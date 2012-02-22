@@ -4,10 +4,7 @@ Debug/
 *.user
 ipch/
 *.opensdf
-*GL_Benchmark_Results*
-*GL Benchmark Results*
 *.tlog
 *.obj
 *.old
 version.h
-Release/
