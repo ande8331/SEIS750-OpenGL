@@ -35,9 +35,9 @@ GLdouble rx = 0.0;
 GLdouble ry = 0.0;
 GLdouble rz = 0.0;
 
-GLdouble sx = 0.0;
-GLdouble sy = 0.0;
-GLdouble sz = 0.0;
+GLdouble sx = 1.0;
+GLdouble sy = 1.0;
+GLdouble sz = 1.0;
 
 vec4 cubeVerts[36];
 vec4 cubeColors[36];
@@ -148,7 +148,7 @@ void display(void)
 	trans[0][1] = -sin(rx);
 	trans[1][1] = cos(ry);
 	*/
-
+	ry += 1.0;
 	mv = mv*RotateX(rx);
 	mv = mv*RotateY(ry);
 	mv = mv*RotateZ(rz);
@@ -164,6 +164,27 @@ void display(void)
 	// Now we have a vertex array that has all of our cube vertex locations and colors
 	glBindVertexArray( vao[0] );
 	glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the cube 
+
+
+	 mv = LookAt(vec4(0, 0, 20, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
+	 
+	 static float rx = 0.0;
+	 static float ry = 0.0;
+	 static float rz = 0.0;
+
+	 	 
+	 mv = mv * RotateY(ry);
+	 mv = mv*Translate(4, 0, 0);
+	 mv = mv * RotateY(-ry);
+	 rx -= 1.0;
+	 ry -= 1.0;
+	 rz -= 1.0;
+
+	 mv = mv * RotateX(rx);
+	 //mv = mv * RotateZ(rz);
+
+	 glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+	 glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the cube 
 
   /*start processing buffered OpenGL routines*/
   glutSwapBuffers();
@@ -324,6 +345,13 @@ void reshape(int width, int height){
 	glViewport( 0, 0, width, height );
 }
 
+void my_timer(int v) 
+{
+	/* calls the display function v times a second */
+	glutPostRedisplay();
+	glutTimerFunc(1000/v, my_timer, v);
+}
+
 int main(int argc, char **argv)
 {
   /*set up window for display*/
@@ -343,6 +371,7 @@ int main(int argc, char **argv)
   glutReshapeFunc(reshape);
   //glutIdleFunc(idle);
   glutSpecialFunc(my_special);
+     glutTimerFunc(500, my_timer, 60);
 
   glutMainLoop();
   return 0;
