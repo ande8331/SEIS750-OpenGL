@@ -168,23 +168,43 @@ void display(void)
 
 	 mv = LookAt(vec4(0, 0, 20, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
 	 
-	 static float rx = 0.0;
-	 static float ry = 0.0;
-	 static float rz = 0.0;
+	 static float rx2 = 0.0;
+	 static float ry2 = 0.0;
+	 static float rz2 = 0.0;
 
 	 	 
-	 mv = mv * RotateY(ry);
-	 mv = mv*Translate(4, 0, 0);
-	 mv = mv * RotateY(-ry);
-	 rx -= 1.0;
-	 ry -= 1.0;
-	 rz -= 1.0;
+	 mv = mv * RotateY(ry2);
+	 mv = mv* Translate(4, 0, 0);
+	 mv = mv * RotateY(-ry2);
+	 rx2 -= 1.0;
+	 ry2 += 1.0;
+	 rz2 -= 1.0;
 
-	 mv = mv * RotateX(rx);
-	 //mv = mv * RotateZ(rz);
+	 mv = mv * RotateX(rx2);
+	 //mv = mv * RotateZ(rz2);
 
 	 glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	 glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the cube 
+
+
+	mv = LookAt(vec4(0, 0, 20, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
+	 
+	 static float rx3 = 0.0;
+	 static float ry3 = 0.0;
+	 static float rz3 = 0.0;
+
+	 mv = mv* Translate(0, -4, 0);
+	 
+	 rz3 += .25;
+	 rx3 += 1.0;
+	 mv = mv*RotateX(rx3);
+	 mv = mv*RotateZ(rz3);
+
+
+	 glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+	 glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the cube 
+
+
 
   /*start processing buffered OpenGL routines*/
   glutSwapBuffers();
