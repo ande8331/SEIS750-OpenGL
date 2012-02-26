@@ -43,6 +43,9 @@ vec4 cubeVerts[36];
 vec4 cubeColors[36];
 vec4 stageVerts[36];
 vec4 stageColors[36];
+#define WHEEL_POINT_COUNT 361
+vec4 wheelVerts[WHEEL_POINT_COUNT];
+vec4 wheelColors[WHEEL_POINT_COUNT];
 
 #define STAGE_WIDTH 10.0
 #define STAGE_HEIGHT 2.0
@@ -151,6 +154,23 @@ void generateStage(){
 	stageVerts[34] = vec4(-STAGE_WIDTH, -STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
 	stageVerts[35] = vec4(STAGE_WIDTH, -STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
 }
+void generateWheel()
+{
+	for (int i = 0; i < WHEEL_POINT_COUNT; i++)
+	{
+		wheelColors[i] = vec4(1.0, 0.0, 0.0, 1.0);
+	}
+	wheelVerts[0] = vec4(0.0, 0.0, 0.0, 1.0);
+
+	for (int i = 1; i < WHEEL_POINT_COUNT; i++)
+	{
+#define RADIUS 3
+		float Angle = i * (2.0*M_PI/(WHEEL_POINT_COUNT-1));
+		float X = cos( Angle )*RADIUS;
+		float Y = sin( Angle )*RADIUS;
+		wheelVerts[i] = vec4(X, Y, 0.0, 1.0);
+	}
+}
 void display(void)
 {
   /*clear all pixels*/
@@ -174,12 +194,14 @@ void display(void)
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
     
 	// Now we have a vertex array that has all of our cube vertex locations and colors
-	glBindVertexArray( vao[0] );
-	glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the cube 
+	//glBindVertexArray( vao[0] );
+	//glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the cube 
 
-	glBindVertexArray( vao[1] );
-	glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the cube 
+	//glBindVertexArray( vao[1] );
+	//glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the cube 
 
+	glBindVertexArray( vao[2] );
+	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the cube 
   /*start processing buffered OpenGL routines*/
   glutSwapBuffers();
 }
@@ -295,6 +317,7 @@ void init() {
   //populate our arrays
   generateCube();
   generateStage();
+  generateWheel();
 
    // Load shaders and use the resulting shader program
     GLuint program = InitShader( "vshader-transform.glsl", "fshader-transform.glsl" );
@@ -342,6 +365,26 @@ void init() {
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
+	// Create a vertex array object
+    glGenVertexArrays( 1, &vao[2] );
+
+    // Create and initialize any buffer objects
+	glBindVertexArray( vao[2] );
+	glGenBuffers( 2, &vbo[4] );
+    glBindBuffer( GL_ARRAY_BUFFER, vbo[4] );
+    glBufferData( GL_ARRAY_BUFFER, sizeof(wheelVerts), wheelVerts, GL_STATIC_DRAW);
+	// notice that since position is unique for every vertex, we treat it as an 
+	// attribute instead of a uniform
+	vPosition = glGetAttribLocation(program, "vPosition");
+	glEnableVertexAttribArray(vPosition);
+	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+	//and now our colors for each vertex
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[5] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelColors), wheelColors, GL_STATIC_DRAW );
+	vColor = glGetAttribLocation(program, "vColor");
+	glEnableVertexAttribArray(vColor);
+	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	//grab pointers for our modelview and perspecive uniform matrices
 	model_view = glGetUniformLocation(program, "model_view");
