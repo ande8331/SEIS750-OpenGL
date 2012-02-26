@@ -46,7 +46,7 @@ vec4 stageColors[36];
 #define WHEEL_POINT_COUNT 361
 vec4 wheelVerts[WHEEL_POINT_COUNT*2];
 vec4 wheelColors[WHEEL_POINT_COUNT*2];
-#define HEAD_POINT_COUNT 360
+#define HEAD_POINT_COUNT 342
 vec4 headVerts[HEAD_POINT_COUNT];
 vec4 headColors[HEAD_POINT_COUNT];
 #define EYE_POINT_COUNT 360
@@ -247,6 +247,21 @@ void generateWheel()
 }
 void generateHead()
 {
+	int k = 0;
+	for (float phi = -80.0; phi <= 80.0; phi += 20.0)
+	{
+		float phir = phi*(M_PI/180);
+		float phir20 = (phi + 20)*(M_PI/180);
+
+		for (float theta = -180.0; theta <= 180.0; theta += 20.0)
+		{
+			float thetar = theta*(M_PI/180);
+			headVerts[k] = vec4(sin(thetar)*cos(phir), cos(thetar)*cos(phir), sin(phir), 1.0);
+			headColors[k++] = vec4(1.0, 1.0, 1.0, 1.0);
+			headVerts[k] = vec4(sin(thetar)*cos(phir20), cos(thetar)*cos(phir20), sin(phir20), 1.0);
+			headColors[k++] = vec4(1.0, 1.0, 1.0, 1.0);
+		}
+	}
 }
 void generateEye()
 {
@@ -285,6 +300,13 @@ void display(void)
 	glDrawArrays( GL_TRIANGLES, 0, CAR_POINT_COUNT );    // draw the car 
 
 	mat4 original = mv;
+
+	mv = mv*Translate(0.0, 10.0, 0.0);
+	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+	glBindVertexArray( vao[3] );
+	glDrawArrays( GL_TRIANGLES, 0, HEAD_POINT_COUNT );    // draw the car 
+
+	mv = original;
 #define WHEEL_X_OFFSET (CAR_WIDTH+1)
 #define WHEEL_Y_OFFSET -5.0
 #define WHEEL_Z_OFFSET (CAR_LENGTH*0.8)
