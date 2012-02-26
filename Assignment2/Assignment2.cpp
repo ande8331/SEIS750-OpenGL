@@ -1,8 +1,8 @@
 /*
- *Skeleton transform program
- *COS490
- *Fall 2011
- **/
+* Assignment 2 (Car) - Ross Anderson
+* SEIS750
+* Spring 2012
+**/
 
 #include <GL/Angel.h>
 #include <math.h>
@@ -12,8 +12,6 @@
 int ww=500, wh=500;
 
 #define M_PI 3.14159265358979323846
-
-
 
 GLuint vao[3];
 GLuint vbo[6];
@@ -61,7 +59,7 @@ void generateCube(){
 	cubeVerts[3] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
 	cubeVerts[4] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
 	cubeVerts[5] = vec4(1.0f, -1.0f, 1.0f, 1.0);
-	
+
 
 	for(int i=6; i<12; i++){
 		cubeColors[i] = vec4(1.0, 0.0, 1.0, 1.0); //back
@@ -82,7 +80,7 @@ void generateCube(){
 	cubeVerts[15] = vec4(1.0f, -1.0f, -1.0f, 1.0);
 	cubeVerts[16] = vec4(1.0f, 1.0f, -1.0f, 1.0);
 	cubeVerts[17] = vec4(1.0f, 1.0f, 1.0f, 1.0);
-	
+
 	for(int i=18; i<24; i++){
 		cubeColors[i] = vec4(1.0, 0.0, 0.0, 1.0); //right
 	}
@@ -92,7 +90,7 @@ void generateCube(){
 	cubeVerts[21] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
 	cubeVerts[22] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
 	cubeVerts[23] = vec4(-1.0f, 1.0f, -1.0f, 1.0);
-	
+
 	for(int i=24; i<30; i++){
 		cubeColors[i] = vec4(0.0, 0.0, 1.0, 1.0); //top
 	}
@@ -102,7 +100,7 @@ void generateCube(){
 	cubeVerts[27] = vec4(-1.0f, 1.0f, -1.0f, 1.0);
 	cubeVerts[28] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
 	cubeVerts[29] = vec4(1.0f, 1.0f, 1.0f, 1.0);
-	
+
 	for(int i=30; i<36; i++){
 		cubeColors[i] = vec4(0.0, 1.0, 0.0, 1.0); //bottom
 	}
@@ -173,11 +171,11 @@ void generateWheel()
 }
 void display(void)
 {
-  /*clear all pixels*/
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
+	/*clear all pixels*/
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	// we'll explain this later, but it's setting our default modelview matrix
-    mv = LookAt(vec4(0, 0, 20, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
+	mv = LookAt(vec4(0, 0, 20, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
 
 	mv = mv*Translate(tx, ty, tz);
 
@@ -188,11 +186,11 @@ void display(void)
 	mv = mv*Scale(sx, sy, sz);
 
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
-	
+
 	// and we also need to send our projection matrix, which again is more appropriately
 	// a uniform instead of an attribute since it's the same for every vertex
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
-    
+
 	// Now we have a vertex array that has all of our cube vertex locations and colors
 	//glBindVertexArray( vao[0] );
 	//glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the cube 
@@ -202,17 +200,17 @@ void display(void)
 
 	glBindVertexArray( vao[2] );
 	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the cube 
-  /*start processing buffered OpenGL routines*/
-  glutSwapBuffers();
+	/*start processing buffered OpenGL routines*/
+	glutSwapBuffers();
 }
 
 /* Function call for game reset */
 void my_special(int key, int x, int y) 
 {
-    if (key == GLUT_KEY_UP)
-    {
+	if (key == GLUT_KEY_UP)
+	{
 		ty += 1.0;
-    }
+	}
 
 	if (key == GLUT_KEY_DOWN)
 	{
@@ -228,7 +226,7 @@ void my_special(int key, int x, int y)
 	{
 		tx -= 1.0;
 	}
-		glutPostRedisplay();
+	glutPostRedisplay();
 }
 
 void Keyboard(unsigned char key, int x, int y) {
@@ -310,27 +308,27 @@ void Keyboard(unsigned char key, int x, int y) {
 
 void init() {
 
-  /*select clearing (background) color*/
-  glClearColor(0.0, 0.0, 0.0, 0.0);
+	/*select clearing (background) color*/
+	glClearColor(0.0, 0.0, 0.0, 0.0);
 
 
-  //populate our arrays
-  generateCube();
-  generateStage();
-  generateWheel();
+	//populate our arrays
+	generateCube();
+	generateStage();
+	generateWheel();
 
-   // Load shaders and use the resulting shader program
-    GLuint program = InitShader( "vshader-transform.glsl", "fshader-transform.glsl" );
-    glUseProgram( program );
+	// Load shaders and use the resulting shader program
+	GLuint program = InitShader( "vshader-transform.glsl", "fshader-transform.glsl" );
+	glUseProgram( program );
 
 	// Create a vertex array object
-    glGenVertexArrays( 1, &vao[0] );
+	glGenVertexArrays( 1, &vao[0] );
 
-    // Create and initialize any buffer objects
+	// Create and initialize any buffer objects
 	glBindVertexArray( vao[0] );
 	glGenBuffers( 2, &vbo[0] );
-    glBindBuffer( GL_ARRAY_BUFFER, vbo[0] );
-    glBufferData( GL_ARRAY_BUFFER, sizeof(cubeVerts), cubeVerts, GL_STATIC_DRAW);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[0] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(cubeVerts), cubeVerts, GL_STATIC_DRAW);
 	// notice that since position is unique for every vertex, we treat it as an 
 	// attribute instead of a uniform
 	vPosition = glGetAttribLocation(program, "vPosition");
@@ -345,13 +343,13 @@ void init() {
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	// Create a vertex array object
-    glGenVertexArrays( 1, &vao[1] );
+	glGenVertexArrays( 1, &vao[1] );
 
-    // Create and initialize any buffer objects
+	// Create and initialize any buffer objects
 	glBindVertexArray( vao[1] );
 	glGenBuffers( 2, &vbo[2] );
-    glBindBuffer( GL_ARRAY_BUFFER, vbo[2] );
-    glBufferData( GL_ARRAY_BUFFER, sizeof(stageVerts), stageVerts, GL_STATIC_DRAW);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[2] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(stageVerts), stageVerts, GL_STATIC_DRAW);
 	// notice that since position is unique for every vertex, we treat it as an 
 	// attribute instead of a uniform
 	vPosition = glGetAttribLocation(program, "vPosition");
@@ -366,13 +364,13 @@ void init() {
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	// Create a vertex array object
-    glGenVertexArrays( 1, &vao[2] );
+	glGenVertexArrays( 1, &vao[2] );
 
-    // Create and initialize any buffer objects
+	// Create and initialize any buffer objects
 	glBindVertexArray( vao[2] );
 	glGenBuffers( 2, &vbo[4] );
-    glBindBuffer( GL_ARRAY_BUFFER, vbo[4] );
-    glBufferData( GL_ARRAY_BUFFER, sizeof(wheelVerts), wheelVerts, GL_STATIC_DRAW);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[4] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelVerts), wheelVerts, GL_STATIC_DRAW);
 	// notice that since position is unique for every vertex, we treat it as an 
 	// attribute instead of a uniform
 	vPosition = glGetAttribLocation(program, "vPosition");
@@ -390,7 +388,7 @@ void init() {
 	model_view = glGetUniformLocation(program, "model_view");
 	projection = glGetUniformLocation(program, "projection");
 
-  //Only draw the things in the front layer
+	//Only draw the things in the front layer
 	glEnable(GL_DEPTH_TEST);
 }
 
@@ -413,25 +411,25 @@ void my_timer(int v)
 
 int main(int argc, char **argv)
 {
-  /*set up window for display*/
-  glutInit(&argc, argv);
-  glutInitWindowPosition(0, 0); 
-  glutInitWindowSize(ww, wh);
-  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-  glutCreateWindow("Transformations Exercise");  
+	/*set up window for display*/
+	glutInit(&argc, argv);
+	glutInitWindowPosition(0, 0); 
+	glutInitWindowSize(ww, wh);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+	glutCreateWindow("Assignment 2 - Ross Anderson");  
 
-  glewExperimental = GL_TRUE;
+	glewExperimental = GL_TRUE;
 
 	glewInit();
-  init();
+	init();
 
-  glutDisplayFunc(display);
-  glutKeyboardFunc(Keyboard);
-  glutReshapeFunc(reshape);
-  //glutIdleFunc(idle);
-  glutSpecialFunc(my_special);
-     glutTimerFunc(500, my_timer, 60);
+	glutDisplayFunc(display);
+	glutKeyboardFunc(Keyboard);
+	glutReshapeFunc(reshape);
+	//glutIdleFunc(idle);
+	glutSpecialFunc(my_special);
+	glutTimerFunc(500, my_timer, 60);
 
-  glutMainLoop();
-  return 0;
+	glutMainLoop();
+	return 0;
 }
