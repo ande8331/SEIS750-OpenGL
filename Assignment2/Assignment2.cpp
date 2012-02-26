@@ -37,8 +37,8 @@ GLdouble sx = 1.0;
 GLdouble sy = 1.0;
 GLdouble sz = 1.0;
 
-vec4 cubeVerts[36];
-vec4 cubeColors[36];
+vec4 carVerts[36];
+vec4 carColors[36];
 vec4 stageVerts[36];
 vec4 stageColors[36];
 #define WHEEL_POINT_COUNT 361
@@ -49,67 +49,67 @@ vec4 wheelColors[WHEEL_POINT_COUNT];
 #define STAGE_HEIGHT 2.0
 #define STAGE_DEPTH STAGE_WIDTH
 
-void generateCube(){
+void generatecar(){
 	for(int i=0; i<6; i++){
-		cubeColors[i] = vec4(0.0, 1.0, 1.0, 1.0); //front
+		carColors[i] = vec4(0.0, 1.0, 1.0, 1.0); //front
 	}
-	cubeVerts[0] = vec4(1.0f, -1.0f, 1.0f, 1.0);
-	cubeVerts[1] = vec4(1.0f, 1.0f, 1.0f, 1.0);
-	cubeVerts[2] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
-	cubeVerts[3] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
-	cubeVerts[4] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
-	cubeVerts[5] = vec4(1.0f, -1.0f, 1.0f, 1.0);
+	carVerts[0] = vec4(1.0f, -1.0f, 1.0f, 1.0);
+	carVerts[1] = vec4(1.0f, 1.0f, 1.0f, 1.0);
+	carVerts[2] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
+	carVerts[3] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
+	carVerts[4] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
+	carVerts[5] = vec4(1.0f, -1.0f, 1.0f, 1.0);
 
 
 	for(int i=6; i<12; i++){
-		cubeColors[i] = vec4(1.0, 0.0, 1.0, 1.0); //back
+		carColors[i] = vec4(1.0, 0.0, 1.0, 1.0); //back
 	}
-	cubeVerts[6] = vec4(-1.0f, -1.0f, -1.0f, 1.0);
-	cubeVerts[7] = vec4(-1.0f, 1.0f, -1.0f, 1.0);
-	cubeVerts[8] = vec4(1.0f, 1.0f, -1.0f, 1.0);
-	cubeVerts[9] = vec4(1.0f, 1.0f, -1.0f, 1.0);
-	cubeVerts[10] = vec4(1.0f, -1.0f, -1.0f, 1.0);
-	cubeVerts[11] = vec4(-1.0f, -1.0f, -1.0f, 1.0);
+	carVerts[6] = vec4(-1.0f, -1.0f, -1.0f, 1.0);
+	carVerts[7] = vec4(-1.0f, 1.0f, -1.0f, 1.0);
+	carVerts[8] = vec4(1.0f, 1.0f, -1.0f, 1.0);
+	carVerts[9] = vec4(1.0f, 1.0f, -1.0f, 1.0);
+	carVerts[10] = vec4(1.0f, -1.0f, -1.0f, 1.0);
+	carVerts[11] = vec4(-1.0f, -1.0f, -1.0f, 1.0);
 
 	for(int i=12; i<18; i++){
-		cubeColors[i] = vec4(1.0, 1.0, 0.0, 1.0); //left
+		carColors[i] = vec4(1.0, 1.0, 0.0, 1.0); //left
 	}
-	cubeVerts[12] = vec4(1.0f, 1.0f, 1.0f, 1.0);
-	cubeVerts[13] = vec4(1.0f, -1.0f, 1.0f, 1.0);
-	cubeVerts[14] = vec4(1.0f, -1.0f, -1.0f, 1.0);
-	cubeVerts[15] = vec4(1.0f, -1.0f, -1.0f, 1.0);
-	cubeVerts[16] = vec4(1.0f, 1.0f, -1.0f, 1.0);
-	cubeVerts[17] = vec4(1.0f, 1.0f, 1.0f, 1.0);
+	carVerts[12] = vec4(1.0f, 1.0f, 1.0f, 1.0);
+	carVerts[13] = vec4(1.0f, -1.0f, 1.0f, 1.0);
+	carVerts[14] = vec4(1.0f, -1.0f, -1.0f, 1.0);
+	carVerts[15] = vec4(1.0f, -1.0f, -1.0f, 1.0);
+	carVerts[16] = vec4(1.0f, 1.0f, -1.0f, 1.0);
+	carVerts[17] = vec4(1.0f, 1.0f, 1.0f, 1.0);
 
 	for(int i=18; i<24; i++){
-		cubeColors[i] = vec4(1.0, 0.0, 0.0, 1.0); //right
+		carColors[i] = vec4(1.0, 0.0, 0.0, 1.0); //right
 	}
-	cubeVerts[18] = vec4(-1.0f, 1.0f, -1.0f, 1.0);
-	cubeVerts[19] = vec4(-1.0f, -1.0f, -1.0f, 1.0);
-	cubeVerts[20] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
-	cubeVerts[21] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
-	cubeVerts[22] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
-	cubeVerts[23] = vec4(-1.0f, 1.0f, -1.0f, 1.0);
+	carVerts[18] = vec4(-1.0f, 1.0f, -1.0f, 1.0);
+	carVerts[19] = vec4(-1.0f, -1.0f, -1.0f, 1.0);
+	carVerts[20] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
+	carVerts[21] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
+	carVerts[22] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
+	carVerts[23] = vec4(-1.0f, 1.0f, -1.0f, 1.0);
 
 	for(int i=24; i<30; i++){
-		cubeColors[i] = vec4(0.0, 0.0, 1.0, 1.0); //top
+		carColors[i] = vec4(0.0, 0.0, 1.0, 1.0); //top
 	}
-	cubeVerts[24] = vec4(1.0f, 1.0f, 1.0f, 1.0);
-	cubeVerts[25] = vec4(1.0f, 1.0f, -1.0f, 1.0);
-	cubeVerts[26] = vec4(-1.0f, 1.0f, -1.0f, 1.0);
-	cubeVerts[27] = vec4(-1.0f, 1.0f, -1.0f, 1.0);
-	cubeVerts[28] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
-	cubeVerts[29] = vec4(1.0f, 1.0f, 1.0f, 1.0);
+	carVerts[24] = vec4(1.0f, 1.0f, 1.0f, 1.0);
+	carVerts[25] = vec4(1.0f, 1.0f, -1.0f, 1.0);
+	carVerts[26] = vec4(-1.0f, 1.0f, -1.0f, 1.0);
+	carVerts[27] = vec4(-1.0f, 1.0f, -1.0f, 1.0);
+	carVerts[28] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
+	carVerts[29] = vec4(1.0f, 1.0f, 1.0f, 1.0);
 
 	for(int i=30; i<36; i++){
-		cubeColors[i] = vec4(0.0, 1.0, 0.0, 1.0); //bottom
+		carColors[i] = vec4(0.0, 1.0, 0.0, 1.0); //bottom
 	}
-	cubeVerts[30] = vec4(1.0f, -1.0f, -1.0f, 1.0);
-	cubeVerts[31] = vec4(1.0f, -1.0f, 1.0f, 1.0);
-	cubeVerts[32] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
-	cubeVerts[33] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
-	cubeVerts[34] = vec4(-1.0f, -1.0f, -1.0f, 1.0);
-	cubeVerts[35] = vec4(1.0f, -1.0f, -1.0f, 1.0);
+	carVerts[30] = vec4(1.0f, -1.0f, -1.0f, 1.0);
+	carVerts[31] = vec4(1.0f, -1.0f, 1.0f, 1.0);
+	carVerts[32] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
+	carVerts[33] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
+	carVerts[34] = vec4(-1.0f, -1.0f, -1.0f, 1.0);
+	carVerts[35] = vec4(1.0f, -1.0f, -1.0f, 1.0);
 }
 void generateStage(){
 	for(int i=0; i<36; i++){
@@ -191,15 +191,15 @@ void display(void)
 	// a uniform instead of an attribute since it's the same for every vertex
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
 
-	// Now we have a vertex array that has all of our cube vertex locations and colors
+	// Now we have a vertex array that has all of our car vertex locations and colors
 	//glBindVertexArray( vao[0] );
-	//glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the cube 
+	//glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the car 
 
 	//glBindVertexArray( vao[1] );
-	//glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the cube 
+	//glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the car 
 
 	glBindVertexArray( vao[2] );
-	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the cube 
+	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the car 
 	/*start processing buffered OpenGL routines*/
 	glutSwapBuffers();
 }
@@ -313,7 +313,7 @@ void init() {
 
 
 	//populate our arrays
-	generateCube();
+	generatecar();
 	generateStage();
 	generateWheel();
 
@@ -328,7 +328,7 @@ void init() {
 	glBindVertexArray( vao[0] );
 	glGenBuffers( 2, &vbo[0] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[0] );
-	glBufferData( GL_ARRAY_BUFFER, sizeof(cubeVerts), cubeVerts, GL_STATIC_DRAW);
+	glBufferData( GL_ARRAY_BUFFER, sizeof(carVerts), carVerts, GL_STATIC_DRAW);
 	// notice that since position is unique for every vertex, we treat it as an 
 	// attribute instead of a uniform
 	vPosition = glGetAttribLocation(program, "vPosition");
@@ -337,7 +337,7 @@ void init() {
 
 	//and now our colors for each vertex
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[1] );
-	glBufferData( GL_ARRAY_BUFFER, sizeof(cubeColors), cubeColors, GL_STATIC_DRAW );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(carColors), carColors, GL_STATIC_DRAW );
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
