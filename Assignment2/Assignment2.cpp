@@ -328,16 +328,21 @@ void display(void)
 
 	mat4 original = mv;
 
-	mv = mv*Translate(0.0, 10.0, 0.0);
+	mv = mv*Translate(0.0, CAR_HEIGHT+(HEAD_RADIUS*2), 0.0);
 	mv = mv*RotateY(headAngle);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[3] );
 	glDrawArrays( GL_LINE_LOOP, 0, HEAD_POINT_COUNT );    // draw the head 
-
-	mv = mv*Translate(0.0, 0.0, HEAD_RADIUS);
+	mat4 headOriginal = mv;
+	mv = mv*Translate(.4*HEAD_RADIUS, 0.0, HEAD_RADIUS);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[4] );
-	glDrawArrays( GL_LINE_LOOP, 0, HEAD_POINT_COUNT );    // draw the eye 
+	glDrawArrays( GL_LINE_LOOP, 0, EYE_POINT_COUNT );    // draw the eye 
+	mv = headOriginal;
+	mv = mv*Translate(-.4*HEAD_RADIUS, 0.0, HEAD_RADIUS);
+	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+	glBindVertexArray( vao[4] );
+	glDrawArrays( GL_LINE_LOOP, 0, EYE_POINT_COUNT );    // draw the eye 
 
 	mv = original;
 #define WHEEL_X_OFFSET (CAR_WIDTH+1)
