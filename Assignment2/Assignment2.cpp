@@ -45,71 +45,75 @@ vec4 stageColors[36];
 vec4 wheelVerts[WHEEL_POINT_COUNT];
 vec4 wheelColors[WHEEL_POINT_COUNT];
 
-#define STAGE_WIDTH 10.0
-#define STAGE_HEIGHT 2.0
+#define CAR_WIDTH 5
+#define CAR_HEIGHT 5
+#define CAR_LENGTH 10
+
+#define STAGE_WIDTH 50.0
+#define STAGE_HEIGHT 1
 #define STAGE_DEPTH STAGE_WIDTH
 
 void generatecar(){
 	for(int i=0; i<6; i++){
 		carColors[i] = vec4(0.0, 1.0, 1.0, 1.0); //front
 	}
-	carVerts[0] = vec4(1.0f, -1.0f, 1.0f, 1.0);
-	carVerts[1] = vec4(1.0f, 1.0f, 1.0f, 1.0);
-	carVerts[2] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
-	carVerts[3] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
-	carVerts[4] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
-	carVerts[5] = vec4(1.0f, -1.0f, 1.0f, 1.0);
+	carVerts[0] = vec4(CAR_WIDTH, -CAR_HEIGHT, CAR_LENGTH, 1.0);
+	carVerts[1] = vec4(CAR_WIDTH, CAR_HEIGHT, CAR_LENGTH, 1.0);
+	carVerts[2] = vec4(-CAR_WIDTH, CAR_HEIGHT, CAR_LENGTH, 1.0);
+	carVerts[3] = vec4(-CAR_WIDTH, CAR_HEIGHT, CAR_LENGTH, 1.0);
+	carVerts[4] = vec4(-CAR_WIDTH, -CAR_HEIGHT, CAR_LENGTH, 1.0);
+	carVerts[5] = vec4(CAR_WIDTH, -CAR_HEIGHT, CAR_LENGTH, 1.0);
 
 
 	for(int i=6; i<12; i++){
 		carColors[i] = vec4(1.0, 0.0, 1.0, 1.0); //back
 	}
-	carVerts[6] = vec4(-1.0f, -1.0f, -1.0f, 1.0);
-	carVerts[7] = vec4(-1.0f, 1.0f, -1.0f, 1.0);
-	carVerts[8] = vec4(1.0f, 1.0f, -1.0f, 1.0);
-	carVerts[9] = vec4(1.0f, 1.0f, -1.0f, 1.0);
-	carVerts[10] = vec4(1.0f, -1.0f, -1.0f, 1.0);
-	carVerts[11] = vec4(-1.0f, -1.0f, -1.0f, 1.0);
+	carVerts[6] = vec4(-CAR_WIDTH, -CAR_HEIGHT, -CAR_LENGTH, 1.0);
+	carVerts[7] = vec4(-CAR_WIDTH, CAR_HEIGHT, -CAR_LENGTH, 1.0);
+	carVerts[8] = vec4(CAR_WIDTH, CAR_HEIGHT, -CAR_LENGTH, 1.0);
+	carVerts[9] = vec4(CAR_WIDTH, CAR_HEIGHT, -CAR_LENGTH, 1.0);
+	carVerts[10] = vec4(CAR_WIDTH, -CAR_HEIGHT, -CAR_LENGTH, 1.0);
+	carVerts[11] = vec4(-CAR_WIDTH, -CAR_HEIGHT, -CAR_LENGTH, 1.0);
 
 	for(int i=12; i<18; i++){
 		carColors[i] = vec4(1.0, 1.0, 0.0, 1.0); //left
 	}
-	carVerts[12] = vec4(1.0f, 1.0f, 1.0f, 1.0);
-	carVerts[13] = vec4(1.0f, -1.0f, 1.0f, 1.0);
-	carVerts[14] = vec4(1.0f, -1.0f, -1.0f, 1.0);
-	carVerts[15] = vec4(1.0f, -1.0f, -1.0f, 1.0);
-	carVerts[16] = vec4(1.0f, 1.0f, -1.0f, 1.0);
-	carVerts[17] = vec4(1.0f, 1.0f, 1.0f, 1.0);
+	carVerts[12] = vec4(CAR_WIDTH, CAR_HEIGHT, CAR_LENGTH, 1.0);
+	carVerts[13] = vec4(CAR_WIDTH, -CAR_HEIGHT, CAR_LENGTH, 1.0);
+	carVerts[14] = vec4(CAR_WIDTH, -CAR_HEIGHT, -CAR_LENGTH, 1.0);
+	carVerts[15] = vec4(CAR_WIDTH, -CAR_HEIGHT, -CAR_LENGTH, 1.0);
+	carVerts[16] = vec4(CAR_WIDTH, CAR_HEIGHT, -CAR_LENGTH, 1.0);
+	carVerts[17] = vec4(CAR_WIDTH, CAR_HEIGHT, CAR_LENGTH, 1.0);
 
 	for(int i=18; i<24; i++){
 		carColors[i] = vec4(1.0, 0.0, 0.0, 1.0); //right
 	}
-	carVerts[18] = vec4(-1.0f, 1.0f, -1.0f, 1.0);
-	carVerts[19] = vec4(-1.0f, -1.0f, -1.0f, 1.0);
-	carVerts[20] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
-	carVerts[21] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
-	carVerts[22] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
-	carVerts[23] = vec4(-1.0f, 1.0f, -1.0f, 1.0);
+	carVerts[18] = vec4(-CAR_WIDTH, CAR_HEIGHT, -CAR_LENGTH, 1.0);
+	carVerts[19] = vec4(-CAR_WIDTH, -CAR_HEIGHT, -CAR_LENGTH, 1.0);
+	carVerts[20] = vec4(-CAR_WIDTH, -CAR_HEIGHT, CAR_LENGTH, 1.0);
+	carVerts[21] = vec4(-CAR_WIDTH, -CAR_HEIGHT, CAR_LENGTH, 1.0);
+	carVerts[22] = vec4(-CAR_WIDTH, CAR_HEIGHT, CAR_LENGTH, 1.0);
+	carVerts[23] = vec4(-CAR_WIDTH, CAR_HEIGHT, -CAR_LENGTH, 1.0);
 
 	for(int i=24; i<30; i++){
 		carColors[i] = vec4(0.0, 0.0, 1.0, 1.0); //top
 	}
-	carVerts[24] = vec4(1.0f, 1.0f, 1.0f, 1.0);
-	carVerts[25] = vec4(1.0f, 1.0f, -1.0f, 1.0);
-	carVerts[26] = vec4(-1.0f, 1.0f, -1.0f, 1.0);
-	carVerts[27] = vec4(-1.0f, 1.0f, -1.0f, 1.0);
-	carVerts[28] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
-	carVerts[29] = vec4(1.0f, 1.0f, 1.0f, 1.0);
+	carVerts[24] = vec4(CAR_WIDTH, CAR_HEIGHT, CAR_LENGTH, 1.0);
+	carVerts[25] = vec4(CAR_WIDTH, CAR_HEIGHT, -CAR_LENGTH, 1.0);
+	carVerts[26] = vec4(-CAR_WIDTH, CAR_HEIGHT, -CAR_LENGTH, 1.0);
+	carVerts[27] = vec4(-CAR_WIDTH, CAR_HEIGHT, -CAR_LENGTH, 1.0);
+	carVerts[28] = vec4(-CAR_WIDTH, CAR_HEIGHT, CAR_LENGTH, 1.0);
+	carVerts[29] = vec4(CAR_WIDTH, CAR_HEIGHT, CAR_LENGTH, 1.0);
 
 	for(int i=30; i<36; i++){
 		carColors[i] = vec4(0.0, 1.0, 0.0, 1.0); //bottom
 	}
-	carVerts[30] = vec4(1.0f, -1.0f, -1.0f, 1.0);
-	carVerts[31] = vec4(1.0f, -1.0f, 1.0f, 1.0);
-	carVerts[32] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
-	carVerts[33] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
-	carVerts[34] = vec4(-1.0f, -1.0f, -1.0f, 1.0);
-	carVerts[35] = vec4(1.0f, -1.0f, -1.0f, 1.0);
+	carVerts[30] = vec4(CAR_WIDTH, -CAR_HEIGHT, -CAR_LENGTH, 1.0);
+	carVerts[31] = vec4(CAR_WIDTH, -CAR_HEIGHT, CAR_LENGTH, 1.0);
+	carVerts[32] = vec4(-CAR_WIDTH, -CAR_HEIGHT, CAR_LENGTH, 1.0);
+	carVerts[33] = vec4(-CAR_WIDTH, -CAR_HEIGHT, CAR_LENGTH, 1.0);
+	carVerts[34] = vec4(-CAR_WIDTH, -CAR_HEIGHT, -CAR_LENGTH, 1.0);
+	carVerts[35] = vec4(CAR_WIDTH, -CAR_HEIGHT, -CAR_LENGTH, 1.0);
 }
 void generateStage(){
 	for(int i=0; i<36; i++){
@@ -175,7 +179,7 @@ void display(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// we'll explain this later, but it's setting our default modelview matrix
-	mv = LookAt(vec4(0, 0, 20, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
+	mv = LookAt(vec4(0, 0, 100, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
 
 	mv = mv*Translate(tx, ty, tz);
 
@@ -191,16 +195,51 @@ void display(void)
 	// a uniform instead of an attribute since it's the same for every vertex
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
 
-	// Now we have a vertex array that has all of our car vertex locations and colors
-	//glBindVertexArray( vao[0] );
-	//glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the car 
+	glBindVertexArray( vao[1] );
+	glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the stage 
 
-	//glBindVertexArray( vao[1] );
-	//glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the car 
+	mv = mv*Translate(0.0, 10, 0.0);
+	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+
+	
+	glBindVertexArray( vao[0] );
+	glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the car 
+
+	mat4 original = mv;
+#define WHEEL_X_OFFSET (CAR_WIDTH+1)
+#define WHEEL_Y_OFFSET -5.0
+#define WHEEL_Z_OFFSET (CAR_LENGTH*0.8)
+
+	mv = mv*Translate(WHEEL_X_OFFSET, WHEEL_Y_OFFSET, WHEEL_Z_OFFSET);
+	mv = mv*RotateY(90);
+	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
 	glBindVertexArray( vao[2] );
-	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the car 
+	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the wheel 
 	/*start processing buffered OpenGL routines*/
+
+	//mv = original;
+	mv = mv*Translate(0, 0, -2*WHEEL_X_OFFSET);	// Because we are turned 90 degrees, the X and Z are reversed now
+	//mv = mv*RotateY(90);
+	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+
+	glBindVertexArray( vao[2] );
+	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the wheel 
+
+	mv = mv*Translate(2*WHEEL_Z_OFFSET, 0, 0);	// Because we are turned 90 degrees, the X and Z are reversed now
+	//mv = mv*RotateY(90);
+	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+
+	glBindVertexArray( vao[2] );
+	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the wheel 
+
+	mv = mv*Translate(0, 0, 2*WHEEL_X_OFFSET);	// Because we are turned 90 degrees, the X and Z are reversed now
+	//mv = mv*RotateY(90);
+	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+
+	glBindVertexArray( vao[2] );
+	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the wheel 
+
 	glutSwapBuffers();
 }
 
