@@ -13,8 +13,8 @@ int ww=500, wh=500;
 
 #define M_PI 3.14159265358979323846
 
-GLuint vao[3];
-GLuint vbo[6];
+GLuint vao[5];
+GLuint vbo[10];
 
 //our modelview and perspective matrices
 mat4 mv, p;
@@ -37,13 +37,21 @@ GLdouble sx = 1.0;
 GLdouble sy = 1.0;
 GLdouble sz = 1.0;
 
-vec4 carVerts[36];
-vec4 carColors[36];
+GLdouble steering = 0.0f;
+#define CAR_POINT_COUNT 72
+vec4 carVerts[CAR_POINT_COUNT];
+vec4 carColors[CAR_POINT_COUNT];
 vec4 stageVerts[36];
 vec4 stageColors[36];
 #define WHEEL_POINT_COUNT 361
-vec4 wheelVerts[WHEEL_POINT_COUNT];
-vec4 wheelColors[WHEEL_POINT_COUNT];
+vec4 wheelVerts[WHEEL_POINT_COUNT*2];
+vec4 wheelColors[WHEEL_POINT_COUNT*2];
+#define HEAD_POINT_COUNT 360
+vec4 headVerts[HEAD_POINT_COUNT];
+vec4 headColors[HEAD_POINT_COUNT];
+#define EYE_POINT_COUNT 360
+vec4 eyeVerts[EYE_POINT_COUNT];
+vec4 eyeColors[EYE_POINT_COUNT];
 
 #define CAR_WIDTH 5
 #define CAR_HEIGHT 5
@@ -114,6 +122,53 @@ void generatecar(){
 	carVerts[33] = vec4(-CAR_WIDTH, -CAR_HEIGHT, CAR_LENGTH, 1.0);
 	carVerts[34] = vec4(-CAR_WIDTH, -CAR_HEIGHT, -CAR_LENGTH, 1.0);
 	carVerts[35] = vec4(CAR_WIDTH, -CAR_HEIGHT, -CAR_LENGTH, 1.0);
+
+	for(int i=36; i<72; i++){
+		carColors[i] = vec4(1.0, 1.0, 1.0, 1.0); //front
+	}
+
+	int i = 36;
+	// Front Racing Stipes
+	carVerts[i++] = vec4(CAR_WIDTH*.3, -CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
+	carVerts[i++] = vec4(CAR_WIDTH*.3, CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
+	carVerts[i++] = vec4(CAR_WIDTH*.6, CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
+	carVerts[i++] = vec4(CAR_WIDTH*.6, CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
+	carVerts[i++] = vec4(CAR_WIDTH*.3, -CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
+	carVerts[i++] = vec4(CAR_WIDTH*.6, -CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
+	carVerts[i++] = vec4(-CAR_WIDTH*.3, -CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
+	carVerts[i++] = vec4(-CAR_WIDTH*.3, CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
+	carVerts[i++] = vec4(-CAR_WIDTH*.6, CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
+	carVerts[i++] = vec4(-CAR_WIDTH*.6, CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
+	carVerts[i++] = vec4(-CAR_WIDTH*.3, -CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
+	carVerts[i++] = vec4(-CAR_WIDTH*.6, -CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
+	
+	// Middle Racing Stripes
+	carVerts[i++] = vec4(CAR_WIDTH*.3, CAR_HEIGHT+.001, -CAR_LENGTH, 1.0);
+	carVerts[i++] = vec4(CAR_WIDTH*.3, CAR_HEIGHT+.001, CAR_LENGTH, 1.0);
+	carVerts[i++] = vec4(CAR_WIDTH*.6, CAR_HEIGHT+.001, CAR_LENGTH, 1.0);
+	carVerts[i++] = vec4(CAR_WIDTH*.6, CAR_HEIGHT+.001, CAR_LENGTH, 1.0);
+	carVerts[i++] = vec4(CAR_WIDTH*.3, CAR_HEIGHT+.001, -CAR_LENGTH, 1.0);
+	carVerts[i++] = vec4(CAR_WIDTH*.6, CAR_HEIGHT+.001, -CAR_LENGTH, 1.0);
+	carVerts[i++] = vec4(-CAR_WIDTH*.3, CAR_HEIGHT+.001, -CAR_LENGTH, 1.0);
+	carVerts[i++] = vec4(-CAR_WIDTH*.3, CAR_HEIGHT+.001, CAR_LENGTH, 1.0);
+	carVerts[i++] = vec4(-CAR_WIDTH*.6, CAR_HEIGHT+.001, CAR_LENGTH, 1.0);
+	carVerts[i++] = vec4(-CAR_WIDTH*.6, CAR_HEIGHT+.001, CAR_LENGTH, 1.0);
+	carVerts[i++] = vec4(-CAR_WIDTH*.3, CAR_HEIGHT+.001, -CAR_LENGTH, 1.0);
+	carVerts[i++] = vec4(-CAR_WIDTH*.6, CAR_HEIGHT+.001, -CAR_LENGTH, 1.0);
+
+	// Back Racing Stripes
+	carVerts[i++] = vec4(CAR_WIDTH*.3, -CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
+	carVerts[i++] = vec4(CAR_WIDTH*.3, CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
+	carVerts[i++] = vec4(CAR_WIDTH*.6, CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
+	carVerts[i++] = vec4(CAR_WIDTH*.6, CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
+	carVerts[i++] = vec4(CAR_WIDTH*.3, -CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
+	carVerts[i++] = vec4(CAR_WIDTH*.6, -CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
+	carVerts[i++] = vec4(-CAR_WIDTH*.3, -CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
+	carVerts[i++] = vec4(-CAR_WIDTH*.3, CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
+	carVerts[i++] = vec4(-CAR_WIDTH*.6, CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
+	carVerts[i++] = vec4(-CAR_WIDTH*.6, CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
+	carVerts[i++] = vec4(-CAR_WIDTH*.3, -CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
+	carVerts[i++] = vec4(-CAR_WIDTH*.6, -CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
 }
 void generateStage(){
 	for(int i=0; i<36; i++){
@@ -158,21 +213,45 @@ void generateStage(){
 }
 void generateWheel()
 {
-	for (int i = 0; i < WHEEL_POINT_COUNT; i++)
+	int i;
+	for (i = 0; i < WHEEL_POINT_COUNT; i++)
 	{
 		wheelColors[i] = vec4(1.0, 0.0, 0.0, 1.0);
 	}
+	for ( ; i < WHEEL_POINT_COUNT*2; i++)
+	{
+		wheelColors[i] = vec4(0.0, 1.0, 0.0, 1.0);
+	}
+
 	wheelVerts[0] = vec4(0.0, 0.0, 0.0, 1.0);
 
-	for (int i = 1; i < WHEEL_POINT_COUNT; i++)
+	for ( i = 1; i < WHEEL_POINT_COUNT; i++)
 	{
 #define RADIUS 3
 		float Angle = i * (2.0*M_PI/(WHEEL_POINT_COUNT-1));
 		float X = cos( Angle )*RADIUS;
 		float Y = sin( Angle )*RADIUS;
-		wheelVerts[i] = vec4(X, Y, 0.0, 1.0);
+		wheelVerts[i] = vec4(X, Y, 0.5, 1.0);
+	}
+
+	wheelVerts[i++] = vec4(0.0, 0.0, 0.0, 1.0);
+
+	for ( ; i < WHEEL_POINT_COUNT*2; i++)
+	{
+#define RADIUS 3
+		float Angle = i * (2.0*M_PI/(WHEEL_POINT_COUNT-1));
+		float X = cos( Angle )*RADIUS;
+		float Y = sin( Angle )*RADIUS;
+		wheelVerts[i] = vec4(X, Y, -0.5, 1.0);
 	}
 }
+void generateHead()
+{
+}
+void generateEye()
+{
+}
+
 void display(void)
 {
 	/*clear all pixels*/
@@ -203,7 +282,7 @@ void display(void)
 
 	
 	glBindVertexArray( vao[0] );
-	glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the car 
+	glDrawArrays( GL_TRIANGLES, 0, CAR_POINT_COUNT );    // draw the car 
 
 	mat4 original = mv;
 #define WHEEL_X_OFFSET (CAR_WIDTH+1)
@@ -211,30 +290,33 @@ void display(void)
 #define WHEEL_Z_OFFSET (CAR_LENGTH*0.8)
 
 	mv = mv*Translate(WHEEL_X_OFFSET, WHEEL_Y_OFFSET, WHEEL_Z_OFFSET);
+	mv = mv*RotateY(90+steering);
+	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+
+	glBindVertexArray( vao[2] );
+	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the wheel 
+	glDrawArrays( GL_TRIANGLE_FAN, WHEEL_POINT_COUNT, WHEEL_POINT_COUNT*2 );    // draw the wheel 
+	/*start processing buffered OpenGL routines*/
+
+	mv = original;
+	mv = mv*Translate(-WHEEL_X_OFFSET, WHEEL_Y_OFFSET, WHEEL_Z_OFFSET);
+	mv = mv*RotateY(90+steering);
+	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+
+	glBindVertexArray( vao[2] );
+	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the wheel 
+
+	mv = original;
+	mv = mv*Translate(WHEEL_X_OFFSET, WHEEL_Y_OFFSET, -WHEEL_Z_OFFSET);
 	mv = mv*RotateY(90);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
 	glBindVertexArray( vao[2] );
 	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the wheel 
-	/*start processing buffered OpenGL routines*/
 
-	//mv = original;
-	mv = mv*Translate(0, 0, -2*WHEEL_X_OFFSET);	// Because we are turned 90 degrees, the X and Z are reversed now
-	//mv = mv*RotateY(90);
-	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
-
-	glBindVertexArray( vao[2] );
-	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the wheel 
-
-	mv = mv*Translate(2*WHEEL_Z_OFFSET, 0, 0);	// Because we are turned 90 degrees, the X and Z are reversed now
-	//mv = mv*RotateY(90);
-	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
-
-	glBindVertexArray( vao[2] );
-	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the wheel 
-
-	mv = mv*Translate(0, 0, 2*WHEEL_X_OFFSET);	// Because we are turned 90 degrees, the X and Z are reversed now
-	//mv = mv*RotateY(90);
+	mv = original;
+	mv = mv*Translate(-WHEEL_X_OFFSET, WHEEL_Y_OFFSET, -WHEEL_Z_OFFSET);
+	mv = mv*RotateY(90);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
 	glBindVertexArray( vao[2] );
@@ -258,12 +340,18 @@ void my_special(int key, int x, int y)
 
 	if (key == GLUT_KEY_RIGHT)
 	{
-		tx += 1.0;
+		if (steering < 45)
+		{
+			steering += 1.0;
+		}
 	}
 
 	if (key == GLUT_KEY_LEFT)
 	{
-		tx -= 1.0;
+		if (steering > -45)
+		{
+			steering -= 1.0;
+		}
 	}
 	glutPostRedisplay();
 }
@@ -355,6 +443,8 @@ void init() {
 	generatecar();
 	generateStage();
 	generateWheel();
+	generateHead();
+	generateEye();
 
 	// Load shaders and use the resulting shader program
 	GLuint program = InitShader( "vshader-transform.glsl", "fshader-transform.glsl" );
@@ -423,9 +513,54 @@ void init() {
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
+	// Create a vertex array object
+	glGenVertexArrays( 1, &vao[3] );
+
+	// Create and initialize any buffer objects
+	glBindVertexArray( vao[3] );
+	glGenBuffers( 2, &vbo[6] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[6] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(headVerts), headVerts, GL_STATIC_DRAW);
+	// notice that since position is unique for every vertex, we treat it as an 
+	// attribute instead of a uniform
+	vPosition = glGetAttribLocation(program, "vPosition");
+	glEnableVertexAttribArray(vPosition);
+	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+	//and now our colors for each vertex
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[7] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(headColors), headColors, GL_STATIC_DRAW );
+	vColor = glGetAttribLocation(program, "vColor");
+	glEnableVertexAttribArray(vColor);
+	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+
 	//grab pointers for our modelview and perspecive uniform matrices
 	model_view = glGetUniformLocation(program, "model_view");
 	projection = glGetUniformLocation(program, "projection");
+
+	// Create a vertex array object
+	glGenVertexArrays( 1, &vao[4] );
+
+	// Create and initialize any buffer objects
+	glBindVertexArray( vao[4] );
+	glGenBuffers( 2, &vbo[8] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[8] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(eyeVerts), eyeVerts, GL_STATIC_DRAW);
+	// notice that since position is unique for every vertex, we treat it as an 
+	// attribute instead of a uniform
+	vPosition = glGetAttribLocation(program, "vPosition");
+	glEnableVertexAttribArray(vPosition);
+	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+	//and now our colors for each vertex
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[9] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(eyeColors), eyeColors, GL_STATIC_DRAW );
+	vColor = glGetAttribLocation(program, "vColor");
+	glEnableVertexAttribArray(vColor);
+	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+
 
 	//Only draw the things in the front layer
 	glEnable(GL_DEPTH_TEST);
