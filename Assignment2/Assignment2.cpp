@@ -13,8 +13,8 @@ int ww=500, wh=500;
 
 #define M_PI 3.14159265358979323846
 
-GLuint vao[5];
-GLuint vbo[10];
+GLuint vao[10];
+GLuint vbo[20];
 
 //our modelview and perspective matrices
 mat4 mv, p;
@@ -39,6 +39,8 @@ GLdouble sz = 1.0;
 
 GLdouble steering = 0.0f;
 GLdouble headAngle = 0.0f;
+GLdouble wheelRollAngle = 0.0f;
+
 #define CAR_POINT_COUNT 72
 vec4 carVerts[CAR_POINT_COUNT];
 vec4 carColors[CAR_POINT_COUNT];
@@ -47,6 +49,9 @@ vec4 stageColors[36];
 #define WHEEL_POINT_COUNT 361
 vec4 wheelVerts[WHEEL_POINT_COUNT*2];
 vec4 wheelColors[WHEEL_POINT_COUNT*2];
+#define WHEEL_STRIPE_POINT_COUNT 3
+vec4 wheelStripeVerts[WHEEL_STRIPE_POINT_COUNT];
+vec4 wheelStripeColors[WHEEL_STRIPE_POINT_COUNT];
 #define HEAD_POINT_COUNT 342
 vec4 headVerts[HEAD_POINT_COUNT];
 vec4 headColors[HEAD_POINT_COUNT];
@@ -247,6 +252,14 @@ void generateWheel()
 		float Y = sin( Angle )*RADIUS;
 		wheelVerts[i] = vec4(X, Y, -0.5, 1.0);
 	}
+
+	wheelStripeVerts[0] = vec4(-1.5, -1.5, 0.51, 1.0);
+	wheelStripeVerts[1] = vec4(1.5, -1.5, 0.51, 1.0);
+	wheelStripeVerts[2] = vec4(0.0, 1.5, 0.51, 1.0);
+	wheelStripeColors[0] = vec4(0.0, 0.0, 0.0, 1.0);
+	wheelStripeColors[1] = vec4(0.0, 0.0, 0.0, 1.0);
+	wheelStripeColors[2] = vec4(0.0, 0.0, 0.0, 1.0);
+
 }
 void generateHead()
 {
@@ -291,7 +304,8 @@ void drawWheel(void)
 	glBindVertexArray( vao[2] );
 	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the wheel 
 	glDrawArrays( GL_TRIANGLE_FAN, WHEEL_POINT_COUNT, WHEEL_POINT_COUNT*2 );    // draw the wheel 
-
+	glBindVertexArray( vao[5] );
+	glDrawArrays( GL_TRIANGLES, 0, WHEEL_STRIPE_POINT_COUNT );    // draw the wheel 
 }
 
 void display(void)
@@ -353,11 +367,14 @@ void display(void)
 	mv = mv*RotateY(90+steering);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
+	wheelRollAngle += 1.0;
+
 	drawWheel();
 
 	mv = original;
 	mv = mv*Translate(-WHEEL_X_OFFSET, WHEEL_Y_OFFSET, WHEEL_Z_OFFSET);
-	mv = mv*RotateY(90+steering);
+	mv = mv*RotateY(-90+steering);
+	mv = mv*RotateZ(wheelRollAngle);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
 	drawWheel();
@@ -365,13 +382,15 @@ void display(void)
 	mv = original;
 	mv = mv*Translate(WHEEL_X_OFFSET, WHEEL_Y_OFFSET, -WHEEL_Z_OFFSET);
 	mv = mv*RotateY(90);
+	mv = mv*RotateZ(wheelRollAngle);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
 	drawWheel();
 
 	mv = original;
 	mv = mv*Translate(-WHEEL_X_OFFSET, WHEEL_Y_OFFSET, -WHEEL_Z_OFFSET);
-	mv = mv*RotateY(90);
+	mv = mv*RotateY(-90);
+	mv = mv*RotateZ(wheelRollAngle);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
 	drawWheel();
@@ -593,11 +612,7 @@ void init() {
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 
-	//grab pointers for our modelview and perspecive uniform matrices
-	model_view = glGetUniformLocation(program, "model_view");
-	projection = glGetUniformLocation(program, "projection");
-
-	// Create a vertex array object
+		// Create a vertex array object
 	glGenVertexArrays( 1, &vao[4] );
 
 	// Create and initialize any buffer objects
@@ -618,7 +633,31 @@ void init() {
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
+	// Create a vertex array object
+	glGenVertexArrays( 1, &vao[5] );
 
+	// Create and initialize any buffer objects
+	glBindVertexArray( vao[5] );
+	glGenBuffers( 2, &vbo[10] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[10] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelStripeVerts), wheelStripeVerts, GL_STATIC_DRAW);
+	// notice that since position is unique for every vertex, we treat it as an 
+	// attribute instead of a uniform
+	vPosition = glGetAttribLocation(program, "vPosition");
+	glEnableVertexAttribArray(vPosition);
+	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+	//and now our colors for each vertex
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[11] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelStripeColors), wheelStripeColors, GL_STATIC_DRAW );
+	vColor = glGetAttribLocation(program, "vColor");
+	glEnableVertexAttribArray(vColor);
+	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+
+	//grab pointers for our modelview and perspecive uniform matrices
+	model_view = glGetUniformLocation(program, "model_view");
+	projection = glGetUniformLocation(program, "projection");
 
 	//Only draw the things in the front layer
 	glEnable(GL_DEPTH_TEST);
