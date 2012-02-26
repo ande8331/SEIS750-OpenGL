@@ -40,18 +40,31 @@ GLdouble sz = 1.0;
 GLdouble steering = 0.0f;
 GLdouble headAngle = 0.0f;
 GLdouble wheelRollAngle = 0.0f;
+GLdouble wheelRollRate = 0.0f;
+GLdouble carAngle = 0.0;
+GLdouble carAngleRate = 0.0;
+GLdouble xPosition = 0.0f;
+GLdouble yPosition = 0.0f;
+GLdouble zPosition = 0.0f;
+GLdouble xRate = 0.0f;
+GLdouble yRate = 0.0f;
+GLdouble zRate = 0.0f;
+int velocity = 0;
 
 #define CAR_POINT_COUNT 72
 vec4 carVerts[CAR_POINT_COUNT];
 vec4 carColors[CAR_POINT_COUNT];
 vec4 stageVerts[36];
 vec4 stageColors[36];
-#define WHEEL_POINT_COUNT 361
+#define WHEEL_POINT_COUNT 362
 vec4 wheelVerts[WHEEL_POINT_COUNT*2];
 vec4 wheelColors[WHEEL_POINT_COUNT*2];
 #define WHEEL_STRIPE_POINT_COUNT 3
 vec4 wheelStripeVerts[WHEEL_STRIPE_POINT_COUNT];
 vec4 wheelStripeColors[WHEEL_STRIPE_POINT_COUNT];
+#define WHEEL_CONNECTOR_POINT_COUNT 360*6
+vec4 wheelConVerts[WHEEL_CONNECTOR_POINT_COUNT];
+vec4 wheelConColors[WHEEL_CONNECTOR_POINT_COUNT];
 #define HEAD_POINT_COUNT 342
 vec4 headVerts[HEAD_POINT_COUNT];
 vec4 headColors[HEAD_POINT_COUNT];
@@ -232,7 +245,8 @@ void generateWheel()
 	}
 
 	wheelVerts[0] = vec4(0.0, 0.0, 0.0, 1.0);
-
+	wheelVerts[0+WHEEL_POINT_COUNT] = vec4(0.0, 0.0, 0.0, 1.0);
+	int connectorCount = 0;
 	for ( i = 1; i < WHEEL_POINT_COUNT; i++)
 	{
 #define RADIUS 3
@@ -240,18 +254,23 @@ void generateWheel()
 		float X = cos( Angle )*RADIUS;
 		float Y = sin( Angle )*RADIUS;
 		wheelVerts[i] = vec4(X, Y, 0.5, 1.0);
+		wheelVerts[i+WHEEL_POINT_COUNT] = vec4(X, Y, -0.5, 1.0);
+		Angle = (i+1) * (2.0*M_PI/(WHEEL_POINT_COUNT-1));
+		float XNext = cos( Angle ) * RADIUS;
+		float YNext = sin( Angle ) * RADIUS;
+		wheelConVerts[connectorCount++] = vec4(X, Y, -0.5, 1.0);
+		wheelConVerts[connectorCount++] = vec4(XNext, YNext, -0.5, 1.0);
+		wheelConVerts[connectorCount++] = vec4(XNext, YNext, 0.5, 1.0);
+		wheelConVerts[connectorCount++] = vec4(XNext, YNext, 0.5, 1.0);
+		wheelConVerts[connectorCount++] = vec4(X, Y, 0.5, 1.0);
+		wheelConVerts[connectorCount++] = vec4(X, Y, -0.5, 1.0);
 	}
 
-	wheelVerts[i++] = vec4(0.0, 0.0, 0.0, 1.0);
-
-	for ( ; i < WHEEL_POINT_COUNT*2; i++)
+	for (int i = 0; i < WHEEL_CONNECTOR_POINT_COUNT; i++)
 	{
-#define RADIUS 3
-		float Angle = i * (2.0*M_PI/(WHEEL_POINT_COUNT-1));
-		float X = cos( Angle )*RADIUS;
-		float Y = sin( Angle )*RADIUS;
-		wheelVerts[i] = vec4(X, Y, -0.5, 1.0);
+		wheelConColors[i] = vec4(0.0, 0.0, 1.0, 0.0);
 	}
+
 
 	wheelStripeVerts[0] = vec4(-1.5, -1.5, 0.51, 1.0);
 	wheelStripeVerts[1] = vec4(1.5, -1.5, 0.51, 1.0);
@@ -306,6 +325,8 @@ void drawWheel(void)
 	glDrawArrays( GL_TRIANGLE_FAN, WHEEL_POINT_COUNT, WHEEL_POINT_COUNT*2 );    // draw the wheel 
 	glBindVertexArray( vao[5] );
 	glDrawArrays( GL_TRIANGLES, 0, WHEEL_STRIPE_POINT_COUNT );    // draw the wheel 
+	glBindVertexArray( vao[6] );
+	glDrawArrays( GL_TRIANGLES, 0, WHEEL_CONNECTOR_POINT_COUNT );    // draw the wheel 
 }
 
 void display(void)
@@ -334,6 +355,8 @@ void display(void)
 	glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the stage 
 
 	mv = mv*Translate(0.0, 10, 0.0);
+	mv = mv*Translate(xPosition, yPosition, zPosition);
+	mv = mv*RotateY(carAngle);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
 	
@@ -367,7 +390,7 @@ void display(void)
 	mv = mv*RotateY(90+steering);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
-	wheelRollAngle += 1.0;
+
 
 	drawWheel();
 
@@ -398,17 +421,35 @@ void display(void)
 	glutSwapBuffers();
 }
 
+void stopCar(void)
+{
+	xRate = 0;
+	yRate = 0;
+	zRate = 0;
+	carAngleRate = 0;
+	wheelRollRate = 0;
+	velocity = 0;
+}
 /* Function call for game reset */
 void my_special(int key, int x, int y) 
 {
+
+#define MAX_VELOCITY 5
+
 	if (key == GLUT_KEY_UP)
 	{
-		ty += 1.0;
+		if (velocity < MAX_VELOCITY)
+		{
+			velocity++;
+		}
 	}
 
 	if (key == GLUT_KEY_DOWN)
 	{
-		ty -= 1.0;
+		if (velocity > -MAX_VELOCITY)
+		{
+			velocity--;
+		}
 	}
 
 	if (key == GLUT_KEY_RIGHT)
@@ -426,6 +467,13 @@ void my_special(int key, int x, int y)
 			steering -= 1.0;
 		}
 	}
+#define THROTTLE 0.05
+	zRate = velocity- (velocity * (steering/45));
+	xRate = velocity-zRate;
+	xRate *= THROTTLE;
+	zRate *= THROTTLE;
+	carAngleRate = steering * THROTTLE;
+	wheelRollRate = -1*velocity;
 	glutPostRedisplay();
 }
 
@@ -434,11 +482,6 @@ void Keyboard(unsigned char key, int x, int y) {
 	if (key == 27)
 		exit(0);
 
-	if (key == 'a')
-	{
-		tz -= 1.0;
-	}
-
 	if (key == 'z')
 	{
 		headAngle -= 1.0;
@@ -446,6 +489,15 @@ void Keyboard(unsigned char key, int x, int y) {
 	if (key == 'x')
 	{
 		headAngle += 1.0;
+	}
+	if (key == ' ')
+	{
+		stopCar();
+	}
+
+	if (key == 'a')
+	{
+		tz -= 1.0;
 	}
 
 	if (key == 'q')
@@ -507,6 +559,8 @@ void Keyboard(unsigned char key, int x, int y) {
 	{
 		sz -= 1.0;
 	}
+
+
 	glutPostRedisplay();
 }
 
@@ -654,6 +708,26 @@ void init() {
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
+	// Create a vertex array object
+	glGenVertexArrays( 1, &vao[6] );
+
+	// Create and initialize any buffer objects
+	glBindVertexArray( vao[6] );
+	glGenBuffers( 2, &vbo[12] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[12] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelConVerts), wheelConVerts, GL_STATIC_DRAW);
+	// notice that since position is unique for every vertex, we treat it as an 
+	// attribute instead of a uniform
+	vPosition = glGetAttribLocation(program, "vPosition");
+	glEnableVertexAttribArray(vPosition);
+	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+	//and now our colors for each vertex
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[13] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelConColors), wheelConColors, GL_STATIC_DRAW );
+	vColor = glGetAttribLocation(program, "vColor");
+	glEnableVertexAttribArray(vColor);
+	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	//grab pointers for our modelview and perspecive uniform matrices
 	model_view = glGetUniformLocation(program, "model_view");
@@ -675,6 +749,40 @@ void reshape(int width, int height){
 
 void my_timer(int v) 
 {
+	wheelRollAngle += wheelRollRate;
+
+	xPosition += xRate;
+	yPosition += yRate;
+	zPosition += zRate;
+
+	if ((xPosition+CAR_WIDTH) > STAGE_WIDTH)
+	{
+		stopCar();
+		xPosition = STAGE_WIDTH - CAR_WIDTH-1;
+	}
+
+	if((xPosition-CAR_WIDTH) < -STAGE_WIDTH)
+	{
+		stopCar();
+		xPosition = -STAGE_WIDTH + CAR_WIDTH+1;
+	}
+
+	if((zPosition+CAR_LENGTH) > STAGE_DEPTH)
+	{
+		stopCar();
+		zPosition = STAGE_DEPTH - CAR_LENGTH-1;
+	}
+
+	if ((zPosition-CAR_LENGTH) < -STAGE_DEPTH)
+	{
+		stopCar();
+		zPosition = -STAGE_DEPTH + CAR_LENGTH+1;
+	}
+
+
+
+	carAngle += carAngleRate;
+
 	/* calls the display function v times a second */
 	glutPostRedisplay();
 	glutTimerFunc(1000/v, my_timer, v);
