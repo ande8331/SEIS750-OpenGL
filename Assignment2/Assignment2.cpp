@@ -1,7 +1,7 @@
 /*
- * Assignment 2
- * SEIS750
- * Spring 2012
+ *Skeleton transform program
+ *COS490
+ *Fall 2011
  **/
 
 #include <GL/Angel.h>
@@ -39,71 +39,15 @@ GLdouble sx = 1.0;
 GLdouble sy = 1.0;
 GLdouble sz = 1.0;
 
-#define STAGE_ELEMENTS_COUNT 36
-#define WHEEL_ELEMENTS_COUNT (360)+1
 vec4 cubeVerts[36];
 vec4 cubeColors[36];
-vec4 stageVerts[STAGE_ELEMENTS_COUNT];
-vec4 stageColors[STAGE_ELEMENTS_COUNT];
-vec4 wheelVerts[WHEEL_ELEMENTS_COUNT];
-vec4 wheelColors[WHEEL_ELEMENTS_COUNT];
+vec4 stageVerts[36];
+vec4 stageColors[36];
 
-#define STAGE_WIDTH 10.0f
-#define STAGE_DEPTH 10.0f
-#define STAGE_HEIGHT 2.0f
+#define STAGE_WIDTH 10.0
+#define STAGE_HEIGHT 2.0
+#define STAGE_DEPTH STAGE_WIDTH
 
-#define WHEEL_RADIUS 1.0f;
-
-void generateStage()
-{
-	for(int i=0; i<STAGE_ELEMENTS_COUNT; i++){
-		stageColors[i] = vec4(1.0, 0.5, 0.0, 1.0);
-	}
-
-	stageVerts[0] = vec4(STAGE_WIDTH/2, -STAGE_HEIGHT/2, STAGE_DEPTH/2, 1.0);
-	stageVerts[1] = vec4(STAGE_WIDTH/2, STAGE_HEIGHT/2, STAGE_DEPTH/2, 1.0);
-	stageVerts[2] = vec4(-STAGE_WIDTH/2, STAGE_HEIGHT/2, STAGE_DEPTH/2, 1.0);
-	stageVerts[3] = vec4(-STAGE_WIDTH/2, STAGE_HEIGHT/2, STAGE_DEPTH/2, 1.0);
-	stageVerts[4] = vec4(-STAGE_WIDTH/2, -STAGE_HEIGHT/2, STAGE_DEPTH/2, 1.0);
-	stageVerts[5] = vec4(STAGE_WIDTH/2, -STAGE_HEIGHT/2, STAGE_DEPTH/2, 1.0);
-	
-	stageVerts[6] = vec4(-STAGE_WIDTH/2, -STAGE_HEIGHT/2, -STAGE_DEPTH/2, 1.0);
-	stageVerts[7] = vec4(-STAGE_WIDTH/2, STAGE_HEIGHT/2, -STAGE_DEPTH/2, 1.0);
-	stageVerts[8] = vec4(STAGE_WIDTH/2, STAGE_HEIGHT/2, -STAGE_DEPTH/2, 1.0);
-	stageVerts[9] = vec4(STAGE_WIDTH/2, STAGE_HEIGHT/2, -STAGE_DEPTH/2, 1.0);
-	stageVerts[10] = vec4(STAGE_WIDTH/2, -STAGE_HEIGHT/2, -STAGE_DEPTH/2, 1.0);
-	stageVerts[11] = vec4(-STAGE_WIDTH/2, -STAGE_HEIGHT/2, -STAGE_DEPTH/2, 1.0);
-
-	stageVerts[12] = vec4(STAGE_WIDTH/2, STAGE_HEIGHT/2, STAGE_DEPTH/2, 1.0);
-	stageVerts[13] = vec4(STAGE_WIDTH/2, -STAGE_HEIGHT/2, STAGE_DEPTH/2, 1.0);
-	stageVerts[14] = vec4(STAGE_WIDTH/2, -STAGE_HEIGHT/2, -STAGE_DEPTH/2, 1.0);
-	stageVerts[15] = vec4(STAGE_WIDTH/2, -STAGE_HEIGHT/2, -STAGE_DEPTH/2, 1.0);
-	stageVerts[16] = vec4(STAGE_WIDTH/2, STAGE_HEIGHT/2, -STAGE_DEPTH/2, 1.0);
-	stageVerts[17] = vec4(STAGE_WIDTH/2, STAGE_HEIGHT/2, STAGE_DEPTH/2, 1.0);
-	
-	stageVerts[18] = vec4(-STAGE_WIDTH/2, STAGE_HEIGHT/2, -STAGE_DEPTH/2, 1.0);
-	stageVerts[19] = vec4(-STAGE_WIDTH/2, -STAGE_HEIGHT/2, -STAGE_DEPTH/2, 1.0);
-	stageVerts[20] = vec4(-STAGE_WIDTH/2, -STAGE_HEIGHT/2, STAGE_DEPTH/2, 1.0);
-	stageVerts[21] = vec4(-STAGE_WIDTH/2, -STAGE_HEIGHT/2, STAGE_DEPTH/2, 1.0);
-	stageVerts[22] = vec4(-STAGE_WIDTH/2, STAGE_HEIGHT/2, STAGE_DEPTH/2, 1.0);
-	stageVerts[23] = vec4(-STAGE_WIDTH/2, STAGE_HEIGHT/2, -STAGE_DEPTH/2, 1.0);
-	
-	stageVerts[24] = vec4(STAGE_WIDTH/2, STAGE_HEIGHT/2, STAGE_DEPTH/2, 1.0);
-	stageVerts[25] = vec4(STAGE_WIDTH/2, STAGE_HEIGHT/2, -STAGE_DEPTH/2, 1.0);
-	stageVerts[26] = vec4(-STAGE_WIDTH/2, STAGE_HEIGHT/2, -STAGE_DEPTH/2, 1.0);
-	stageVerts[27] = vec4(-STAGE_WIDTH/2, STAGE_HEIGHT/2, -STAGE_DEPTH/2, 1.0);
-	stageVerts[28] = vec4(-STAGE_WIDTH/2, STAGE_HEIGHT/2, STAGE_DEPTH/2, 1.0);
-	stageVerts[29] = vec4(STAGE_WIDTH/2, STAGE_HEIGHT/2, STAGE_DEPTH/2, 1.0);
-	
-
-	stageVerts[30] = vec4(STAGE_WIDTH/2, -STAGE_HEIGHT/2, -STAGE_DEPTH/2, 1.0);
-	stageVerts[31] = vec4(STAGE_WIDTH/2, -STAGE_HEIGHT/2, STAGE_DEPTH/2, 1.0);
-	stageVerts[32] = vec4(-STAGE_WIDTH/2, -STAGE_HEIGHT/2, STAGE_DEPTH/2, 1.0);
-	stageVerts[33] = vec4(-STAGE_WIDTH/2, -STAGE_HEIGHT/2, STAGE_DEPTH/2, 1.0);
-	stageVerts[34] = vec4(-STAGE_WIDTH/2, -STAGE_HEIGHT/2, -STAGE_DEPTH/2, 1.0);
-	stageVerts[35] = vec4(STAGE_WIDTH/2, -STAGE_HEIGHT/2, -STAGE_DEPTH/2, 1.0);
-
-}
 void generateCube(){
 	for(int i=0; i<6; i++){
 		cubeColors[i] = vec4(0.0, 1.0, 1.0, 1.0); //front
@@ -166,71 +110,78 @@ void generateCube(){
 	cubeVerts[34] = vec4(-1.0f, -1.0f, -1.0f, 1.0);
 	cubeVerts[35] = vec4(1.0f, -1.0f, -1.0f, 1.0);
 }
-void generateWheel()
-{
-	for (int i = 0; i < WHEEL_ELEMENTS_COUNT; i++)
-	{
-		wheelColors[i] = vec4(1.0, 1.0, 0.0, 1.0);
+void generateStage(){
+	for(int i=0; i<36; i++){
+		stageColors[i] = vec4(0.0, 1.0, 1.0, 1.0); //front
 	}
-/*
-	for (int i = 0; i < WHEEL_ELEMENTS_COUNT/3; i+=3)
-	{
-		float iFloat = i/3;
-		float x = cos(iFloat);
-		float y = sin(iFloat);
-		wheelVerts[i] = vec4(2*M_PI*x, 2*M_PI*y, 1.0f, 1.0);
-		wheelVerts[i+1] = vec4(0, 0, 1.0f, 1.0);
-		iFloat = (i+3)/3;
-		x = cos(iFloat);
-		y = sin(iFloat);
-		wheelVerts[i+2] = vec4(2*M_PI*x, 2*M_PI*y, 1.0f, 1.0);	
-	}
-*/
-	int i = 0;
-	wheelVerts[i++] = vec4(0, 0, 0, 1.0);
-#define RADIUS 10.0
-	for ( ; i < WHEEL_ELEMENTS_COUNT; i++)
-	{
-		wheelVerts[i] = vec4(RADIUS * cos(i* M_PI * 2 / (WHEEL_ELEMENTS_COUNT-1)), RADIUS * sin(i*M_PI*2 / (WHEEL_ELEMENTS_COUNT-1)), 0.0, 1.0);
-		  //for(i = 0; i <= sections;i++) { // make $section number of circles
-            //           glVertex2f(radius * cos(i *  twoPi / sections), 
-            //                   radius* sin(i * twoPi / sections))
-	}
+	stageVerts[0] = vec4(STAGE_WIDTH, -STAGE_HEIGHT, STAGE_DEPTH, 1.0);
+	stageVerts[1] = vec4(STAGE_WIDTH, STAGE_HEIGHT, STAGE_DEPTH, 1.0);
+	stageVerts[2] = vec4(-STAGE_WIDTH, STAGE_HEIGHT, STAGE_DEPTH, 1.0);
+	stageVerts[3] = vec4(-STAGE_WIDTH, STAGE_HEIGHT, STAGE_DEPTH, 1.0);
+	stageVerts[4] = vec4(-STAGE_WIDTH, -STAGE_HEIGHT, STAGE_DEPTH, 1.0);
+	stageVerts[5] = vec4(STAGE_WIDTH, -STAGE_HEIGHT, STAGE_DEPTH, 1.0);
+	stageVerts[6] = vec4(-STAGE_WIDTH, -STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
+	stageVerts[7] = vec4(-STAGE_WIDTH, STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
+	stageVerts[8] = vec4(STAGE_WIDTH, STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
+	stageVerts[9] = vec4(STAGE_WIDTH, STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
+	stageVerts[10] = vec4(STAGE_WIDTH, -STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
+	stageVerts[11] = vec4(-STAGE_WIDTH, -STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
+	stageVerts[12] = vec4(STAGE_WIDTH, STAGE_HEIGHT, STAGE_DEPTH, 1.0);
+	stageVerts[13] = vec4(STAGE_WIDTH, -STAGE_HEIGHT, STAGE_DEPTH, 1.0);
+	stageVerts[14] = vec4(STAGE_WIDTH, -STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
+	stageVerts[15] = vec4(STAGE_WIDTH, -STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
+	stageVerts[16] = vec4(STAGE_WIDTH, STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
+	stageVerts[17] = vec4(STAGE_WIDTH, STAGE_HEIGHT, STAGE_DEPTH, 1.0);
+	stageVerts[18] = vec4(-STAGE_WIDTH, STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
+	stageVerts[19] = vec4(-STAGE_WIDTH, -STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
+	stageVerts[20] = vec4(-STAGE_WIDTH, -STAGE_HEIGHT, STAGE_DEPTH, 1.0);
+	stageVerts[21] = vec4(-STAGE_WIDTH, -STAGE_HEIGHT, STAGE_DEPTH, 1.0);
+	stageVerts[22] = vec4(-STAGE_WIDTH, STAGE_HEIGHT, STAGE_DEPTH, 1.0);
+	stageVerts[23] = vec4(-STAGE_WIDTH, STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
+	stageVerts[24] = vec4(STAGE_WIDTH, STAGE_HEIGHT, STAGE_DEPTH, 1.0);
+	stageVerts[25] = vec4(STAGE_WIDTH, STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
+	stageVerts[26] = vec4(-STAGE_WIDTH, STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
+	stageVerts[27] = vec4(-STAGE_WIDTH, STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
+	stageVerts[28] = vec4(-STAGE_WIDTH, STAGE_HEIGHT, STAGE_DEPTH, 1.0);
+	stageVerts[29] = vec4(STAGE_WIDTH, STAGE_HEIGHT, STAGE_DEPTH, 1.0);
+	stageVerts[30] = vec4(STAGE_WIDTH, -STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
+	stageVerts[31] = vec4(STAGE_WIDTH, -STAGE_HEIGHT, STAGE_DEPTH, 1.0);
+	stageVerts[32] = vec4(-STAGE_WIDTH, -STAGE_HEIGHT, STAGE_DEPTH, 1.0);
+	stageVerts[33] = vec4(-STAGE_WIDTH, -STAGE_HEIGHT, STAGE_DEPTH, 1.0);
+	stageVerts[34] = vec4(-STAGE_WIDTH, -STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
+	stageVerts[35] = vec4(STAGE_WIDTH, -STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
 }
-
 void display(void)
 {
-	/*clear all pixels*/
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  /*clear all pixels*/
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
 	// we'll explain this later, but it's setting our default modelview matrix
-    mv = LookAt(vec4(0, 0, 40, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
+    mv = LookAt(vec4(0, 0, 20, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
 
 	mv = mv*Translate(tx, ty, tz);
+
 	mv = mv*RotateX(rx);
 	mv = mv*RotateY(ry);
 	mv = mv*RotateZ(rz);
+
 	mv = mv*Scale(sx, sy, sz);
 
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
-
-	glBindVertexArray( vao[0] );
-	glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the cube
-
-	//glBindVertexArray( vao[1] );
-	//glDrawArrays( GL_TRIANGLES, 0, STAGE_ELEMENTS_COUNT );    // draw the stage
-
-	//glBindVertexArray( vao[2] );
-	//glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_ELEMENTS_COUNT );    // draw the wheel
-
-	// any additional modelview transformations would happen here
 	
-	// now that our modelview matrix is all set to go, we send it to our shaders
-	// modelview is the same for all vertices in an object, so it's a uniform rather 
-	// than an attribute
+	// and we also need to send our projection matrix, which again is more appropriately
+	// a uniform instead of an attribute since it's the same for every vertex
+	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
+    
+	// Now we have a vertex array that has all of our cube vertex locations and colors
+	glBindVertexArray( vao[0] );
+	glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the cube 
 
-	/*start processing buffered OpenGL routines*/
-	glutSwapBuffers();
+	glBindVertexArray( vao[1] );
+	glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the cube 
+
+  /*start processing buffered OpenGL routines*/
+  glutSwapBuffers();
 }
 
 /* Function call for game reset */
@@ -335,17 +286,17 @@ void Keyboard(unsigned char key, int x, int y) {
 	glutPostRedisplay();
 }
 
-void init() 
-{
-	/*select clearing (background) color*/
-	glClearColor(0.0, 0.0, 0.0, 0.0);
+void init() {
 
-	//populate our arrays
-	generateCube();
-	//generateStage();
-	//generateWheel();
+  /*select clearing (background) color*/
+  glClearColor(0.0, 0.0, 0.0, 0.0);
 
-	// Load shaders and use the resulting shader program
+
+  //populate our arrays
+  generateCube();
+  generateStage();
+
+   // Load shaders and use the resulting shader program
     GLuint program = InitShader( "vshader-transform.glsl", "fshader-transform.glsl" );
     glUseProgram( program );
 
@@ -369,8 +320,6 @@ void init()
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
-#ifdef JUNK
-	/* Load the Stage */
 
 	// Create a vertex array object
     glGenVertexArrays( 1, &vao[1] );
@@ -393,41 +342,17 @@ void init()
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-	/* Load a wheel */
 
-	// Create a vertex array object
-    glGenVertexArrays( 1, &vao[2] );
-
-    // Create and initialize any buffer objects
-	glBindVertexArray( vao[2] );
-	glGenBuffers( 2, &vbo[4] );
-    glBindBuffer( GL_ARRAY_BUFFER, vbo[4] );
-    glBufferData( GL_ARRAY_BUFFER, sizeof(wheelVerts), wheelVerts, GL_STATIC_DRAW);
-	// notice that since position is unique for every vertex, we treat it as an 
-	// attribute instead of a uniform
-	vPosition = glGetAttribLocation(program, "vPosition");
-	glEnableVertexAttribArray(vPosition);
-	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-	//and now our colors for each vertex
-	glBindBuffer( GL_ARRAY_BUFFER, vbo[5] );
-	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelColors), wheelColors, GL_STATIC_DRAW );
-	vColor = glGetAttribLocation(program, "vColor");
-	glEnableVertexAttribArray(vColor);
-	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-#endif
 	//grab pointers for our modelview and perspecive uniform matrices
 	model_view = glGetUniformLocation(program, "model_view");
 	projection = glGetUniformLocation(program, "projection");
 
-	//Only draw the things in the front layer
+  //Only draw the things in the front layer
 	glEnable(GL_DEPTH_TEST);
 }
 
 
-void reshape(int width, int height)
-{
+void reshape(int width, int height){
 	ww= width;
 	wh = height;
 	//field of view angle, aspect ratio, closest distance from camera to object, largest distanec from camera to object
@@ -445,25 +370,25 @@ void my_timer(int v)
 
 int main(int argc, char **argv)
 {
-	/*set up window for display*/
-	glutInit(&argc, argv);
-	glutInitWindowPosition(0, 0); 
-	glutInitWindowSize(ww, wh);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-	glutCreateWindow("Assignment 2 - Ross Anderson");  
+  /*set up window for display*/
+  glutInit(&argc, argv);
+  glutInitWindowPosition(0, 0); 
+  glutInitWindowSize(ww, wh);
+  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+  glutCreateWindow("Transformations Exercise");  
 
-	glewExperimental = GL_TRUE;
+  glewExperimental = GL_TRUE;
 
 	glewInit();
-	init();
+  init();
 
-	glutDisplayFunc(display);
-	glutKeyboardFunc(Keyboard);
-	glutReshapeFunc(reshape);
-	//glutIdleFunc(idle);
-	glutSpecialFunc(my_special);
-	glutTimerFunc(500, my_timer, 60);
+  glutDisplayFunc(display);
+  glutKeyboardFunc(Keyboard);
+  glutReshapeFunc(reshape);
+  //glutIdleFunc(idle);
+  glutSpecialFunc(my_special);
+     glutTimerFunc(500, my_timer, 60);
 
-	glutMainLoop();
-	return 0;
+  glutMainLoop();
+  return 0;
 }
