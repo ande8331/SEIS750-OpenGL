@@ -50,7 +50,7 @@ vec4 wheelColors[WHEEL_POINT_COUNT*2];
 #define HEAD_POINT_COUNT 342
 vec4 headVerts[HEAD_POINT_COUNT];
 vec4 headColors[HEAD_POINT_COUNT];
-#define EYE_POINT_COUNT 360
+#define EYE_POINT_COUNT 342
 vec4 eyeVerts[EYE_POINT_COUNT];
 vec4 eyeColors[EYE_POINT_COUNT];
 
@@ -61,6 +61,8 @@ vec4 eyeColors[EYE_POINT_COUNT];
 #define STAGE_WIDTH 50.0
 #define STAGE_HEIGHT 1
 #define STAGE_DEPTH STAGE_WIDTH
+#define HEAD_RADIUS 1
+#define EYE_RADIUS 0.2
 
 void generatecar(){
 	for(int i=0; i<6; i++){
@@ -257,15 +259,31 @@ void generateHead()
 		for (float theta = -180.0; theta <= 180.0; theta += 20.0)
 		{
 			float thetar = theta*(M_PI/180);
-			headVerts[k] = vec4(sin(thetar)*cos(phir), cos(thetar)*cos(phir), sin(phir), 1.0);
+			headVerts[k] = vec4(sin(thetar)*cos(phir)*HEAD_RADIUS, cos(thetar)*cos(phir)*HEAD_RADIUS, sin(phir)*HEAD_RADIUS, 1.0);
 			headColors[k++] = vec4(1.0, 1.0, 1.0, 1.0);
-			headVerts[k] = vec4(sin(thetar)*cos(phir20), cos(thetar)*cos(phir20), sin(phir20), 1.0);
+			headVerts[k] = vec4(sin(thetar)*cos(phir20)*HEAD_RADIUS, cos(thetar)*cos(phir20)*HEAD_RADIUS, sin(phir20)*HEAD_RADIUS, 1.0);
 			headColors[k++] = vec4(1.0, 1.0, 1.0, 1.0);
 		}
 	}
 }
 void generateEye()
 {
+
+	int k = 0;
+	for (float phi = -80.0; phi <= 80.0; phi += 20.0)
+	{
+		float phir = phi*(M_PI/180);
+		float phir20 = (phi + 20)*(M_PI/180);
+
+		for (float theta = -180.0; theta <= 180.0; theta += 20.0)
+		{
+			float thetar = theta*(M_PI/180);
+			eyeVerts[k] = vec4(sin(thetar)*cos(phir)*EYE_RADIUS, cos(thetar)*cos(phir)*EYE_RADIUS, sin(phir*EYE_RADIUS), 1.0);
+			eyeColors[k++] = vec4(0.0, 0.0, 0.0, 0.0);
+			eyeVerts[k] = vec4(sin(thetar)*cos(phir20)*EYE_RADIUS, cos(thetar)*cos(phir20)*EYE_RADIUS, sin(phir20*EYE_RADIUS), 1.0);
+			eyeColors[k++] = vec4(0.0, 0.0, 0.0, 0.0);
+		}
+	}
 }
 
 void drawWheel(void)
@@ -315,6 +333,11 @@ void display(void)
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[3] );
 	glDrawArrays( GL_LINE_LOOP, 0, HEAD_POINT_COUNT );    // draw the head 
+
+	mv = mv*Translate(0.0, 0.0, HEAD_RADIUS);
+	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+	glBindVertexArray( vao[4] );
+	glDrawArrays( GL_LINE_LOOP, 0, HEAD_POINT_COUNT );    // draw the eye 
 
 	mv = original;
 #define WHEEL_X_OFFSET (CAR_WIDTH+1)
