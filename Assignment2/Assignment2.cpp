@@ -38,6 +38,7 @@ GLdouble sy = 1.0;
 GLdouble sz = 1.0;
 
 GLdouble steering = 0.0f;
+GLdouble headAngle = 0.0f;
 #define CAR_POINT_COUNT 72
 vec4 carVerts[CAR_POINT_COUNT];
 vec4 carColors[CAR_POINT_COUNT];
@@ -267,6 +268,14 @@ void generateEye()
 {
 }
 
+void drawWheel(void)
+{
+	glBindVertexArray( vao[2] );
+	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the wheel 
+	glDrawArrays( GL_TRIANGLE_FAN, WHEEL_POINT_COUNT, WHEEL_POINT_COUNT*2 );    // draw the wheel 
+
+}
+
 void display(void)
 {
 	/*clear all pixels*/
@@ -302,9 +311,10 @@ void display(void)
 	mat4 original = mv;
 
 	mv = mv*Translate(0.0, 10.0, 0.0);
+	mv = mv*RotateY(headAngle);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[3] );
-	glDrawArrays( GL_TRIANGLES, 0, HEAD_POINT_COUNT );    // draw the car 
+	glDrawArrays( GL_LINE_LOOP, 0, HEAD_POINT_COUNT );    // draw the head 
 
 	mv = original;
 #define WHEEL_X_OFFSET (CAR_WIDTH+1)
@@ -315,34 +325,28 @@ void display(void)
 	mv = mv*RotateY(90+steering);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
-	glBindVertexArray( vao[2] );
-	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the wheel 
-	glDrawArrays( GL_TRIANGLE_FAN, WHEEL_POINT_COUNT, WHEEL_POINT_COUNT*2 );    // draw the wheel 
-	/*start processing buffered OpenGL routines*/
+	drawWheel();
 
 	mv = original;
 	mv = mv*Translate(-WHEEL_X_OFFSET, WHEEL_Y_OFFSET, WHEEL_Z_OFFSET);
 	mv = mv*RotateY(90+steering);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
-	glBindVertexArray( vao[2] );
-	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the wheel 
+	drawWheel();
 
 	mv = original;
 	mv = mv*Translate(WHEEL_X_OFFSET, WHEEL_Y_OFFSET, -WHEEL_Z_OFFSET);
 	mv = mv*RotateY(90);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
-	glBindVertexArray( vao[2] );
-	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the wheel 
+	drawWheel();
 
 	mv = original;
 	mv = mv*Translate(-WHEEL_X_OFFSET, WHEEL_Y_OFFSET, -WHEEL_Z_OFFSET);
 	mv = mv*RotateY(90);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
-	glBindVertexArray( vao[2] );
-	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the wheel 
+	drawWheel();
 
 	glutSwapBuffers();
 }
@@ -390,7 +394,11 @@ void Keyboard(unsigned char key, int x, int y) {
 
 	if (key == 'z')
 	{
-		tz += 1.0;
+		headAngle -= 1.0;
+	}
+	if (key == 'x')
+	{
+		headAngle += 1.0;
 	}
 
 	if (key == 'q')
