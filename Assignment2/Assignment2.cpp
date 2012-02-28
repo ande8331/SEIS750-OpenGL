@@ -335,7 +335,7 @@ void display(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// we'll explain this later, but it's setting our default modelview matrix
-	mv = LookAt(vec4(0, 0, 100, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
+	mv = LookAt(vec4(0, 100, 100, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 100, 100, 0.0));
 
 	mv = mv*Translate(tx, ty, tz);
 
