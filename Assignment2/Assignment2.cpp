@@ -244,18 +244,18 @@ void generateWheel()
 		wheelColors[i] = vec4(0.0, 1.0, 0.0, 1.0);
 	}
 
-	wheelVerts[0] = vec4(0.0, 0.0, 0.0, 1.0);
-	wheelVerts[0+WHEEL_POINT_COUNT] = vec4(0.0, 0.0, 0.0, 1.0);
+	wheelVerts[0] = vec4(0.0, 0.0, 0.5, 1.0);
+	wheelVerts[0+WHEEL_POINT_COUNT] = vec4(0.0, 0.0, -0.5, 1.0);
 	int connectorCount = 0;
 	for ( i = 1; i < WHEEL_POINT_COUNT; i++)
 	{
 #define RADIUS 3
-		float Angle = i * (2.0*M_PI/(WHEEL_POINT_COUNT-1));
+		float Angle = (i-1) * (2.0*M_PI/180);
 		float X = cos( Angle )*RADIUS;
 		float Y = sin( Angle )*RADIUS;
 		wheelVerts[i] = vec4(X, Y, 0.5, 1.0);
 		wheelVerts[i+WHEEL_POINT_COUNT] = vec4(X, Y, -0.5, 1.0);
-		Angle = (i+1) * (2.0*M_PI/(WHEEL_POINT_COUNT-1));
+		Angle = (i) * (2.0*M_PI/(WHEEL_POINT_COUNT-1));
 		float XNext = cos( Angle ) * RADIUS;
 		float YNext = sin( Angle ) * RADIUS;
 		wheelConVerts[connectorCount++] = vec4(X, Y, -0.5, 1.0);
