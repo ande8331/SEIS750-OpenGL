@@ -38,7 +38,7 @@ GLdouble sy = 1.0;
 GLdouble sz = 1.0;
 
 GLdouble steering = 0.0f;
-GLdouble headAngle = 0.0f;
+GLdouble headAngle = 180.0f;
 GLdouble wheelRollAngle = 0.0f;
 GLdouble wheelRollRate = 0.0f;
 GLdouble carAngle = 0.0;
@@ -193,7 +193,7 @@ void generatecar(){
 }
 void generateStage(){
 	for(int i=0; i<36; i++){
-		stageColors[i] = vec4(0.0, 1.0, 1.0, 1.0); //front
+		stageColors[i] = vec4(0.25, 0.25, 0.25, 1.0); //front
 	}
 	stageVerts[0] = vec4(STAGE_WIDTH, -STAGE_HEIGHT, STAGE_DEPTH, 1.0);
 	stageVerts[1] = vec4(STAGE_WIDTH, STAGE_HEIGHT, STAGE_DEPTH, 1.0);
@@ -237,11 +237,11 @@ void generateWheel()
 	int i;
 	for (i = 0; i < WHEEL_POINT_COUNT; i++)
 	{
-		wheelColors[i] = vec4(1.0, 0.0, 0.0, 1.0);
+		wheelColors[i] = vec4(0.75, 0.75, 0.75, 1.0);
 	}
 	for ( ; i < WHEEL_POINT_COUNT*2; i++)
 	{
-		wheelColors[i] = vec4(0.0, 1.0, 0.0, 1.0);
+		wheelColors[i] = vec4(0.75, 0.75, 0.75, 1.0);
 	}
 
 	wheelVerts[0] = vec4(0.0, 0.0, 0.5, 1.0);
@@ -268,7 +268,7 @@ void generateWheel()
 
 	for (int i = 0; i < WHEEL_CONNECTOR_POINT_COUNT; i++)
 	{
-		wheelConColors[i] = vec4(0.0, 0.0, 1.0, 0.0);
+		wheelConColors[i] = vec4(0.05, 0.05, 0.05, 1.0);
 	}
 
 
@@ -335,7 +335,7 @@ void display(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// we'll explain this later, but it's setting our default modelview matrix
-	mv = LookAt(vec4(0, 100, 100, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 100, 100, 0.0));
+	mv = LookAt(vec4(0, 100, 100, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
 
 	mv = mv*Translate(tx, ty, tz);
 
@@ -386,8 +386,8 @@ void display(void)
 #define WHEEL_Y_OFFSET -5.0
 #define WHEEL_Z_OFFSET (CAR_LENGTH*0.8)
 
-	mv = mv*Translate(WHEEL_X_OFFSET, WHEEL_Y_OFFSET, WHEEL_Z_OFFSET);
-	mv = mv*RotateY(90+steering);
+	mv = mv*Translate(WHEEL_X_OFFSET, WHEEL_Y_OFFSET, -WHEEL_Z_OFFSET);
+	mv = mv*RotateY(90-steering);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
 
@@ -395,15 +395,15 @@ void display(void)
 	drawWheel();
 
 	mv = original;
-	mv = mv*Translate(-WHEEL_X_OFFSET, WHEEL_Y_OFFSET, WHEEL_Z_OFFSET);
-	mv = mv*RotateY(-90+steering);
+	mv = mv*Translate(-WHEEL_X_OFFSET, WHEEL_Y_OFFSET, -WHEEL_Z_OFFSET);
+	mv = mv*RotateY(-90-steering);
 	mv = mv*RotateZ(wheelRollAngle);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
 	drawWheel();
 
 	mv = original;
-	mv = mv*Translate(WHEEL_X_OFFSET, WHEEL_Y_OFFSET, -WHEEL_Z_OFFSET);
+	mv = mv*Translate(WHEEL_X_OFFSET, WHEEL_Y_OFFSET, WHEEL_Z_OFFSET);
 	mv = mv*RotateY(90);
 	mv = mv*RotateZ(wheelRollAngle);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
@@ -411,7 +411,7 @@ void display(void)
 	drawWheel();
 
 	mv = original;
-	mv = mv*Translate(-WHEEL_X_OFFSET, WHEEL_Y_OFFSET, -WHEEL_Z_OFFSET);
+	mv = mv*Translate(-WHEEL_X_OFFSET, WHEEL_Y_OFFSET, WHEEL_Z_OFFSET);
 	mv = mv*RotateY(-90);
 	mv = mv*RotateZ(wheelRollAngle);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
@@ -438,23 +438,23 @@ void my_special(int key, int x, int y)
 
 	if (key == GLUT_KEY_UP)
 	{
-		if (velocity < MAX_VELOCITY)
-		{
-			velocity++;
-		}
-	}
-
-	if (key == GLUT_KEY_DOWN)
-	{
 		if (velocity > -MAX_VELOCITY)
 		{
 			velocity--;
 		}
 	}
 
+	if (key == GLUT_KEY_DOWN)
+	{
+		if (velocity < MAX_VELOCITY)
+		{
+			velocity++;
+		}
+	}
+
 	if (key == GLUT_KEY_RIGHT)
 	{
-		if (steering < 45)
+		if (steering < 35)
 		{
 			steering += 1.0;
 		}
@@ -462,7 +462,7 @@ void my_special(int key, int x, int y)
 
 	if (key == GLUT_KEY_LEFT)
 	{
-		if (steering > -45)
+		if (steering > -35)
 		{
 			steering -= 1.0;
 		}
@@ -749,11 +749,15 @@ void reshape(int width, int height){
 
 void my_timer(int v) 
 {
-	wheelRollAngle += wheelRollRate;
-
-	xPosition += xRate;
-	yPosition += yRate;
-	zPosition += zRate;
+	
+	if (velocity != 0)
+	{
+		wheelRollAngle += wheelRollRate;
+		xPosition += xRate;
+		yPosition += yRate;
+		zPosition += zRate;
+		carAngle += carAngleRate;
+	}
 
 	if ((xPosition+CAR_WIDTH) > STAGE_WIDTH)
 	{
@@ -781,7 +785,7 @@ void my_timer(int v)
 
 
 
-	carAngle += carAngleRate;
+
 
 	/* calls the display function v times a second */
 	glutPostRedisplay();
