@@ -12,6 +12,17 @@
 int ww=500, wh=500;
 
 #define M_PI 3.14159265358979323846
+typedef enum
+{
+	CAR,
+	STAGE,
+	WHEEL,
+	HEAD,
+	EYE,
+	WHEEL_STRIPE,
+	WHEEL_CONNECTORS,
+	VAO_COUNT
+} vertexArrayObjectsEnum;
 
 GLuint vao[10];
 GLuint vbo[20];
@@ -82,7 +93,7 @@ vec4 eyeColors[EYE_POINT_COUNT];
 #define HEAD_RADIUS 1
 #define EYE_RADIUS 0.2
 
-void generatecar(){
+void head(){
 	for(int i=0; i<6; i++){
 		carColors[i] = vec4(0.0, 1.0, 1.0, 1.0); //front
 	}
@@ -320,12 +331,12 @@ void generateEye()
 
 void drawWheel(void)
 {
-	glBindVertexArray( vao[2] );
+	glBindVertexArray( vao[WHEEL] );
 	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the wheel 
 	glDrawArrays( GL_TRIANGLE_FAN, WHEEL_POINT_COUNT, WHEEL_POINT_COUNT*2 );    // draw the wheel 
-	glBindVertexArray( vao[5] );
+	glBindVertexArray( vao[WHEEL_STRIPE] );
 	glDrawArrays( GL_TRIANGLES, 0, WHEEL_STRIPE_POINT_COUNT );    // draw the wheel 
-	glBindVertexArray( vao[6] );
+	glBindVertexArray( vao[WHEEL_CONNECTORS] );
 	glDrawArrays( GL_TRIANGLES, 0, WHEEL_CONNECTOR_POINT_COUNT );    // draw the wheel 
 }
 
@@ -338,11 +349,9 @@ void display(void)
 	mv = LookAt(vec4(0, 100, 100, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
 
 	mv = mv*Translate(tx, ty, tz);
-
 	mv = mv*RotateX(rx);
 	mv = mv*RotateY(ry);
 	mv = mv*RotateZ(rz);
-
 	mv = mv*Scale(sx, sy, sz);
 
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
@@ -351,16 +360,15 @@ void display(void)
 	// a uniform instead of an attribute since it's the same for every vertex
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
 
-	glBindVertexArray( vao[1] );
+	glBindVertexArray( vao[STAGE] );
 	glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the stage 
 
 	mv = mv*Translate(0.0, 10, 0.0);
 	mv = mv*Translate(xPosition, yPosition, zPosition);
 	mv = mv*RotateY(carAngle);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
-
 	
-	glBindVertexArray( vao[0] );
+	glBindVertexArray( vao[CAR] );
 	glDrawArrays( GL_TRIANGLES, 0, CAR_POINT_COUNT );    // draw the car 
 
 	mat4 original = mv;
@@ -368,17 +376,17 @@ void display(void)
 	mv = mv*Translate(0.0, CAR_HEIGHT+(HEAD_RADIUS*2), 0.0);
 	mv = mv*RotateY(headAngle);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
-	glBindVertexArray( vao[3] );
+	glBindVertexArray( vao[HEAD] );
 	glDrawArrays( GL_LINE_LOOP, 0, HEAD_POINT_COUNT );    // draw the head 
 	mat4 headOriginal = mv;
 	mv = mv*Translate(.4*HEAD_RADIUS, 0.0, HEAD_RADIUS);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
-	glBindVertexArray( vao[4] );
+	glBindVertexArray( vao[EYE] );
 	glDrawArrays( GL_LINE_LOOP, 0, EYE_POINT_COUNT );    // draw the eye 
 	mv = headOriginal;
 	mv = mv*Translate(-.4*HEAD_RADIUS, 0.0, HEAD_RADIUS);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
-	glBindVertexArray( vao[4] );
+	glBindVertexArray( vao[EYE] );
 	glDrawArrays( GL_LINE_LOOP, 0, EYE_POINT_COUNT );    // draw the eye 
 
 	mv = original;
@@ -390,8 +398,6 @@ void display(void)
 	mv = mv*RotateY(90-steering);
 	mv = mv*RotateZ(wheelRollAngle);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
-
-
 
 	drawWheel();
 
@@ -565,14 +571,13 @@ void Keyboard(unsigned char key, int x, int y) {
 	glutPostRedisplay();
 }
 
-void init() {
-
+void init() 
+{
 	/*select clearing (background) color*/
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 
-
 	//populate our arrays
-	generatecar();
+	head();
 	generateStage();
 	generateWheel();
 	generateHead();
@@ -582,148 +587,89 @@ void init() {
 	GLuint program = InitShader( "vshader-transform.glsl", "fshader-transform.glsl" );
 	glUseProgram( program );
 
-	// Create a vertex array object
-	glGenVertexArrays( 1, &vao[0] );
+	// Create all vertex array object
+	glGenVertexArrays( VAO_COUNT, &vao[0] );
+	glGenBuffers(VAO_COUNT*2, &vbo[0]);
 
 	// Create and initialize any buffer objects
-	glBindVertexArray( vao[0] );
-	glGenBuffers( 2, &vbo[0] );
+	glBindVertexArray( vao[CAR] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[0] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(carVerts), carVerts, GL_STATIC_DRAW);
-	// notice that since position is unique for every vertex, we treat it as an 
-	// attribute instead of a uniform
 	vPosition = glGetAttribLocation(program, "vPosition");
 	glEnableVertexAttribArray(vPosition);
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-	//and now our colors for each vertex
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[1] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(carColors), carColors, GL_STATIC_DRAW );
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-	// Create a vertex array object
-	glGenVertexArrays( 1, &vao[1] );
-
-	// Create and initialize any buffer objects
-	glBindVertexArray( vao[1] );
-	glGenBuffers( 2, &vbo[2] );
+	glBindVertexArray( vao[STAGE] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[2] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(stageVerts), stageVerts, GL_STATIC_DRAW);
-	// notice that since position is unique for every vertex, we treat it as an 
-	// attribute instead of a uniform
 	vPosition = glGetAttribLocation(program, "vPosition");
 	glEnableVertexAttribArray(vPosition);
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-	//and now our colors for each vertex
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[3] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(stageColors), stageColors, GL_STATIC_DRAW );
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-	// Create a vertex array object
-	glGenVertexArrays( 1, &vao[2] );
-
-	// Create and initialize any buffer objects
-	glBindVertexArray( vao[2] );
-	glGenBuffers( 2, &vbo[4] );
+	glBindVertexArray( vao[WHEEL] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[4] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelVerts), wheelVerts, GL_STATIC_DRAW);
-	// notice that since position is unique for every vertex, we treat it as an 
-	// attribute instead of a uniform
 	vPosition = glGetAttribLocation(program, "vPosition");
 	glEnableVertexAttribArray(vPosition);
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-	//and now our colors for each vertex
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[5] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelColors), wheelColors, GL_STATIC_DRAW );
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-	// Create a vertex array object
-	glGenVertexArrays( 1, &vao[3] );
-
-	// Create and initialize any buffer objects
-	glBindVertexArray( vao[3] );
-	glGenBuffers( 2, &vbo[6] );
+	glBindVertexArray( vao[HEAD] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[6] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(headVerts), headVerts, GL_STATIC_DRAW);
-	// notice that since position is unique for every vertex, we treat it as an 
-	// attribute instead of a uniform
 	vPosition = glGetAttribLocation(program, "vPosition");
 	glEnableVertexAttribArray(vPosition);
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-	//and now our colors for each vertex
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[7] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(headColors), headColors, GL_STATIC_DRAW );
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-
-		// Create a vertex array object
-	glGenVertexArrays( 1, &vao[4] );
-
-	// Create and initialize any buffer objects
-	glBindVertexArray( vao[4] );
-	glGenBuffers( 2, &vbo[8] );
+	glBindVertexArray( vao[EYE] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[8] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(eyeVerts), eyeVerts, GL_STATIC_DRAW);
-	// notice that since position is unique for every vertex, we treat it as an 
-	// attribute instead of a uniform
 	vPosition = glGetAttribLocation(program, "vPosition");
 	glEnableVertexAttribArray(vPosition);
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-	//and now our colors for each vertex
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[9] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(eyeColors), eyeColors, GL_STATIC_DRAW );
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-	// Create a vertex array object
-	glGenVertexArrays( 1, &vao[5] );
-
-	// Create and initialize any buffer objects
-	glBindVertexArray( vao[5] );
-	glGenBuffers( 2, &vbo[10] );
+	glBindVertexArray( vao[WHEEL_STRIPE] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[10] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelStripeVerts), wheelStripeVerts, GL_STATIC_DRAW);
-	// notice that since position is unique for every vertex, we treat it as an 
-	// attribute instead of a uniform
 	vPosition = glGetAttribLocation(program, "vPosition");
 	glEnableVertexAttribArray(vPosition);
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-	//and now our colors for each vertex
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[11] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelStripeColors), wheelStripeColors, GL_STATIC_DRAW );
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-	// Create a vertex array object
-	glGenVertexArrays( 1, &vao[6] );
-
-	// Create and initialize any buffer objects
-	glBindVertexArray( vao[6] );
-	glGenBuffers( 2, &vbo[12] );
+	glBindVertexArray( vao[WHEEL_CONNECTORS] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[12] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelConVerts), wheelConVerts, GL_STATIC_DRAW);
-	// notice that since position is unique for every vertex, we treat it as an 
-	// attribute instead of a uniform
 	vPosition = glGetAttribLocation(program, "vPosition");
 	glEnableVertexAttribArray(vPosition);
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-	//and now our colors for each vertex
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[13] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelConColors), wheelConColors, GL_STATIC_DRAW );
 	vColor = glGetAttribLocation(program, "vColor");
