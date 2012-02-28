@@ -49,7 +49,7 @@ GLdouble zPosition = 0.0f;
 GLdouble xRate = 0.0f;
 GLdouble yRate = 0.0f;
 GLdouble zRate = 0.0f;
-int velocity = 0;
+GLdouble velocity = 0;
 
 #define CAR_POINT_COUNT 72
 vec4 carVerts[CAR_POINT_COUNT];
@@ -388,6 +388,7 @@ void display(void)
 
 	mv = mv*Translate(WHEEL_X_OFFSET, WHEEL_Y_OFFSET, -WHEEL_Z_OFFSET);
 	mv = mv*RotateY(90-steering);
+	mv = mv*RotateZ(wheelRollAngle);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
 
@@ -397,7 +398,7 @@ void display(void)
 	mv = original;
 	mv = mv*Translate(-WHEEL_X_OFFSET, WHEEL_Y_OFFSET, -WHEEL_Z_OFFSET);
 	mv = mv*RotateY(-90-steering);
-	mv = mv*RotateZ(wheelRollAngle);
+	mv = mv*RotateZ(-wheelRollAngle);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
 	drawWheel();
@@ -413,7 +414,7 @@ void display(void)
 	mv = original;
 	mv = mv*Translate(-WHEEL_X_OFFSET, WHEEL_Y_OFFSET, WHEEL_Z_OFFSET);
 	mv = mv*RotateY(-90);
-	mv = mv*RotateZ(wheelRollAngle);
+	mv = mv*RotateZ(-wheelRollAngle);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
 	drawWheel();
@@ -440,7 +441,7 @@ void my_special(int key, int x, int y)
 	{
 		if (velocity > -MAX_VELOCITY)
 		{
-			velocity--;
+			velocity -= 1.0;
 		}
 	}
 
@@ -448,7 +449,7 @@ void my_special(int key, int x, int y)
 	{
 		if (velocity < MAX_VELOCITY)
 		{
-			velocity++;
+			velocity+= 1.0;
 		}
 	}
 
@@ -468,12 +469,12 @@ void my_special(int key, int x, int y)
 		}
 	}
 #define THROTTLE 0.05
-	zRate = velocity- (velocity * (steering/45));
-	xRate = velocity-zRate;
-	xRate *= THROTTLE;
-	zRate *= THROTTLE;
-	carAngleRate = steering * THROTTLE;
-	wheelRollRate = -1*velocity;
+	//zRate = velocity*cos(2*M_PI*steering);
+	//xRate = velocity-zRate;
+	//xRate *= THROTTLE;
+	//zRate *= THROTTLE;
+	//carAngleRate = steering * THROTTLE;
+	wheelRollRate = velocity;
 	glutPostRedisplay();
 }
 
@@ -750,13 +751,16 @@ void reshape(int width, int height){
 void my_timer(int v) 
 {
 	
-	if (velocity != 0)
+	if (velocity > 0.5 || velocity < -0.5)
 	{
 		wheelRollAngle += wheelRollRate;
-		xPosition += xRate;
-		yPosition += yRate;
-		zPosition += zRate;
-		carAngle += carAngleRate;
+		//xPosition += xRate;
+		//yPosition += yRate;
+		//zPosition += zRate;
+		carAngle += steering * THROTTLE;
+		xPosition += sin(2*M_PI*steering) * velocity * THROTTLE;
+		zPosition += cos(2*M_PI*steering) * velocity * THROTTLE;
+		
 	}
 
 	if ((xPosition+CAR_WIDTH) > STAGE_WIDTH)
@@ -782,9 +786,6 @@ void my_timer(int v)
 		stopCar();
 		zPosition = -STAGE_DEPTH + CAR_LENGTH+1;
 	}
-
-
-
 
 
 	/* calls the display function v times a second */
