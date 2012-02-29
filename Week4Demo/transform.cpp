@@ -38,6 +38,8 @@ GLdouble rz = 0.0;
 GLdouble sx = 1.0;
 GLdouble sy = 1.0;
 GLdouble sz = 1.0;
+GLdouble zoom = 45;
+GLdouble dolly = 20;
 
 vec4 cubeVerts[36];
 vec4 cubeColors[36];
@@ -111,7 +113,7 @@ void display(void)
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
 	// we'll explain this later, but it's setting our default modelview matrix
-    mv = LookAt(vec4(0, 0, 20, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
+    mv = LookAt(vec4(0, 0, dolly, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
 
 	// any additional modelview transformations would happen here
 	
@@ -159,6 +161,7 @@ void display(void)
 	
 	// and we also need to send our projection matrix, which again is more appropriately
 	// a uniform instead of an attribute since it's the same for every vertex
+	p = Perspective(zoom, (float)ww/(float)wh, 1.0, 100.0);
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
     
 	// Now we have a vertex array that has all of our cube vertex locations and colors
@@ -166,7 +169,7 @@ void display(void)
 	glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the cube 
 
 
-	 mv = LookAt(vec4(0, 0, 20, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
+	 mv = LookAt(vec4(0, 0, dolly, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
 	 
 	 static float rx2 = 0.0;
 	 static float ry2 = 0.0;
@@ -187,7 +190,7 @@ void display(void)
 	 glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the cube 
 
 
-	mv = LookAt(vec4(0, 0, 20, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
+	mv = LookAt(vec4(0, 0, dolly, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
 	 
 	 static float rx3 = 0.0;
 	 static float ry3 = 0.0;
@@ -309,6 +312,24 @@ void Keyboard(unsigned char key, int x, int y) {
 	{
 		sz -= 1.0;
 	}
+
+	if (key == '7')
+	{
+		zoom -= 1.0;
+	}
+	if (key == '8')
+	{
+		zoom += 1.0;
+	}
+	if (key == '9')
+	{
+		dolly -=1.0;
+	}
+	if (key == '0')
+	{
+		dolly += 1.0;
+	}
+
 	glutPostRedisplay();
 }
 
