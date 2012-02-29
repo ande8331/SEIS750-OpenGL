@@ -83,15 +83,17 @@ vec4 headColors[HEAD_POINT_COUNT];
 vec4 eyeVerts[EYE_POINT_COUNT];
 vec4 eyeColors[EYE_POINT_COUNT];
 
-#define CAR_WIDTH 5
-#define CAR_HEIGHT 5
-#define CAR_LENGTH 10
+#define CAR_WIDTH 2.5
+#define CAR_HEIGHT 2.
+#define CAR_LENGTH 5
+#define WHEEL_RADIUS 1.5
+#define WHEEL_THICKNESS 0.5
 
-#define STAGE_WIDTH 50.0
+#define STAGE_WIDTH 25.0
 #define STAGE_HEIGHT 1
 #define STAGE_DEPTH STAGE_WIDTH
-#define HEAD_RADIUS 1
-#define EYE_RADIUS 0.2
+#define HEAD_RADIUS 0.5
+#define EYE_RADIUS 0.1
 
 void head(){
 	for(int i=0; i<6; i++){
@@ -255,26 +257,25 @@ void generateWheel()
 		wheelColors[i] = vec4(0.75, 0.75, 0.75, 1.0);
 	}
 
-	wheelVerts[0] = vec4(0.0, 0.0, 0.5, 1.0);
-	wheelVerts[0+WHEEL_POINT_COUNT] = vec4(0.0, 0.0, -0.5, 1.0);
+	wheelVerts[0] = vec4(0.0, 0.0, WHEEL_THICKNESS, 1.0);
+	wheelVerts[0+WHEEL_POINT_COUNT] = vec4(0.0, 0.0, -WHEEL_THICKNESS, 1.0);
 	int connectorCount = 0;
 	for ( i = 1; i < WHEEL_POINT_COUNT; i++)
 	{
-#define RADIUS 3
 		float Angle = (i-1) * (2.0*M_PI/180);
-		float X = cos( Angle )*RADIUS;
-		float Y = sin( Angle )*RADIUS;
+		float X = cos( Angle )*WHEEL_RADIUS;
+		float Y = sin( Angle )*WHEEL_RADIUS;
 		wheelVerts[i] = vec4(X, Y, 0.5, 1.0);
-		wheelVerts[i+WHEEL_POINT_COUNT] = vec4(X, Y, -0.5, 1.0);
-		Angle = (i) * (2.0*M_PI/(WHEEL_POINT_COUNT-1));
-		float XNext = cos( Angle ) * RADIUS;
-		float YNext = sin( Angle ) * RADIUS;
-		wheelConVerts[connectorCount++] = vec4(X, Y, -0.5, 1.0);
-		wheelConVerts[connectorCount++] = vec4(XNext, YNext, -0.5, 1.0);
-		wheelConVerts[connectorCount++] = vec4(XNext, YNext, 0.5, 1.0);
-		wheelConVerts[connectorCount++] = vec4(XNext, YNext, 0.5, 1.0);
-		wheelConVerts[connectorCount++] = vec4(X, Y, 0.5, 1.0);
-		wheelConVerts[connectorCount++] = vec4(X, Y, -0.5, 1.0);
+		wheelVerts[i+WHEEL_POINT_COUNT] = vec4(X, Y, -WHEEL_THICKNESS, 1.0);
+		Angle = (i) * (2.0*M_PI/180);
+		float XNext = cos( Angle ) * WHEEL_RADIUS;
+		float YNext = sin( Angle ) * WHEEL_RADIUS;
+		wheelConVerts[connectorCount++] = vec4(X, Y, -WHEEL_THICKNESS, 1.0);
+		wheelConVerts[connectorCount++] = vec4(XNext, YNext, -WHEEL_THICKNESS, 1.0);
+		wheelConVerts[connectorCount++] = vec4(XNext, YNext, WHEEL_THICKNESS, 1.0);
+		wheelConVerts[connectorCount++] = vec4(XNext, YNext, WHEEL_THICKNESS, 1.0);
+		wheelConVerts[connectorCount++] = vec4(X, Y, WHEEL_THICKNESS, 1.0);
+		wheelConVerts[connectorCount++] = vec4(X, Y, -WHEEL_THICKNESS, 1.0);
 	}
 
 	for (int i = 0; i < WHEEL_CONNECTOR_POINT_COUNT; i++)
@@ -283,9 +284,9 @@ void generateWheel()
 	}
 
 
-	wheelStripeVerts[0] = vec4(-1.5, -1.5, 0.51, 1.0);
-	wheelStripeVerts[1] = vec4(1.5, -1.5, 0.51, 1.0);
-	wheelStripeVerts[2] = vec4(0.0, 1.5, 0.51, 1.0);
+	wheelStripeVerts[0] = vec4(-WHEEL_RADIUS, -WHEEL_RADIUS, WHEEL_THICKNESS, 1.0);
+	wheelStripeVerts[1] = vec4(WHEEL_RADIUS, -WHEEL_RADIUS, WHEEL_THICKNESS, 1.0);
+	wheelStripeVerts[2] = vec4(0.0, WHEEL_RADIUS, WHEEL_THICKNESS, 1.0);
 	wheelStripeColors[0] = vec4(0.0, 0.0, 0.0, 1.0);
 	wheelStripeColors[1] = vec4(0.0, 0.0, 0.0, 1.0);
 	wheelStripeColors[2] = vec4(0.0, 0.0, 0.0, 1.0);
@@ -346,7 +347,7 @@ void display(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// we'll explain this later, but it's setting our default modelview matrix
-	mv = LookAt(vec4(0, 100, 100, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
+	mv = LookAt(vec4(0, 100, 50, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
 
 	mv = mv*Translate(tx, ty, tz);
 	mv = mv*RotateX(rx);
