@@ -95,7 +95,7 @@ vec4 eyeColors[EYE_POINT_COUNT];
 #define HEAD_RADIUS 0.5
 #define EYE_RADIUS 0.1
 
-void head(){
+void generateCar(){
 	for(int i=0; i<6; i++){
 		carColors[i] = vec4(0.0, 1.0, 1.0, 1.0); //front
 	}
@@ -263,13 +263,13 @@ void generateWheel()
 	for ( i = 1; i < WHEEL_POINT_COUNT; i++)
 	{
 		float Angle = (i-1) * (2.0*M_PI/180);
-		float X = cos( Angle )*WHEEL_RADIUS;
-		float Y = sin( Angle )*WHEEL_RADIUS;
+		float X = cos(Angle)*WHEEL_RADIUS;
+		float Y = sin(Angle)*WHEEL_RADIUS;
 		wheelVerts[i] = vec4(X, Y, 0.5, 1.0);
 		wheelVerts[i+WHEEL_POINT_COUNT] = vec4(X, Y, -WHEEL_THICKNESS, 1.0);
-		Angle = (i) * (2.0*M_PI/180);
-		float XNext = cos( Angle ) * WHEEL_RADIUS;
-		float YNext = sin( Angle ) * WHEEL_RADIUS;
+		Angle = i * (2.0*M_PI/180);
+		float XNext = cos(Angle) * WHEEL_RADIUS;
+		float YNext = sin(Angle) * WHEEL_RADIUS;
 		wheelConVerts[connectorCount++] = vec4(X, Y, -WHEEL_THICKNESS, 1.0);
 		wheelConVerts[connectorCount++] = vec4(XNext, YNext, -WHEEL_THICKNESS, 1.0);
 		wheelConVerts[connectorCount++] = vec4(XNext, YNext, WHEEL_THICKNESS, 1.0);
@@ -333,12 +333,12 @@ void generateEye()
 void drawWheel(void)
 {
 	glBindVertexArray( vao[WHEEL] );
-	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the wheel 
-	glDrawArrays( GL_TRIANGLE_FAN, WHEEL_POINT_COUNT, WHEEL_POINT_COUNT*2 );    // draw the wheel 
+	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the outside wheel 
+	glDrawArrays( GL_TRIANGLE_FAN, WHEEL_POINT_COUNT, WHEEL_POINT_COUNT*2 );    // draw the inside wheel 
 	glBindVertexArray( vao[WHEEL_STRIPE] );
-	glDrawArrays( GL_TRIANGLES, 0, WHEEL_STRIPE_POINT_COUNT );    // draw the wheel 
+	glDrawArrays( GL_TRIANGLES, 0, WHEEL_STRIPE_POINT_COUNT );    // draw wheel stripe 
 	glBindVertexArray( vao[WHEEL_CONNECTORS] );
-	glDrawArrays( GL_TRIANGLES, 0, WHEEL_CONNECTOR_POINT_COUNT );    // draw the wheel 
+	glDrawArrays( GL_TRIANGLES, 0, WHEEL_CONNECTOR_POINT_COUNT );    // draw the connections between the two discs 
 }
 
 void display(void)
@@ -578,7 +578,7 @@ void init()
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 
 	//populate our arrays
-	head();
+	generateCar();
 	generateStage();
 	generateWheel();
 	generateHead();
@@ -697,6 +697,7 @@ void reshape(int width, int height){
 
 void my_timer(int v) 
 {
+	static bool alternate = false;
 	
 	if (velocity > 0.5 || velocity < -0.5)
 	{
@@ -704,10 +705,27 @@ void my_timer(int v)
 		//xPosition += xRate;
 		//yPosition += yRate;
 		//zPosition += zRate;
-		carAngle += steering * THROTTLE;
-		xPosition += sin(2*M_PI*steering) * velocity * THROTTLE;
-		zPosition += cos(2*M_PI*steering) * velocity * THROTTLE;
 		
+		//xPosition += sin(2*M_PI*steering) * velocity * THROTTLE;
+		//zPosition += cos(2*M_PI*steering) * velocity * THROTTLE;
+		if (alternate == false)
+		{
+			float tempAngle = carAngle;
+
+			if (tempAngle > 180)
+			{
+				tempAngle = -1*(360-tempAngle);
+			}
+			float xFactor = tempAngle/180;
+
+			xPosition += sin((M_PI*carAngle)/180) * velocity*.3;// * THROTTLE*10;
+			zPosition += cos((M_PI*carAngle)/180) * velocity*.3;// * THROTTLE*10;
+		}
+		else
+		{
+			carAngle += steering * THROTTLE;
+		}
+		alternate = !alternate;
 	}
 
 	if ((xPosition+CAR_WIDTH) > STAGE_WIDTH)
