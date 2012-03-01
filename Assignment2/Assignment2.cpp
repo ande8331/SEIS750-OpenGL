@@ -347,7 +347,7 @@ void display(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// we'll explain this later, but it's setting our default modelview matrix
-	mv = LookAt(vec4(0, 100, 50, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
+	mv = LookAt(vec4(50, 50, 50, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
 
 	mv = mv*Translate(tx, ty, tz);
 	mv = mv*RotateX(rx);
@@ -431,9 +431,6 @@ void display(void)
 
 void stopCar(void)
 {
-	xRate = 0;
-	yRate = 0;
-	zRate = 0;
 	carAngleRate = 0;
 	wheelRollRate = 0;
 	velocity = 0;
@@ -475,12 +472,7 @@ void my_special(int key, int x, int y)
 			steering -= 1.0;
 		}
 	}
-#define THROTTLE 0.05
-	//zRate = velocity*cos(2*M_PI*steering);
-	//xRate = velocity-zRate;
-	//xRate *= THROTTLE;
-	//zRate *= THROTTLE;
-	//carAngleRate = steering * THROTTLE;
+
 	wheelRollRate = velocity;
 	glutPostRedisplay();
 }
@@ -702,28 +694,19 @@ void my_timer(int v)
 	if (velocity > 0.5 || velocity < -0.5)
 	{
 		wheelRollAngle += wheelRollRate;
-		//xPosition += xRate;
-		//yPosition += yRate;
-		//zPosition += zRate;
-		
-		//xPosition += sin(2*M_PI*steering) * velocity * THROTTLE;
-		//zPosition += cos(2*M_PI*steering) * velocity * THROTTLE;
 		if (alternate == false)
 		{
-			float tempAngle = carAngle;
-
-			if (tempAngle > 180)
-			{
-				tempAngle = -1*(360-tempAngle);
-			}
-			float xFactor = tempAngle/180;
-
-			xPosition += sin((M_PI*carAngle)/180) * velocity*.3;// * THROTTLE*10;
-			zPosition += cos((M_PI*carAngle)/180) * velocity*.3;// * THROTTLE*10;
+			xPosition += sin((M_PI*carAngle)/180) * velocity*.3;
+			zPosition += cos((M_PI*carAngle)/180) * velocity*.3;
 		}
 		else
-		{
-			carAngle += steering * THROTTLE;
+		{	
+			float temp = steering;
+			if (velocity < 0)
+			{
+				temp *= -1;
+			}
+			carAngle += temp * .1;
 		}
 		alternate = !alternate;
 	}
