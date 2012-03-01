@@ -97,7 +97,7 @@ vec4 eyeColors[EYE_POINT_COUNT];
 
 void generateCar(){
 	for(int i=0; i<6; i++){
-		carColors[i] = vec4(0.0, 1.0, 1.0, 1.0); //front
+		carColors[i] = vec4(0.0, 1.0, 1.0, 1.0); //back
 	}
 	carVerts[0] = vec4(CAR_WIDTH, -CAR_HEIGHT, CAR_LENGTH, 1.0);
 	carVerts[1] = vec4(CAR_WIDTH, CAR_HEIGHT, CAR_LENGTH, 1.0);
@@ -108,7 +108,7 @@ void generateCar(){
 
 
 	for(int i=6; i<12; i++){
-		carColors[i] = vec4(1.0, 0.0, 1.0, 1.0); //back
+		carColors[i] = vec4(0.0, 1.0, 0.0, 1.0); //front
 	}
 	carVerts[6] = vec4(-CAR_WIDTH, -CAR_HEIGHT, -CAR_LENGTH, 1.0);
 	carVerts[7] = vec4(-CAR_WIDTH, CAR_HEIGHT, -CAR_LENGTH, 1.0);
@@ -158,7 +158,7 @@ void generateCar(){
 	carVerts[35] = vec4(CAR_WIDTH, -CAR_HEIGHT, -CAR_LENGTH, 1.0);
 
 	for(int i=36; i<72; i++){
-		carColors[i] = vec4(1.0, 1.0, 1.0, 1.0); //front
+		carColors[i] = vec4(1.0, 1.0, 1.0, 1.0);
 	}
 
 	int i = 36;
@@ -284,9 +284,9 @@ void generateWheel()
 	}
 
 
-	wheelStripeVerts[0] = vec4(-WHEEL_RADIUS, -WHEEL_RADIUS, WHEEL_THICKNESS, 1.0);
-	wheelStripeVerts[1] = vec4(WHEEL_RADIUS, -WHEEL_RADIUS, WHEEL_THICKNESS, 1.0);
-	wheelStripeVerts[2] = vec4(0.0, WHEEL_RADIUS, WHEEL_THICKNESS, 1.0);
+	wheelStripeVerts[0] = vec4(-WHEEL_RADIUS*.75, -WHEEL_RADIUS*.75, WHEEL_THICKNESS+0.001, 1.0);
+	wheelStripeVerts[1] = vec4(WHEEL_RADIUS*.75, -WHEEL_RADIUS*.75, WHEEL_THICKNESS+0.001, 1.0);
+	wheelStripeVerts[2] = vec4(0.0, WHEEL_RADIUS*.75, WHEEL_THICKNESS+0.001, 1.0);
 	wheelStripeColors[0] = vec4(0.0, 0.0, 0.0, 1.0);
 	wheelStripeColors[1] = vec4(0.0, 0.0, 0.0, 1.0);
 	wheelStripeColors[2] = vec4(0.0, 0.0, 0.0, 1.0);
@@ -364,7 +364,7 @@ void display(void)
 	glBindVertexArray( vao[STAGE] );
 	glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the stage 
 
-	mv = mv*Translate(0.0, 10, 0.0);
+	mv = mv*Translate(0.0, CAR_HEIGHT+(WHEEL_RADIUS), 0.0);
 	mv = mv*Translate(xPosition, yPosition, zPosition);
 	mv = mv*RotateY(carAngle);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
@@ -392,7 +392,7 @@ void display(void)
 
 	mv = original;
 #define WHEEL_X_OFFSET (CAR_WIDTH+1)
-#define WHEEL_Y_OFFSET -5.0
+#define WHEEL_Y_OFFSET (-CAR_HEIGHT/2)
 #define WHEEL_Z_OFFSET (CAR_LENGTH*0.8)
 
 	mv = mv*Translate(WHEEL_X_OFFSET, WHEEL_Y_OFFSET, -WHEEL_Z_OFFSET);
@@ -473,7 +473,7 @@ void my_special(int key, int x, int y)
 		}
 	}
 
-	wheelRollRate = velocity;
+	wheelRollRate = velocity*2;
 	glutPostRedisplay();
 }
 
@@ -734,7 +734,6 @@ void my_timer(int v)
 		stopCar();
 		zPosition = -STAGE_DEPTH + CAR_LENGTH+1;
 	}
-
 
 	/* calls the display function v times a second */
 	glutPostRedisplay();
