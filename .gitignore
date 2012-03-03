@@ -1,6 +1,7 @@
 *.suo
 *.sdf
-Debug/
+Debug/*.pdb
+Debug/*.ilk
 *.user
 ipch/
 *.opensdf
