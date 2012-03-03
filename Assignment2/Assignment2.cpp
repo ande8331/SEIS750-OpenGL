@@ -24,8 +24,8 @@ typedef enum
 	VAO_COUNT
 } vertexArrayObjectsEnum;
 
-GLuint vao[10];
-GLuint vbo[20];
+GLuint vao[VAO_COUNT];
+GLuint vbo[VAO_COUNT*2];  // Two vbo's per vao may not always be true, but for now it is
 
 //our modelview and perspective matrices
 mat4 mv, p;
@@ -36,6 +36,8 @@ GLuint projection;
 GLuint vPosition;
 GLuint vColor;
 
+/* Not all the t,r,s globals used at this point, but leave them in in case they are
+needed for viewing in debug mode */
 GLdouble tx = 0.0;
 GLdouble ty = 0.0;
 GLdouble tz = 0.0;
@@ -57,16 +59,14 @@ GLdouble carAngleRate = 0.0;
 GLdouble xPosition = 0.0f;
 GLdouble yPosition = 0.0f;
 GLdouble zPosition = 0.0f;
-GLdouble xRate = 0.0f;
-GLdouble yRate = 0.0f;
-GLdouble zRate = 0.0f;
 GLdouble velocity = 0;
 
 #define CAR_POINT_COUNT 72
 vec4 carVerts[CAR_POINT_COUNT];
 vec4 carColors[CAR_POINT_COUNT];
-vec4 stageVerts[36];
-vec4 stageColors[36];
+#define STAGE_POINT_COUNT 36
+vec4 stageVerts[STAGE_POINT_COUNT];
+vec4 stageColors[STAGE_POINT_COUNT];
 #define WHEEL_POINT_COUNT 362
 vec4 wheelVerts[WHEEL_POINT_COUNT*2];
 vec4 wheelColors[WHEEL_POINT_COUNT*2];
@@ -94,6 +94,10 @@ vec4 eyeColors[EYE_POINT_COUNT];
 #define STAGE_DEPTH STAGE_WIDTH
 #define HEAD_RADIUS 0.5
 #define EYE_RADIUS 0.1
+
+#define WHEEL_X_OFFSET (CAR_WIDTH+1)
+#define WHEEL_Y_OFFSET (-CAR_HEIGHT/2)
+#define WHEEL_Z_OFFSET (CAR_LENGTH*0.8)
 
 void generateCar(){
 	for(int i=0; i<6; i++){
@@ -330,6 +334,8 @@ void generateEye()
 	}
 }
 
+/* Since the wheel is kind of complex, use this helper function to draw it 
+after the draw position has been set up. */
 void drawWheel(void)
 {
 	glBindVertexArray( vao[WHEEL] );
@@ -362,7 +368,7 @@ void display(void)
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
 
 	glBindVertexArray( vao[STAGE] );
-	glDrawArrays( GL_TRIANGLES, 0, 36 );    // draw the stage 
+	glDrawArrays( GL_TRIANGLES, 0, STAGE_POINT_COUNT );    // draw the stage 
 
 	mv = mv*Translate(0.0, CAR_HEIGHT+(WHEEL_RADIUS), 0.0);
 	mv = mv*Translate(xPosition, yPosition, zPosition);
@@ -391,9 +397,6 @@ void display(void)
 	glDrawArrays( GL_LINE_LOOP, 0, EYE_POINT_COUNT );    // draw the eye 
 
 	mv = original;
-#define WHEEL_X_OFFSET (CAR_WIDTH+1)
-#define WHEEL_Y_OFFSET (-CAR_HEIGHT/2)
-#define WHEEL_Z_OFFSET (CAR_LENGTH*0.8)
 
 	mv = mv*Translate(WHEEL_X_OFFSET, WHEEL_Y_OFFSET, -WHEEL_Z_OFFSET);
 	mv = mv*RotateY(90-steering);
@@ -440,6 +443,7 @@ void my_special(int key, int x, int y)
 {
 
 #define MAX_VELOCITY 5
+#define MAX_STEERING 35
 
 	if (key == GLUT_KEY_UP)
 	{
@@ -459,7 +463,7 @@ void my_special(int key, int x, int y)
 
 	if (key == GLUT_KEY_RIGHT)
 	{
-		if (steering < 35)
+		if (steering < MAX_STEERING)
 		{
 			steering += 1.0;
 		}
@@ -467,13 +471,13 @@ void my_special(int key, int x, int y)
 
 	if (key == GLUT_KEY_LEFT)
 	{
-		if (steering > -35)
+		if (steering > -MAX_STEERING)
 		{
 			steering -= 1.0;
 		}
 	}
 
-	wheelRollRate = velocity*2;
+	wheelRollRate = velocity*2;		// Roll it twice as fast as its not very obvious
 	glutPostRedisplay();
 }
 
@@ -484,22 +488,18 @@ void Keyboard(unsigned char key, int x, int y) {
 
 	if (key == 'z')
 	{
-		headAngle -= 1.0;
+		headAngle -= 2.0;
 	}
 	if (key == 'x')
 	{
-		headAngle += 1.0;
+		headAngle += 2.0;
 	}
 	if (key == ' ')
 	{
 		stopCar();
 	}
 
-	if (key == 'a')
-	{
-		tz -= 1.0;
-	}
-
+#ifdef DEBUG		// Used for creating objects to see all sides
 	if (key == 'q')
 	{
 		rx += 1.0;
@@ -529,43 +529,14 @@ void Keyboard(unsigned char key, int x, int y) {
 	{
 		rz -= 1.0;
 	}
-
-	if (key == 'g')
-	{
-		sx += 1.0;
-	}
-
-	if (key == 'h')
-	{
-		sx -= 1.0;
-	}
-
-	if (key == 'j')
-	{
-		sy += 1.0;
-	}
-
-	if (key == 'k')
-	{
-		sy -= 1.0;
-	}
-
-	if (key == 'l')
-	{
-		sz += 1.0;
-	}
-
-	if (key == ';')
-	{
-		sz -= 1.0;
-	}
-
+#endif
 
 	glutPostRedisplay();
 }
 
 void init() 
 {
+	int vboIndex = 0;	// Used to auto-increment the vbo index
 	/*select clearing (background) color*/
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 
@@ -586,84 +557,84 @@ void init()
 
 	// Create and initialize any buffer objects
 	glBindVertexArray( vao[CAR] );
-	glBindBuffer( GL_ARRAY_BUFFER, vbo[0] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(carVerts), carVerts, GL_STATIC_DRAW);
 	vPosition = glGetAttribLocation(program, "vPosition");
 	glEnableVertexAttribArray(vPosition);
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
-	glBindBuffer( GL_ARRAY_BUFFER, vbo[1] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(carColors), carColors, GL_STATIC_DRAW );
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[STAGE] );
-	glBindBuffer( GL_ARRAY_BUFFER, vbo[2] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(stageVerts), stageVerts, GL_STATIC_DRAW);
 	vPosition = glGetAttribLocation(program, "vPosition");
 	glEnableVertexAttribArray(vPosition);
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
-	glBindBuffer( GL_ARRAY_BUFFER, vbo[3] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(stageColors), stageColors, GL_STATIC_DRAW );
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[WHEEL] );
-	glBindBuffer( GL_ARRAY_BUFFER, vbo[4] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelVerts), wheelVerts, GL_STATIC_DRAW);
 	vPosition = glGetAttribLocation(program, "vPosition");
 	glEnableVertexAttribArray(vPosition);
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
-	glBindBuffer( GL_ARRAY_BUFFER, vbo[5] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelColors), wheelColors, GL_STATIC_DRAW );
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[HEAD] );
-	glBindBuffer( GL_ARRAY_BUFFER, vbo[6] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(headVerts), headVerts, GL_STATIC_DRAW);
 	vPosition = glGetAttribLocation(program, "vPosition");
 	glEnableVertexAttribArray(vPosition);
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
-	glBindBuffer( GL_ARRAY_BUFFER, vbo[7] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(headColors), headColors, GL_STATIC_DRAW );
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[EYE] );
-	glBindBuffer( GL_ARRAY_BUFFER, vbo[8] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(eyeVerts), eyeVerts, GL_STATIC_DRAW);
 	vPosition = glGetAttribLocation(program, "vPosition");
 	glEnableVertexAttribArray(vPosition);
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
-	glBindBuffer( GL_ARRAY_BUFFER, vbo[9] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(eyeColors), eyeColors, GL_STATIC_DRAW );
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[WHEEL_STRIPE] );
-	glBindBuffer( GL_ARRAY_BUFFER, vbo[10] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelStripeVerts), wheelStripeVerts, GL_STATIC_DRAW);
 	vPosition = glGetAttribLocation(program, "vPosition");
 	glEnableVertexAttribArray(vPosition);
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
-	glBindBuffer( GL_ARRAY_BUFFER, vbo[11] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelStripeColors), wheelStripeColors, GL_STATIC_DRAW );
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[WHEEL_CONNECTORS] );
-	glBindBuffer( GL_ARRAY_BUFFER, vbo[12] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelConVerts), wheelConVerts, GL_STATIC_DRAW);
 	vPosition = glGetAttribLocation(program, "vPosition");
 	glEnableVertexAttribArray(vPosition);
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
-	glBindBuffer( GL_ARRAY_BUFFER, vbo[13] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelConColors), wheelConColors, GL_STATIC_DRAW );
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
@@ -688,29 +659,22 @@ void reshape(int width, int height){
 }
 
 void my_timer(int v) 
-{
-	static bool alternate = false;
-	
+{	
 	if (velocity > 0.5 || velocity < -0.5)
 	{
 		wheelRollAngle += wheelRollRate;
-		if (alternate == false)
+		xPosition += sin((M_PI*carAngle)/180) * velocity*.1;
+		zPosition += cos((M_PI*carAngle)/180) * velocity*.1;
+
+		float temp = steering;
+		if (velocity < 0)
 		{
-			xPosition += sin((M_PI*carAngle)/180) * velocity*.3;
-			zPosition += cos((M_PI*carAngle)/180) * velocity*.3;
+			temp *= -1;
 		}
-		else
-		{	
-			float temp = steering;
-			if (velocity < 0)
-			{
-				temp *= -1;
-			}
-			carAngle += temp * .1;
-		}
-		alternate = !alternate;
+		carAngle += temp * .03;
 	}
 
+	/* Checks to see if we are off the stage.  Stop the car and try to move back on stage if off the edge */
 	if ((xPosition+CAR_WIDTH) > STAGE_WIDTH)
 	{
 		stopCar();
@@ -757,7 +721,6 @@ int main(int argc, char **argv)
 	glutDisplayFunc(display);
 	glutKeyboardFunc(Keyboard);
 	glutReshapeFunc(reshape);
-	//glutIdleFunc(idle);
 	glutSpecialFunc(my_special);
 	glutTimerFunc(500, my_timer, 60);
 
