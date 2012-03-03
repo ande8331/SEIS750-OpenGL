@@ -25,6 +25,14 @@ typedef enum
 	VAO_COUNT
 } vertexArrayObjectsEnum;
 
+typedef enum
+{
+	STATIC_CAMERA,
+	VIEWPOINT_CAMERA,
+	CHASE_CAMERA,
+	NUMBER_OF_CAMERAS
+} cameraAnglesEnum;
+
 GLuint vao[VAO_COUNT];
 GLuint vbo[VAO_COUNT*2];  // Two vbo's per vao may not always be true, but for now it is
 
@@ -64,6 +72,8 @@ GLdouble velocity = 0;
 
 GLdouble zoom = 45;
 GLdouble dolly = 50;
+cameraAnglesEnum camera = STATIC_CAMERA;
+bool staticCameraCenterOfStage = true;
 
 #define CAR_POINT_COUNT 72
 vec4 carVerts[CAR_POINT_COUNT];
@@ -102,6 +112,9 @@ vec4 eyeColors[EYE_POINT_COUNT];
 #define WHEEL_X_OFFSET (CAR_WIDTH+1)
 #define WHEEL_Y_OFFSET (-CAR_HEIGHT/2)
 #define WHEEL_Z_OFFSET (CAR_LENGTH*0.8)
+
+#define DEFAULT_ZOOM 45
+#define DEFAULT_DOLLY 50
 
 void generateCar(){
 	for(int i=0; i<6; i++){
@@ -357,7 +370,21 @@ void display(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// we'll explain this later, but it's setting our default modelview matrix
-	mv = LookAt(vec4(dolly, 50, dolly, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
+	if (camera == STATIC_CAMERA)
+	{
+		if (staticCameraCenterOfStage == true)
+		{
+			mv = LookAt(vec4(0, CAR_HEIGHT+(WHEEL_RADIUS), dolly, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
+		}
+		else
+		{
+			mv = LookAt(vec4(0, CAR_HEIGHT+(WHEEL_RADIUS), dolly, 1.0), vec4(xPosition, yPosition, zPosition, 1.0), vec4(0, 1, 0, 0.0));
+		}
+	}
+	else
+	{
+		mv = LookAt(vec4(50, 50, 50, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
+	}
 
 	mv = mv*Translate(tx, ty, tz);
 	mv = mv*RotateX(rx);
@@ -504,22 +531,47 @@ void Keyboard(unsigned char key, int x, int y) {
 		stopCar();
 	}
 
-	if (key == 'a')
-	{
-		zoom -= 1.0;
+	if (camera == STATIC_CAMERA)
+		{
+		if (key == 'a')
+		{
+			zoom -= 1.0;
+		}
+		if (key == 's')
+		{
+			zoom += 1.0;
+		}
+		if (key == 'w')
+		{
+			dolly +=1.0;
+		}
+		if (key == 'q')
+		{
+			dolly -= 1.0;
+		}
+		if (key == 'f')
+		{
+			staticCameraCenterOfStage = !staticCameraCenterOfStage;
+		}
 	}
-	if (key == 's')
+
+	if (key == 'r')
 	{
-		zoom += 1.0;
+		zoom = DEFAULT_ZOOM;
+		dolly = DEFAULT_DOLLY;
 	}
-	if (key == 'w')
+
+	if (key == 'c')
 	{
-		dolly -=1.0;
+		camera = (cameraAnglesEnum) ((int) camera + 1);
+
+		if (camera >= NUMBER_OF_CAMERAS)
+		{
+			camera = STATIC_CAMERA;
+		}
 	}
-	if (key == 'q')
-	{
-		dolly += 1.0;
-	}
+
+
 
 #ifdef DEBUG		// Used for creating objects to see all sides
 	if (key == 'q')
