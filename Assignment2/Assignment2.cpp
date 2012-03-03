@@ -389,12 +389,12 @@ void display(void)
 	mv = mv*Translate(.4*HEAD_RADIUS, 0.0, HEAD_RADIUS);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[EYE] );
-	glDrawArrays( GL_LINE_LOOP, 0, EYE_POINT_COUNT );    // draw the eye 
+	glDrawArrays( GL_LINE_LOOP, 0, EYE_POINT_COUNT );    // draw one eye 
 	mv = headOriginal;
 	mv = mv*Translate(-.4*HEAD_RADIUS, 0.0, HEAD_RADIUS);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[EYE] );
-	glDrawArrays( GL_LINE_LOOP, 0, EYE_POINT_COUNT );    // draw the eye 
+	glDrawArrays( GL_LINE_LOOP, 0, EYE_POINT_COUNT );    // draw the other eye 
 
 	mv = original;
 
@@ -660,21 +660,24 @@ void reshape(int width, int height){
 
 void my_timer(int v) 
 {	
+	/* Avoid checking for 0.0, since we rely on integers for now just make sure we
+	are no where near -1 or 1 to determine if we are in motion. */
 	if (velocity > 0.5 || velocity < -0.5)
 	{
 		wheelRollAngle += wheelRollRate;
-		xPosition += sin((M_PI*carAngle)/180) * velocity*.1;
-		zPosition += cos((M_PI*carAngle)/180) * velocity*.1;
+		xPosition += sin((M_PI*carAngle)/180) * velocity*0.1;	// 0.1 is used to throttle the speed back.
+		zPosition += cos((M_PI*carAngle)/180) * velocity*0.1;
 
 		float temp = steering;
 		if (velocity < 0)
 		{
 			temp *= -1;
 		}
-		carAngle += temp * .03;
+		carAngle += temp * 0.03;	// Throttle back the angle as well.
 	}
 
-	/* Checks to see if we are off the stage.  Stop the car and try to move back on stage if off the edge */
+	/* Checks to see if we are off the stage.  
+	Stop the car and try to move back on stage if off the edge */
 	if ((xPosition+CAR_WIDTH) > STAGE_WIDTH)
 	{
 		stopCar();
