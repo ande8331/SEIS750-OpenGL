@@ -1,5 +1,6 @@
 /*
 * Assignment 2 (Car) - Ross Anderson
+* Assignment 3 (Car with Camera Work)
 * SEIS750
 * Spring 2012
 **/
@@ -60,6 +61,9 @@ GLdouble xPosition = 0.0f;
 GLdouble yPosition = 0.0f;
 GLdouble zPosition = 0.0f;
 GLdouble velocity = 0;
+
+GLdouble zoom = 45;
+GLdouble dolly = 50;
 
 #define CAR_POINT_COUNT 72
 vec4 carVerts[CAR_POINT_COUNT];
@@ -353,7 +357,7 @@ void display(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// we'll explain this later, but it's setting our default modelview matrix
-	mv = LookAt(vec4(50, 50, 50, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
+	mv = LookAt(vec4(dolly, 50, dolly, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
 
 	mv = mv*Translate(tx, ty, tz);
 	mv = mv*RotateX(rx);
@@ -365,6 +369,7 @@ void display(void)
 
 	// and we also need to send our projection matrix, which again is more appropriately
 	// a uniform instead of an attribute since it's the same for every vertex
+	p = Perspective(zoom, (float)ww/(float)wh, 1.0, 100.0);
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
 
 	glBindVertexArray( vao[STAGE] );
@@ -497,6 +502,23 @@ void Keyboard(unsigned char key, int x, int y) {
 	if (key == ' ')
 	{
 		stopCar();
+	}
+
+	if (key == 'a')
+	{
+		zoom -= 1.0;
+	}
+	if (key == 's')
+	{
+		zoom += 1.0;
+	}
+	if (key == 'w')
+	{
+		dolly -=1.0;
+	}
+	if (key == 'q')
+	{
+		dolly += 1.0;
 	}
 
 #ifdef DEBUG		// Used for creating objects to see all sides
@@ -653,7 +675,7 @@ void reshape(int width, int height){
 	ww= width;
 	wh = height;
 	//field of view angle, aspect ratio, closest distance from camera to object, largest distanec from camera to object
-	p = Perspective(45.0, (float)width/(float)height, 1.0, 100.0);
+	p = Perspective(zoom, (float)ww/(float)wh, 1.0, 100.0);
 
 	glViewport( 0, 0, width, height );
 }
