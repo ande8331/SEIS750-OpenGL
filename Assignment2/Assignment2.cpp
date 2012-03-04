@@ -60,7 +60,7 @@ GLdouble sy = 1.0;
 GLdouble sz = 1.0;
 
 GLdouble steering = 0.0f;
-GLdouble headAngle = 0.0f;
+GLdouble headAngle = 180.0f;
 GLdouble wheelRollAngle = 0.0f;
 GLdouble wheelRollRate = 0.0f;
 GLdouble carAngle = 0.0;
@@ -391,7 +391,11 @@ void display(void)
 	}
 	else if (camera == CHASE_CAMERA)
 	{
-		mv = LookAt(vec4(50, 50, 50, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
+		float Angle = (M_PI*(carAngle)/180);
+		float X = sin(Angle)*20;
+		float Z = cos(Angle)*20;
+		mv = LookAt(vec4(xPosition+X, 20, zPosition+Z, 1.0), 
+			vec4(xPosition-X, 1, zPosition-Z, 1.0), vec4(0, 1, 0, 0.0));
 	}
 
 	mv = mv*Translate(tx, ty, tz);
@@ -409,14 +413,6 @@ void display(void)
 	if (camera == VIEWPOINT_CAMERA)
 	{
 		p = Perspective(zoom, (float)ww/(float)wh, (HEAD_RADIUS*2+(EYE_RADIUS*2)), 100.0);
-		//p = p*Translate(xPosition+10, yPosition+10, zPosition+10);
-		//p = p*RotateY(9);
-		//p = p*Translate(-50, -50, -50);
-		//p = p*Translate(0.0, CAR_HEIGHT+(WHEEL_RADIUS), 0.0);
-		//p = p*Translate(xPosition, yPosition, zPosition);
-		//p = p*RotateY(carAngle);
-		//p = p*Translate(0.0, CAR_HEIGHT+(HEAD_RADIUS*2), 0.0);
-		//p = p*RotateY(headAngle);
 	}
 
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
