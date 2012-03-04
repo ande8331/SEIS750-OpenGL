@@ -60,7 +60,7 @@ GLdouble sy = 1.0;
 GLdouble sz = 1.0;
 
 GLdouble steering = 0.0f;
-GLdouble headAngle = 180.0f;
+GLdouble headAngle = 0.0f;
 GLdouble wheelRollAngle = 0.0f;
 GLdouble wheelRollRate = 0.0f;
 GLdouble carAngle = 0.0;
@@ -381,7 +381,15 @@ void display(void)
 			mv = LookAt(vec4(0, CAR_HEIGHT+(WHEEL_RADIUS), dolly, 1.0), vec4(xPosition, yPosition, zPosition, 1.0), vec4(0, 1, 0, 0.0));
 		}
 	}
-	else
+	else if (camera == VIEWPOINT_CAMERA)	
+	{
+		float Angle = (M_PI*(carAngle+headAngle)/180);
+		float X = sin(Angle)*40;
+		float Z = cos(Angle)*40;
+		mv = LookAt(vec4(xPosition, yPosition+STAGE_HEIGHT+(CAR_HEIGHT*2)+WHEEL_RADIUS+(HEAD_RADIUS*2), zPosition, 1.0), 
+			vec4(X+xPosition, 1, Z+zPosition, 1.0), vec4(0, 1, 0, 0.0));
+	}
+	else if (camera == CHASE_CAMERA)
 	{
 		mv = LookAt(vec4(50, 50, 50, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
 	}
@@ -397,10 +405,24 @@ void display(void)
 	// and we also need to send our projection matrix, which again is more appropriately
 	// a uniform instead of an attribute since it's the same for every vertex
 	p = Perspective(zoom, (float)ww/(float)wh, 1.0, 100.0);
+
+	if (camera == VIEWPOINT_CAMERA)
+	{
+		p = Perspective(zoom, (float)ww/(float)wh, (HEAD_RADIUS*2+(EYE_RADIUS*2)), 100.0);
+		//p = p*Translate(xPosition+10, yPosition+10, zPosition+10);
+		//p = p*RotateY(9);
+		//p = p*Translate(-50, -50, -50);
+		//p = p*Translate(0.0, CAR_HEIGHT+(WHEEL_RADIUS), 0.0);
+		//p = p*Translate(xPosition, yPosition, zPosition);
+		//p = p*RotateY(carAngle);
+		//p = p*Translate(0.0, CAR_HEIGHT+(HEAD_RADIUS*2), 0.0);
+		//p = p*RotateY(headAngle);
+	}
+
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
 
 	glBindVertexArray( vao[STAGE] );
-	glDrawArrays( GL_TRIANGLES, 0, STAGE_POINT_COUNT );    // draw the stage 
+	glDrawArrays( GL_TRIANGLES, 0, STAGE_POINT_COUNT );    // draw the stage
 
 	mv = mv*Translate(0.0, CAR_HEIGHT+(WHEEL_RADIUS), 0.0);
 	mv = mv*Translate(xPosition, yPosition, zPosition);
