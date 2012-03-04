@@ -22,6 +22,7 @@ typedef enum
 	EYE,
 	WHEEL_STRIPE,
 	WHEEL_CONNECTORS,
+	PYLON,
 	VAO_COUNT
 } vertexArrayObjectsEnum;
 
@@ -96,6 +97,9 @@ vec4 headColors[HEAD_POINT_COUNT];
 #define EYE_POINT_COUNT 342
 vec4 eyeVerts[EYE_POINT_COUNT];
 vec4 eyeColors[EYE_POINT_COUNT];
+#define PYLON_POINT_COUNT 36
+vec4 pylonVerts[4][PYLON_POINT_COUNT];
+vec4 pylonColors[4][PYLON_POINT_COUNT];
 
 #define CAR_WIDTH 2.5
 #define CAR_HEIGHT 2.
@@ -108,6 +112,10 @@ vec4 eyeColors[EYE_POINT_COUNT];
 #define STAGE_DEPTH STAGE_WIDTH
 #define HEAD_RADIUS 0.5
 #define EYE_RADIUS 0.1
+
+#define PYLON_WIDTH 1
+#define PYLON_DEPTH 1
+#define PYLON_HEIGHT 5
 
 #define WHEEL_X_OFFSET (CAR_WIDTH+1)
 #define WHEEL_Y_OFFSET (-CAR_HEIGHT/2)
@@ -227,7 +235,7 @@ void generateCar(){
 }
 void generateStage(){
 	for(int i=0; i<36; i++){
-		stageColors[i] = vec4(0.25, 0.25, 0.25, 1.0); //front
+		stageColors[i] = vec4(0.25, 0.25, 0.25, 1.0);
 	}
 	stageVerts[0] = vec4(STAGE_WIDTH, -STAGE_HEIGHT, STAGE_DEPTH, 1.0);
 	stageVerts[1] = vec4(STAGE_WIDTH, STAGE_HEIGHT, STAGE_DEPTH, 1.0);
@@ -350,7 +358,55 @@ void generateEye()
 		}
 	}
 }
+void generatePylon()
+{
+	for(int i=0; i<36; i++){
+		pylonColors[0][i] = vec4(1.0, 0.0, 0.0, 1.0);
+		pylonColors[1][i] = vec4(0.0, 1.0, 0.0, 1.0);
+		pylonColors[2][i] = vec4(0.0, 0.0, 1.0, 1.0);
+		pylonColors[3][i] = vec4(0.0, 1.0, 1.0, 1.0);
+	}
 
+	for (int i = 0; i < 4; i++)
+	{
+		pylonVerts[i][0] = vec4(PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
+		pylonVerts[i][1] = vec4(PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
+		pylonVerts[i][2] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
+		pylonVerts[i][3] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
+		pylonVerts[i][4] = vec4(-PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
+		pylonVerts[i][5] = vec4(PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
+		pylonVerts[i][6] = vec4(-PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
+		pylonVerts[i][7] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
+		pylonVerts[i][8] = vec4(PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
+		pylonVerts[i][9] = vec4(PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
+		pylonVerts[i][10] = vec4(PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
+		pylonVerts[i][11] = vec4(-PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
+		pylonVerts[i][12] = vec4(PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
+		pylonVerts[i][13] = vec4(PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
+		pylonVerts[i][14] = vec4(PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
+		pylonVerts[i][15] = vec4(PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
+		pylonVerts[i][16] = vec4(PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
+		pylonVerts[i][17] = vec4(PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
+		pylonVerts[i][18] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
+		pylonVerts[i][19] = vec4(-PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
+		pylonVerts[i][20] = vec4(-PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
+		pylonVerts[i][21] = vec4(-PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
+		pylonVerts[i][22] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
+		pylonVerts[i][23] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
+		pylonVerts[i][24] = vec4(PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
+		pylonVerts[i][25] = vec4(PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
+		pylonVerts[i][26] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
+		pylonVerts[i][27] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
+		pylonVerts[i][28] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
+		pylonVerts[i][29] = vec4(PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
+		pylonVerts[i][30] = vec4(PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
+		pylonVerts[i][31] = vec4(PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
+		pylonVerts[i][32] = vec4(-PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
+		pylonVerts[i][33] = vec4(-PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
+		pylonVerts[i][34] = vec4(-PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
+		pylonVerts[i][35] = vec4(PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
+	}
+}
 /* Since the wheel is kind of complex, use this helper function to draw it 
 after the draw position has been set up. */
 void drawWheel(void)
@@ -420,6 +476,31 @@ void display(void)
 	glBindVertexArray( vao[STAGE] );
 	glDrawArrays( GL_TRIANGLES, 0, STAGE_POINT_COUNT );    // draw the stage
 
+	mat4 original = mv;
+	mv = mv*Translate(-20, 0, -20);
+	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+	glBindVertexArray( vao[PYLON] );
+	glDrawArrays( GL_TRIANGLES, 0, PYLON_POINT_COUNT );    // draw the pylons
+
+	mv = original;
+	mv = mv*Translate(20, 0, -20);
+	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+	glBindVertexArray( vao[PYLON] );
+	glDrawArrays( GL_TRIANGLES, PYLON_POINT_COUNT, PYLON_POINT_COUNT*2 );
+
+	mv = original;
+	mv = mv*Translate(20, 0, 20);
+	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+	glBindVertexArray( vao[PYLON] );
+	glDrawArrays( GL_TRIANGLES, PYLON_POINT_COUNT*2, PYLON_POINT_COUNT*3 );
+
+	mv = original;
+	mv = mv*Translate(-20, 0, 20);
+	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+	glBindVertexArray( vao[PYLON] );
+	glDrawArrays( GL_TRIANGLES, PYLON_POINT_COUNT*3, PYLON_POINT_COUNT*4 );
+
+	mv = original;
 	mv = mv*Translate(0.0, CAR_HEIGHT+(WHEEL_RADIUS), 0.0);
 	mv = mv*Translate(xPosition, yPosition, zPosition);
 	mv = mv*RotateY(carAngle);
@@ -428,7 +509,7 @@ void display(void)
 	glBindVertexArray( vao[CAR] );
 	glDrawArrays( GL_TRIANGLES, 0, CAR_POINT_COUNT );    // draw the car 
 
-	mat4 original = mv;
+	original = mv;
 
 	mv = mv*Translate(0.0, CAR_HEIGHT+(HEAD_RADIUS*2), 0.0);
 	mv = mv*RotateY(headAngle);
@@ -638,6 +719,7 @@ void init()
 	generateWheel();
 	generateHead();
 	generateEye();
+	generatePylon();
 
 	// Load shaders and use the resulting shader program
 	GLuint program = InitShader( "vshader-transform.glsl", "fshader-transform.glsl" );
@@ -728,6 +810,18 @@ void init()
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelConColors), wheelConColors, GL_STATIC_DRAW );
+	vColor = glGetAttribLocation(program, "vColor");
+	glEnableVertexAttribArray(vColor);
+	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+	glBindVertexArray( vao[PYLON] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(pylonVerts), pylonVerts, GL_STATIC_DRAW);
+	vPosition = glGetAttribLocation(program, "vPosition");
+	glEnableVertexAttribArray(vPosition);
+	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(pylonColors), pylonColors, GL_STATIC_DRAW );
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
