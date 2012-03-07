@@ -1,7 +1,11 @@
 *.suo
 *.sdf
-Debug/*.pdb
-Debug/*.ilk
+*.pdb
+*.ilk
+*.idb
+*.log
+*.manifest
+*.lastbuildstate
 *.user
 ipch/
 *.opensdf
