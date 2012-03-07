@@ -137,7 +137,9 @@ void display(void)
 	glUniform4fv(light_position, 1, mv*vec4(50, 50, 50, 1));		// Light will follow the object (Because of mv)
 	
 	glVertexAttrib4fv(vAmbientDiffuseColor, vec4(0, 0.5, 0, 1));
-    
+    glVertexAttrib4fv(vSpecularColor, vec4(1, 1, 1, 1));
+	glVertexAttrib1f(vSpecularExponent, 10);
+
 	if(mode == 0){
 		glBindVertexArray( vao[0] );
 		glDrawArrays( GL_TRIANGLES, 0, spherevertcount );    // draw the sphere 
@@ -254,7 +256,7 @@ void init() {
 
 
   //populate our arrays
-  spherevertcount = generateSphere(2, 10);
+  spherevertcount = generateSphere(2, 100);
 
 
    // Load shaders and use the resulting shader program

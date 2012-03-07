@@ -48,12 +48,20 @@ void generateCube(){
 	for(int i=0; i<6; i++){
 		cubeColors[i] = vec4(0.0, 1.0, 1.0, 1.0); //front
 	}
+	
 	cubeVerts[0] = vec4(1.0f, -1.0f, 1.0f, 1.0);
 	cubeVerts[1] = vec4(1.0f, 1.0f, 1.0f, 1.0);
 	cubeVerts[2] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
 	cubeVerts[3] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
 	cubeVerts[4] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
 	cubeVerts[5] = vec4(1.0f, -1.0f, 1.0f, 1.0);
+
+	cubeColors[0] = vec4(0.0, 1.0, 1.0, 1.0);
+	cubeColors[1] = vec4(0.0, 1.0, 1.0, 1.0);
+	cubeColors[2] = vec4(1.0, 1.0, 0.0, 1.0);
+	cubeColors[3] = vec4(1.0, 1.0, 0.0, 1.0);
+	cubeColors[4] = vec4(0.0, 0.0, 1.0, 1.0);
+	cubeColors[5] = vec4(0.0, 1.0, 1.0, 1.0);
 	
 
 	for(int i=6; i<12; i++){
