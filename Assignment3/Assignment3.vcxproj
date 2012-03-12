@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{B9CA497A-6C7E-48E1-9F18-18AAEEC2B359}</ProjectGuid>
-    <RootNamespace>Assignment2</RootNamespace>
+    <ProjectGuid>{EF03CE5F-21F7-4F07-913D-C84500615C84}</ProjectGuid>
+    <RootNamespace>Assignment3</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -60,7 +60,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Assignment2.cpp" />
+    <ClCompile Include="Assignment3.cpp" />
     <ClCompile Include="InitShader.cpp" />
   </ItemGroup>
   <ItemGroup>
