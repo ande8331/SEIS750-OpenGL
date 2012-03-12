@@ -464,11 +464,19 @@ void display(void)
 
 	// and we also need to send our projection matrix, which again is more appropriately
 	// a uniform instead of an attribute since it's the same for every vertex
-	p = Perspective(zoom, (float)ww/(float)wh, 1.0, 100.0);
+	
 
-	if (camera == VIEWPOINT_CAMERA)
+	if (camera == STATIC_CAMERA)
 	{
-		p = Perspective(zoom, (float)ww/(float)wh, (HEAD_RADIUS*2+(EYE_RADIUS*2)), 100.0);
+		p = Perspective(zoom, (float)ww/(float)wh, 1.0, 100.0);
+	}
+	else if (camera == VIEWPOINT_CAMERA)
+	{
+		p = Perspective(45, (float)ww/(float)wh, (HEAD_RADIUS*2+(EYE_RADIUS*2)), 100.0);
+	}
+	else if (camera == CHASE_CAMERA)
+	{
+		p = Perspective(45, (float)ww/(float)wh, 1.0, 100.0);
 	}
 
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
@@ -619,11 +627,11 @@ void Keyboard(unsigned char key, int x, int y) {
 
 	if (key == 'z')
 	{
-		headAngle -= 2.0;
+		headAngle += 2.0;
 	}
 	if (key == 'x')
 	{
-		headAngle += 2.0;
+		headAngle -= 2.0;
 	}
 	if (key == ' ')
 	{
@@ -631,7 +639,7 @@ void Keyboard(unsigned char key, int x, int y) {
 	}
 
 	if (camera == STATIC_CAMERA)
-		{
+	{
 		if (key == 'a')
 		{
 			zoom -= 1.0;
@@ -658,6 +666,8 @@ void Keyboard(unsigned char key, int x, int y) {
 	{
 		zoom = DEFAULT_ZOOM;
 		dolly = DEFAULT_DOLLY;
+		staticCameraCenterOfStage = true;
+		camera = STATIC_CAMERA;
 	}
 
 	if (key == 'c')
@@ -900,7 +910,7 @@ int main(int argc, char **argv)
 	glutInitWindowPosition(0, 0); 
 	glutInitWindowSize(ww, wh);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-	glutCreateWindow("Assignment 2 - Ross Anderson");  
+	glutCreateWindow("Assignment 3 - Ross Anderson");  
 
 	glewExperimental = GL_TRUE;
 
