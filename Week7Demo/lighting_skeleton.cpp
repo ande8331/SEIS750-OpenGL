@@ -14,7 +14,7 @@ int ww=500, wh=500;
 #define M_PI 3.14159265358979323846
 
 //If you want more than one type of shader, store references to your shader program objects
-GLuint program1, program2;
+GLuint program1, program2, program3;
 
 GLuint vao[1];
 GLuint vbo[2];
@@ -201,6 +201,10 @@ void Keyboard(unsigned char key, int x, int y) {
 	if (key == 'p'){
 		setupShader(program2);
 	}  
+	if (key == 'c')
+	{
+		setupShader(program3);
+	}
 
 	if (key == 's'){
 		mode = 0;
@@ -252,7 +256,7 @@ void mouse(int button, int state, int x, int y) {
 void init() {
 
   /*select clearing (background) color*/
-  glClearColor(0.0, 0.0, 0.0, 0.0);
+  glClearColor(1.0, 1.0, 1.0, 1.0);
 
 
   //populate our arrays
@@ -262,6 +266,7 @@ void init() {
    // Load shaders and use the resulting shader program
     program1 = InitShader( "vshader-lighting.glsl", "fshader-lighting.glsl" );
 	program2 = InitShader( "vshader-phongshading.glsl", "fshader-phongshading.glsl" );
+	program3 = InitShader( "vshader-celshading.glsl", "fshader-celshading.glsl" );
 
 	// Create a vertex array object
     glGenVertexArrays( 1, &vao[0] );

@@ -27,6 +27,12 @@
     <None Include="fshader-phongshading.glsl">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="fshader-celshading.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="vshader-celshading.glsl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="InitShader.cpp">
