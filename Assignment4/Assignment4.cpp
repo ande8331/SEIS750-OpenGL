@@ -91,12 +91,12 @@ vec4 wheelStripeColors[WHEEL_STRIPE_POINT_COUNT];
 #define WHEEL_CONNECTOR_POINT_COUNT 360*6
 vec4 wheelConVerts[WHEEL_CONNECTOR_POINT_COUNT];
 vec4 wheelConColors[WHEEL_CONNECTOR_POINT_COUNT];
-#define HEAD_POINT_COUNT 342
-vec4 headVerts[HEAD_POINT_COUNT];
-vec4 headColors[HEAD_POINT_COUNT];
-#define EYE_POINT_COUNT 342
-vec4 eyeVerts[EYE_POINT_COUNT];
-vec4 eyeColors[EYE_POINT_COUNT];
+int headVertCount;
+vec4* headVerts;
+vec4 *headColors;
+int eyeVertCount;
+vec4* eyeVerts;
+vec4* eyeColors;
 #define PYLON_POINT_COUNT 36
 vec4 pylonVerts[4][PYLON_POINT_COUNT];
 vec4 pylonColors[4][PYLON_POINT_COUNT];
@@ -321,42 +321,98 @@ void generateWheel()
 	wheelStripeColors[2] = vec4(0.0, 0.0, 0.0, 1.0);
 
 }
+
 void generateHead()
 {
-	int k = 0;
-	for (float phi = -80.0; phi <= 80.0; phi += 20.0)
-	{
-		float phir = phi*(M_PI/180);
-		float phir20 = (phi + 20)*(M_PI/180);
+	float radius = HEAD_RADIUS;
+	int subdiv = 100;
+	float step = (360.0/subdiv)*(M_PI/180.0);
 
-		for (float theta = -180.0; theta <= 180.0; theta += 20.0)
-		{
-			float thetar = theta*(M_PI/180);
-			headVerts[k] = vec4(sin(thetar)*cos(phir)*HEAD_RADIUS, cos(thetar)*cos(phir)*HEAD_RADIUS, sin(phir)*HEAD_RADIUS, 1.0);
-			headColors[k++] = vec4(1.0, 1.0, 1.0, 1.0);
-			headVerts[k] = vec4(sin(thetar)*cos(phir20)*HEAD_RADIUS, cos(thetar)*cos(phir20)*HEAD_RADIUS, sin(phir20)*HEAD_RADIUS, 1.0);
-			headColors[k++] = vec4(1.0, 1.0, 1.0, 1.0);
+	headVertCount = ceil(subdiv/2.0)*subdiv * 6;
+
+	if(headVerts){
+		delete[] headVerts;
+	}
+	headVerts = new vec4[headVertCount];
+
+	int k = 0;
+	for(float i = -M_PI/2; i<=M_PI/2; i+=step){
+		for(float j = -M_PI; j<=M_PI; j+=step){
+			//triangle 1
+			headVerts[k]=   vec4(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i), 1.0);
+			k++;
+	
+			headVerts[k]=   vec4(radius*sin(j)*cos(i+step), radius*cos(j)*cos(i+step), radius*sin(i+step), 1.0);
+			k++;
+			
+			headVerts[k]=   vec4(radius*sin((j+step))*cos((i+step)), radius*cos(j+step)*cos(i+step), radius*sin(i+step), 1.0);
+			k++;
+
+			//triangle 2
+			headVerts[k]=   vec4(radius*sin((j+step))*cos((i+step)), radius*cos(j+step)*cos(i+step), radius*sin(i+step), 1.0);
+			k++;
+
+			headVerts[k]=   vec4(radius*sin(j+step)*cos(i), radius*cos(j+step)*cos(i), radius*sin(i), 1.0);
+			k++;
+
+			headVerts[k]=   vec4(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i), 1.0);
+			k++;
 		}
+	}
+
+
+	headColors = new vec4[headVertCount];
+	for (int i = 0; i < headVertCount; i++)
+	{
+		headColors[i] = vec4(1.0, 1.0, 1.0, 1.0);
 	}
 }
 void generateEye()
 {
+	float radius = EYE_RADIUS;
+	int subdiv = 10;
+	float step = (360.0/subdiv)*(M_PI/180.0);
+
+	eyeVertCount = ceil(subdiv/2.0)*subdiv * 6;
+
+	if(eyeVerts){
+		delete[] eyeVerts;
+	}
+	eyeVerts = new vec4[eyeVertCount];
 
 	int k = 0;
-	for (float phi = -80.0; phi <= 80.0; phi += 20.0)
-	{
-		float phir = phi*(M_PI/180);
-		float phir20 = (phi + 20)*(M_PI/180);
+	for(float i = -M_PI/2; i<=M_PI/2; i+=step){
+		for(float j = -M_PI; j<=M_PI; j+=step){
+			//triangle 1
+			eyeVerts[k]=   vec4(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i), 1.0);
+			k++;
+	
+			eyeVerts[k]=   vec4(radius*sin(j)*cos(i+step), radius*cos(j)*cos(i+step), radius*sin(i+step), 1.0);
+			k++;
+			
+			eyeVerts[k]=   vec4(radius*sin((j+step))*cos((i+step)), radius*cos(j+step)*cos(i+step), radius*sin(i+step), 1.0);
+			k++;
 
-		for (float theta = -180.0; theta <= 180.0; theta += 20.0)
-		{
-			float thetar = theta*(M_PI/180);
-			eyeVerts[k] = vec4(sin(thetar)*cos(phir)*EYE_RADIUS, cos(thetar)*cos(phir)*EYE_RADIUS, sin(phir*EYE_RADIUS), 1.0);
-			eyeColors[k++] = vec4(0.0, 0.0, 0.0, 0.0);
-			eyeVerts[k] = vec4(sin(thetar)*cos(phir20)*EYE_RADIUS, cos(thetar)*cos(phir20)*EYE_RADIUS, sin(phir20*EYE_RADIUS), 1.0);
-			eyeColors[k++] = vec4(0.0, 0.0, 0.0, 0.0);
+			//triangle 2
+			eyeVerts[k]=   vec4(radius*sin((j+step))*cos((i+step)), radius*cos(j+step)*cos(i+step), radius*sin(i+step), 1.0);
+			k++;
+
+			eyeVerts[k]=   vec4(radius*sin(j+step)*cos(i), radius*cos(j+step)*cos(i), radius*sin(i), 1.0);
+			k++;
+
+			eyeVerts[k]=   vec4(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i), 1.0);
+			k++;
 		}
 	}
+
+
+	eyeColors = new vec4[eyeVertCount];
+	for (int i = 0; i < eyeVertCount; i++)
+	{
+		eyeColors[i] = vec4(0.0, 0.0, 0.0, 1.0);
+	}
+
+
 }
 void generatePylon()
 {
@@ -523,17 +579,19 @@ void display(void)
 	mv = mv*RotateY(headAngle);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[HEAD] );
-	glDrawArrays( GL_LINE_LOOP, 0, HEAD_POINT_COUNT );    // draw the head 
+	//glDrawArrays( GL_LINE_LOOP, 0, HEAD_POINT_COUNT );    // draw the head 
+	glDrawArrays(GL_TRIANGLES, 0, headVertCount);
+	
 	mat4 headOriginal = mv;
 	mv = mv*Translate(.4*HEAD_RADIUS, 0.0, HEAD_RADIUS);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[EYE] );
-	glDrawArrays( GL_LINE_LOOP, 0, EYE_POINT_COUNT );    // draw one eye 
+	glDrawArrays(GL_TRIANGLES, 0, eyeVertCount);    // draw one eye 
 	mv = headOriginal;
 	mv = mv*Translate(-.4*HEAD_RADIUS, 0.0, HEAD_RADIUS);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[EYE] );
-	glDrawArrays( GL_LINE_LOOP, 0, EYE_POINT_COUNT );    // draw the other eye 
+	glDrawArrays(GL_TRIANGLES, 0, eyeVertCount);    // draw the other eye 
 
 	mv = original;
 
@@ -778,24 +836,27 @@ void init()
 
 	glBindVertexArray( vao[HEAD] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
-	glBufferData( GL_ARRAY_BUFFER, sizeof(headVerts), headVerts, GL_STATIC_DRAW);
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec4), headVerts, GL_STATIC_DRAW);
 	vPosition = glGetAttribLocation(program, "vPosition");
 	glEnableVertexAttribArray(vPosition);
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
-	glBufferData( GL_ARRAY_BUFFER, sizeof(headColors), headColors, GL_STATIC_DRAW );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec4), headColors, GL_STATIC_DRAW );
+
+	
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
+
 	glBindVertexArray( vao[EYE] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
-	glBufferData( GL_ARRAY_BUFFER, sizeof(eyeVerts), eyeVerts, GL_STATIC_DRAW);
+	glBufferData( GL_ARRAY_BUFFER, eyeVertCount*sizeof(vec4), eyeVerts, GL_STATIC_DRAW);
 	vPosition = glGetAttribLocation(program, "vPosition");
 	glEnableVertexAttribArray(vPosition);
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
-	glBufferData( GL_ARRAY_BUFFER, sizeof(eyeColors), eyeColors, GL_STATIC_DRAW );
+	glBufferData( GL_ARRAY_BUFFER, eyeVertCount*sizeof(vec4), eyeColors, GL_STATIC_DRAW );
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
