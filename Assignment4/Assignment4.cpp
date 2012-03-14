@@ -469,7 +469,7 @@ void drawWheel(void)
 {
 	glBindVertexArray( vao[WHEEL] );
 	glDrawArrays( GL_TRIANGLE_FAN, 0, WHEEL_POINT_COUNT );    // draw the outside wheel 
-	glDrawArrays( GL_TRIANGLE_FAN, WHEEL_POINT_COUNT, WHEEL_POINT_COUNT*2 );    // draw the inside wheel 
+	glDrawArrays( GL_TRIANGLE_FAN, WHEEL_POINT_COUNT, WHEEL_POINT_COUNT );    // draw the inside wheel 
 	glBindVertexArray( vao[WHEEL_STRIPE] );
 	glDrawArrays( GL_TRIANGLES, 0, WHEEL_STRIPE_POINT_COUNT );    // draw wheel stripe 
 	glBindVertexArray( vao[WHEEL_CONNECTORS] );
