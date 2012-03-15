@@ -75,6 +75,7 @@ GLdouble zoom = 45;
 GLdouble dolly = 50;
 cameraAnglesEnum camera = STATIC_CAMERA;
 bool staticCameraCenterOfStage = true;
+bool copLightsOn = false;
 
 #define CAR_POINT_COUNT 72
 vec4 carVerts[CAR_POINT_COUNT];
@@ -694,6 +695,11 @@ void Keyboard(unsigned char key, int x, int y) {
 	if (key == ' ')
 	{
 		stopCar();
+	}
+
+	if (key == 'l')
+	{
+		copLightsOn = !copLightsOn;
 	}
 
 	if (camera == STATIC_CAMERA)
