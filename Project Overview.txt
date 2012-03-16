@@ -1,4 +1,5 @@
-Assignment 1 - Shooting Game
+*******************************************************
+Assignment 1 (openGL 1.x) - Shooting Game
 Use mouse to shoot at moving targets.
 
 Controls:
@@ -6,7 +7,8 @@ Spacebar or Left Mouse to shoot.
 Mouse to move the crosshairs.
 F2 to restart the game.
 
-Assignment 2 - 3D Car That Drives
+*******************************************************
+Assignment 2 (openGL 3.x) - 3D Car That Drives
 3D Card that drives around on a stage.
 
 Controls:
@@ -14,7 +16,8 @@ Up and down move the car forward and back.
 Left and right steer the wheels.
 Z and X move the drivers head back and forth.
 
-Assignment 3 - Extension of Car
+*******************************************************
+Assignment 3 (openGL 3.x) - Extension of Car
 Extension of Assignment two to utilize projection views.
 3 camera views are available, Static, Viewpoint (Driver Viewpoint) and Chase (Over the shoulder).
 
