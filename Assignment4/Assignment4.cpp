@@ -1,6 +1,7 @@
 /*
 * Assignment 2 (Car) - Ross Anderson
 * Assignment 3 (Car with Camera Work)
+* Assignment 4 (Car with Camera Work and Lighting)
 * SEIS750
 * Spring 2012
 **/
@@ -46,6 +47,10 @@ GLuint projection;
 GLuint vPosition;
 GLuint vColor;
 GLuint vNormal;
+
+//Ambient Light Pointers
+GLuint ambient_light;
+GLuint vAmbientDiffuseColor;
 
 /* Not all the t,r,s globals used at this point, but leave them in in case they are
 needed for viewing in debug mode */
@@ -575,6 +580,10 @@ void display(void)
 
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
 
+	// Setup the ambient light
+	glUniform4fv(ambient_light, 1, vec4(0.2, 0.2, 0.2, 1));
+	//glVertexAttrib4fv(vAmbientDiffuseColor, vec4(0, 0.5, 0, 1));
+
 	glBindVertexArray( vao[STAGE] );
 	glDrawArrays( GL_TRIANGLES, 0, STAGE_POINT_COUNT );    // draw the stage
 
@@ -980,6 +989,9 @@ void init()
 	//grab pointers for our modelview and perspecive uniform matrices
 	model_view = glGetUniformLocation(program, "model_view");
 	projection = glGetUniformLocation(program, "projection");
+
+	ambient_light = glGetUniformLocation(program, "ambient_light");
+	vAmbientDiffuseColor = glGetAttribLocation(program, "vAmbientDiffuseColor");
 
 	//Only draw the things in the front layer
 	glEnable(GL_DEPTH_TEST);
