@@ -52,6 +52,11 @@ GLuint vNormal;
 GLuint ambient_light;
 GLuint vAmbientDiffuseColor;
 
+GLuint light_position;
+GLuint light_color;
+GLuint light_direction;
+GLuint light_cuttoffangle;
+
 /* Not all the t,r,s globals used at this point, but leave them in in case they are
 needed for viewing in debug mode */
 GLdouble tx = 0.0;
@@ -560,11 +565,10 @@ void display(void)
 	mv = mv*Scale(sx, sy, sz);
 
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+	mat4 original = mv;
 
 	// and we also need to send our projection matrix, which again is more appropriately
 	// a uniform instead of an attribute since it's the same for every vertex
-	
-
 	if (camera == STATIC_CAMERA)
 	{
 		p = Perspective(zoom, (float)ww/(float)wh, 1.0, 100.0);
@@ -584,10 +588,22 @@ void display(void)
 	glUniform4fv(ambient_light, 1, vec4(0.2, 0.2, 0.2, 1));
 	//glVertexAttrib4fv(vAmbientDiffuseColor, vec4(0, 0.5, 0, 1));
 
+	mv = original;
+	mv = mv*Translate(0.0, CAR_HEIGHT+(WHEEL_RADIUS), 0.0);
+	mv = mv*Translate(xPosition, yPosition, zPosition);
+	mv = mv*Translate(0.0, 0.0, CAR_LENGTH + 0.1);
+	mv = mv*RotateY(carAngle);
+
+	glUniform4fv(light_position, 1, vec4(10, 10, 10, 1));
+	glUniform4fv(light_color, 1, vec4(1.0, 1.0, 1.0, 0));
+	glUniform4fv(light_direction, 1, vec4(20, 0, 20, 0));
+	glUniform4fv(light_cuttoffangle, 1, vec4());
+
+
+	mv = original;
 	glBindVertexArray( vao[STAGE] );
 	glDrawArrays( GL_TRIANGLES, 0, STAGE_POINT_COUNT );    // draw the stage
 
-	mat4 original = mv;
 	mv = mv*Translate(-20, 0, -20);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[PYLON] );
@@ -992,6 +1008,11 @@ void init()
 
 	ambient_light = glGetUniformLocation(program, "ambient_light");
 	vAmbientDiffuseColor = glGetAttribLocation(program, "vAmbientDiffuseColor");
+
+	light_position = glGetUniformLocation(program, "light_position");
+	light_color = glGetUniformLocation(program, "light_color");
+	light_direction = glGetUniformLocation(program, "light_direction");
+	light_cuttoffangle = glGetUniformLocation(program, "light_cutoffangle");
 
 	//Only draw the things in the front layer
 	glEnable(GL_DEPTH_TEST);
