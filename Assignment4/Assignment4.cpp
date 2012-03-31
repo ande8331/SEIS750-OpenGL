@@ -1084,7 +1084,7 @@ int main(int argc, char **argv)
 	glutInitWindowPosition(0, 0); 
 	glutInitWindowSize(ww, wh);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-	glutCreateWindow("Assignment 3 - Ross Anderson");  
+	glutCreateWindow("Assignment 4 - Ross Anderson");  
 
 	glewExperimental = GL_TRUE;
 
