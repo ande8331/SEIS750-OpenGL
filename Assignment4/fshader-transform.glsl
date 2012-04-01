@@ -3,23 +3,33 @@ in vec4 color;
 out vec4  fColor;
 in vec3 vN;
 in vec4 position;
+in vec4 fvPosition;
 
 in vec4 fvAmbientLight;
-
-in vec4 fvLightPosition;
 in vec4 fvLightColor;
-in vec4 fvLightDirection;
 in vec4 fvLightCutoffangle;
+
+in vec3 vL;
+in vec3 vLD;
 
 void main()
 {
-	vec3 L = normalize(fvLightPosition.xyz -position.xyz);
-	vec3 E = normalize (-position.xyz);
+	vec3 L = normalize(vL);
+	vec3 E = normalize (position.xyz);
 	vec3 N = normalize (vN);
 	vec3 H = normalize (L+E);
+	vec3 fvLightDirection = normalize (vLD);
 
-	vec4 ambient = (fvAmbientLight)*color;
-	vec4 diffuse = vec4(0,1,0,0);
+
+	vec4 ambient = fvAmbientLight*color;
+
+	vec4 diffuse = vec4(0,0,0,0);
+
+	if(dot(L,  fvLightDirection.xyz) > cos(fvLightCutoffangle.x))
+	{
+		diffuse = fvLightColor * color * max(0.0, dot(L, N));
+	}
+	
 	vec4 specular = vec4(0,0,0,0);
 
 	if (dot (L, N) < 0)

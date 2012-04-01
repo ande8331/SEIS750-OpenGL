@@ -36,7 +36,7 @@ typedef enum
 } cameraAnglesEnum;
 
 GLuint vao[VAO_COUNT];
-GLuint vbo[VAO_COUNT*3];  // Two vbo's per vao may not always be true, but for now it is
+GLuint vbo[VAO_COUNT*4];
 
 //our modelview and perspective matrices
 mat4 mv, p;
@@ -47,6 +47,7 @@ GLuint projection;
 GLuint vPosition;
 GLuint vColor;
 GLuint vNormal;
+GLuint vMaterial;
 
 //Ambient Light Pointers
 GLuint ambient_light;
@@ -92,34 +93,42 @@ bool copLightsOn = false;
 vec4 carVerts[CAR_POINT_COUNT];
 vec3 carNormals[CAR_POINT_COUNT];
 vec4 carColors[CAR_POINT_COUNT];
+vec3 carMaterials[CAR_POINT_COUNT];
 #define STAGE_POINT_COUNT 36
 vec4 stageVerts[STAGE_POINT_COUNT];
 vec3 stageNormals[STAGE_POINT_COUNT];
 vec4 stageColors[STAGE_POINT_COUNT];
+vec3 stageMaterials[STAGE_POINT_COUNT];
 #define WHEEL_POINT_COUNT 362
 vec4 wheelVerts[WHEEL_POINT_COUNT*2];
 vec3 wheelNormals[WHEEL_POINT_COUNT*2];
 vec4 wheelColors[WHEEL_POINT_COUNT*2];
+vec3 wheelMaterials[WHEEL_POINT_COUNT*2];
 #define WHEEL_STRIPE_POINT_COUNT 3
 vec4 wheelStripeVerts[WHEEL_STRIPE_POINT_COUNT];
 vec3 wheelStripeNormals[WHEEL_STRIPE_POINT_COUNT];
 vec4 wheelStripeColors[WHEEL_STRIPE_POINT_COUNT];
+vec3 wheelStripeMaterials[WHEEL_STRIPE_POINT_COUNT];
 #define WHEEL_CONNECTOR_POINT_COUNT 360*6
 vec4 wheelConVerts[WHEEL_CONNECTOR_POINT_COUNT];
 vec3 wheelConNormals[WHEEL_CONNECTOR_POINT_COUNT];
 vec4 wheelConColors[WHEEL_CONNECTOR_POINT_COUNT];
+vec4 wheelConMaterials[WHEEL_CONNECTOR_POINT_COUNT];
 int headVertCount;
 vec4* headVerts;
 vec3* headNormals;
 vec4 *headColors;
+vec3* headMaterials;
 int eyeVertCount;
 vec4* eyeVerts;
 vec3* eyeNormals;
 vec4* eyeColors;
+vec3* eyeMaterials;
 #define PYLON_POINT_COUNT 36
 vec4 pylonVerts[4][PYLON_POINT_COUNT];
 vec3 pylonNormals[4][PYLON_POINT_COUNT];
 vec4 pylonColors[4][PYLON_POINT_COUNT];
+vec3 pylonMaterials[4][PYLON_POINT_COUNT];
 
 #define CAR_WIDTH 2.5
 #define CAR_HEIGHT 2.
@@ -256,6 +265,7 @@ void generateCar(){
 	for (int j = 0; j < i; j++)
 	{
 		carNormals[j] = vec3(carVerts[j].x, carVerts[j].y, carVerts[j].z);
+		carMaterials[j] = vec3(0.9, 0.2, 0.7);
 	}
 }
 void generateStage()
@@ -301,10 +311,16 @@ void generateStage()
 	{
 		stageColors[i] = vec4(0.25, 0.25, 0.25, 1.0);
 		stageNormals[i] = vec3(stageVerts[i].x, stageVerts[i].y, stageVerts[i].z);
+		stageMaterials[i] = vec3(0.9, 0.8, 0.2);
 	}
 }
 void generateWheel()
 {
+	float wheel_ambient, wheel_diffuse, wheel_specular;
+	wheel_ambient = 0.3;
+	wheel_diffuse = 0.1;
+	wheel_specular = 0.9;
+
 	int i;
 	for (i = 0; i < WHEEL_POINT_COUNT; i++)
 	{
@@ -317,9 +333,11 @@ void generateWheel()
 
 	wheelVerts[0] = vec4(0.0, 0.0, WHEEL_THICKNESS, 1.0);
 	wheelNormals[0] = vec3(wheelVerts[0].x, wheelVerts[0].y, wheelVerts[0].z);
+	wheelMaterials[0] = vec3(wheel_ambient, wheel_diffuse, wheel_specular);
 	wheelVerts[0+WHEEL_POINT_COUNT] = vec4(0.0, 0.0, -WHEEL_THICKNESS, 1.0);
 	wheelNormals[0+WHEEL_POINT_COUNT] = vec3(wheelVerts[0+WHEEL_POINT_COUNT].x, wheelVerts[0+WHEEL_POINT_COUNT].y, wheelVerts[0+WHEEL_POINT_COUNT].z);
-	
+	wheelMaterials[0+WHEEL_POINT_COUNT] = vec3(wheel_ambient, wheel_diffuse, wheel_specular);
+
 	int connectorCount = 0;
 	for ( i = 1; i < WHEEL_POINT_COUNT; i++)
 	{
@@ -328,8 +346,10 @@ void generateWheel()
 		float Y = sin(Angle)*WHEEL_RADIUS;
 		wheelVerts[i] = vec4(X, Y, 0.5, 1.0);
 		wheelNormals[i] = vec3(wheelVerts[i].x, wheelVerts[i].y, wheelVerts[i].z);
+		wheelMaterials[i] = vec3(wheel_ambient, wheel_diffuse, wheel_specular);
 		wheelVerts[i+WHEEL_POINT_COUNT] = vec4(X, Y, -WHEEL_THICKNESS, 1.0);
 		wheelNormals[i+WHEEL_POINT_COUNT] = vec3(wheelVerts[i+WHEEL_POINT_COUNT].x, wheelVerts[i+WHEEL_POINT_COUNT].y, wheelVerts[i+WHEEL_POINT_COUNT].z);
+		wheelMaterials[i] = vec3(wheel_ambient, wheel_diffuse, wheel_specular);
 		Angle = i * (2.0*M_PI/180);
 		float XNext = cos(Angle) * WHEEL_RADIUS;
 		float YNext = sin(Angle) * WHEEL_RADIUS;
@@ -345,6 +365,7 @@ void generateWheel()
 	{
 		wheelConColors[i] = vec4(0.05, 0.05, 0.05, 1.0);
 		wheelConNormals[i] = vec3(wheelConVerts[i].x, wheelConVerts[i].y, wheelConVerts[i].z);
+		wheelConMaterials[i] = vec3(0.1, 0.1, 0.1);
 	}
 
 
@@ -357,9 +378,11 @@ void generateWheel()
 	wheelStripeColors[0] = vec4(0.0, 0.0, 0.0, 1.0);
 	wheelStripeColors[1] = vec4(0.0, 0.0, 0.0, 1.0);
 	wheelStripeColors[2] = vec4(0.0, 0.0, 0.0, 1.0);
+	wheelStripeMaterials[0] = vec3(0.2, 0.2, 0.2);
+	wheelStripeMaterials[1] = vec3(0.2, 0.2, 0.2);
+	wheelStripeMaterials[2] = vec3(0.2, 0.2, 0.2);
 
 }
-
 void generateHead()
 {
 	float radius = HEAD_RADIUS;
@@ -400,10 +423,16 @@ void generateHead()
 		delete[] headNormals;
 	}
 	headNormals = new vec3[headVertCount];
+	if (headMaterials){
+		delete[] headMaterials;
+	}
+	headMaterials= new vec3[headVertCount];
+
 	for (int i = 0; i < headVertCount; i++)
 	{
 		headColors[i] = vec4(1.0, 1.0, 1.0, 1.0);
 		headNormals[i] = vec3(headVerts[i].x, headVerts[i].y, headVerts[i].z);
+		headMaterials[i] = vec3(0.5, 0.9, 0.1);
 	}
 }
 void generateEye()
@@ -447,11 +476,17 @@ void generateEye()
 		delete[] eyeNormals;
 	}
 	eyeNormals = new vec3[eyeVertCount];
+	
+	if (eyeMaterials){
+		delete[] eyeMaterials;
+	}
+	eyeMaterials = new vec3[eyeVertCount];
 
 	for (int i = 0; i < eyeVertCount; i++)
 	{
 		eyeColors[i] = vec4(0.0, 0.0, 0.0, 1.0);
 		eyeNormals[i] = vec3(eyeVerts[i].x, eyeVerts[i].y, eyeVerts[i].z);
+		eyeMaterials[i] = vec3(0.1, 0.1, 0.8);
 	}
 
 
@@ -506,7 +541,8 @@ void generatePylon()
 
 		for (int j=0; j < 4; j++)
 		{
-			pylonVerts[j][i] = vec3(pylonVerts[j][i].x, pylonVerts[j][i].y, pylonVerts[j][i].z);
+			pylonNormals[j][i] = vec3(pylonVerts[j][i].x, pylonVerts[j][i].y, pylonVerts[j][i].z);
+			pylonMaterials[j][i] = vec3(0.5, 0.9, 0.2);
 		}
 	}
 
@@ -588,19 +624,27 @@ void display(void)
 	glUniform4fv(ambient_light, 1, vec4(0.2, 0.2, 0.2, 1));
 	//glVertexAttrib4fv(vAmbientDiffuseColor, vec4(0, 0.5, 0, 1));
 
+		float Angle = (M_PI*(carAngle)/180);
+		float X = sin(Angle);
+		float Z = cos(Angle);
+
+	// Confirmed light_position is placed with the next block of code
+	glUniform4fv(light_position, 1, vec4(xPosition-(X*CAR_LENGTH), CAR_HEIGHT*1.5, zPosition-(Z*CAR_LENGTH), 1.0));
+	glUniform4fv(light_color, 1, vec4(1.0, 1.0, 1.0, 0));	// White light for now
+	//glUniform4fv(light_direction, 1, vec4(xPosition-(3*X*CAR_LENGTH), -3, zPosition-(3*Z*CAR_LENGTH), 0));
+	glUniform4fv(light_direction, 1, vec4(-X, -0.2, -Z, 0));
+	glUniform4fv(light_cuttoffangle, 1, vec4(20, 0, 0, 0));	// Just using x as the angle for now
+
+	/* Debug to draw a white ball where the light position is at */
 	mv = original;
-	mv = mv*Translate(0.0, CAR_HEIGHT+(WHEEL_RADIUS), 0.0);
-	mv = mv*Translate(xPosition, yPosition, zPosition);
-	mv = mv*Translate(0.0, 0.0, CAR_LENGTH + 0.1);
-	mv = mv*RotateY(carAngle);
-
-	glUniform4fv(light_position, 1, vec4(10, 10, 10, 1));
-	glUniform4fv(light_color, 1, vec4(1.0, 1.0, 1.0, 0));
-	glUniform4fv(light_direction, 1, vec4(20, 0, 20, 0));
-	glUniform4fv(light_cuttoffangle, 1, vec4());
+	mv = mv*Translate(xPosition-(X*CAR_LENGTH), CAR_HEIGHT*1.5, zPosition-(Z*CAR_LENGTH)); 
+	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+	glBindVertexArray( vao[HEAD] );
+	glDrawArrays(GL_TRIANGLES, 0, headVertCount);
 
 
 	mv = original;
+	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[STAGE] );
 	glDrawArrays( GL_TRIANGLES, 0, STAGE_POINT_COUNT );    // draw the stage
 
@@ -863,7 +907,7 @@ void init()
 
 	// Create all vertex array object
 	glGenVertexArrays( VAO_COUNT, &vao[0] );
-	glGenBuffers(VAO_COUNT*3, &vbo[0]);
+	glGenBuffers(VAO_COUNT*4, &vbo[0]);
 
 	// Create and initialize any buffer objects
 	glBindVertexArray( vao[CAR] );
@@ -882,6 +926,11 @@ void init()
 	vNormal = glGetAttribLocation(program, "vNormal");
 	glEnableVertexAttribArray(vNormal);
 	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(carMaterials), carMaterials, GL_STATIC_DRAW );
+	vMaterial = glGetAttribLocation(program, "vMaterial");
+	glEnableVertexAttribArray(vMaterial);
+	glVertexAttribPointer(vMaterial, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[STAGE] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -899,6 +948,11 @@ void init()
 	vNormal = glGetAttribLocation(program, "vNormal");
 	glEnableVertexAttribArray(vNormal);
 	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(stageMaterials), stageMaterials, GL_STATIC_DRAW );
+	vMaterial = glGetAttribLocation(program, "vMaterial");
+	glEnableVertexAttribArray(vMaterial);
+	glVertexAttribPointer(vMaterial, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[WHEEL] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -916,6 +970,11 @@ void init()
 	vNormal = glGetAttribLocation(program, "vNormal");
 	glEnableVertexAttribArray(vNormal);
 	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelMaterials), wheelMaterials, GL_STATIC_DRAW );
+	vMaterial = glGetAttribLocation(program, "vMaterial");
+	glEnableVertexAttribArray(vMaterial);
+	glVertexAttribPointer(vMaterial, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[HEAD] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -933,6 +992,11 @@ void init()
 	vNormal = glGetAttribLocation(program, "vNormal");
 	glEnableVertexAttribArray(vNormal);
 	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(headMaterials), headMaterials, GL_STATIC_DRAW );
+	vMaterial = glGetAttribLocation(program, "vMaterial");
+	glEnableVertexAttribArray(vMaterial);
+	glVertexAttribPointer(vMaterial, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[EYE] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -950,6 +1014,11 @@ void init()
 	vNormal = glGetAttribLocation(program, "vNormal");
 	glEnableVertexAttribArray(vNormal);
 	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(eyeMaterials), eyeMaterials, GL_STATIC_DRAW );
+	vMaterial = glGetAttribLocation(program, "vMaterial");
+	glEnableVertexAttribArray(vMaterial);
+	glVertexAttribPointer(vMaterial, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[WHEEL_STRIPE] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -967,6 +1036,11 @@ void init()
 	vNormal = glGetAttribLocation(program, "vNormal");
 	glEnableVertexAttribArray(vNormal);
 	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelStripeMaterials), wheelStripeMaterials, GL_STATIC_DRAW );
+	vMaterial = glGetAttribLocation(program, "vMaterial");
+	glEnableVertexAttribArray(vMaterial);
+	glVertexAttribPointer(vMaterial, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[WHEEL_CONNECTORS] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -984,6 +1058,11 @@ void init()
 	vNormal = glGetAttribLocation(program, "vNormal");
 	glEnableVertexAttribArray(vNormal);
 	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelMaterials), wheelMaterials, GL_STATIC_DRAW );
+	vMaterial = glGetAttribLocation(program, "vMaterial");
+	glEnableVertexAttribArray(vMaterial);
+	glVertexAttribPointer(vMaterial, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[PYLON] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -1001,6 +1080,11 @@ void init()
 	vNormal = glGetAttribLocation(program, "vNormal");
 	glEnableVertexAttribArray(vNormal);
 	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(pylonMaterials), pylonMaterials, GL_STATIC_DRAW );
+	vMaterial = glGetAttribLocation(program, "vMaterial");
+	glEnableVertexAttribArray(vMaterial);
+	glVertexAttribPointer(vMaterial, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 	//grab pointers for our modelview and perspecive uniform matrices
 	model_view = glGetUniformLocation(program, "model_view");
@@ -1017,7 +1101,6 @@ void init()
 	//Only draw the things in the front layer
 	glEnable(GL_DEPTH_TEST);
 }
-
 
 void reshape(int width, int height){
 	ww= width;

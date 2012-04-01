@@ -16,21 +16,23 @@ uniform vec4 light_cutoffangle;
 
 out vec4 fvAmbientLight;
 
-out vec4 fvLightPosition;
 out vec4 fvLightColor;
 out vec4 fvLightDirection;
 out vec4 fvLightCutoffangle;
 out vec4 position;
 out vec3 vN;
+out vec4 fvPosition;
+out vec3 vL;
+out vec3 vLD;
 
 void
 main()
 {
 	vec4 veyepos = model_view*vPosition;
 	vec4 normal = vec4(vNormal, 0);		// Converts the vec3 to a vec4
-	vec3 L = normalize( light_position.xyz - veyepos.xyz ); // use vec3 because it works better in a dot product
-
 	vec3 N = normalize(( model_view * normal).xyz);  // apply any mv transformations to the normal (needed to be vec4 to allow 4x4 to multiply it
+	vec3 L = normalize( light_position.xyz - veyepos.xyz ); // use vec3 because it works better in a dot product
+	vec3 LD = normalize(light_direction.xyz);
 
     gl_Position = projection*model_view*vPosition;
 	position = veyepos;
@@ -39,10 +41,13 @@ main()
 
 	fvAmbientLight = ambient_light;
 
-	fvLightPosition=light_position;
 	fvLightColor=light_color;
-	fvLightDirection=light_direction;
+	//fvLightDirection=light_direction;
+
 	fvLightCutoffangle =light_cutoffangle;
+	fvPosition = vPosition;
 
 	vN = N;
+	vL = L;
+	vLD = LD;
 }
