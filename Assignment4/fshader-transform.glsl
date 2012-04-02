@@ -9,7 +9,7 @@ uniform vec4 vAmbient, vDiffuse, vSpecular;
 
 in vec4 fvAmbientLight;
 in vec4 fvLightColor;
-in vec4 fvLightCutoffangle;
+uniform float light_cutoffangle;
 
 in vec3 vL;
 in vec3 vLD;
@@ -22,18 +22,26 @@ void main()
 	vec3 H = normalize (L+E);
 	vec3 fvLightDirection = normalize (vLD);
 
+	// This is the line it should be, but it goes completely black right now	
+	//vec4 ambient = vAmbient * fvAmbientLight;
+	vec4 ambient = fvAmbientLight*color;
 
-	//vec4 ambient = fvAmbientLight*color;
-	vec4 ambient = vAmbient * fvAmbientLight;
-
-	vec4 diffuse = vec4(0,0,0,0);
-
-	//if(dot(L,  fvLightDirection.xyz) > cos(fvLightCutoffangle.x))
-	{
-		diffuse = fvLightColor * vDiffuse * max(0.0, dot(L, N));
-	}
-	
+	vec4 diffuse = vec4(0,0,0,1);
 	vec4 specular = vec4(0,0,0,0);
+	
+	// Debug Junk
+	//fvLightDirection = normalize(vec3(0, 1, 0));
+	//L = normalize(vec3(0, 5, 0));
+
+	// Get a light when in degrees, have to flip the greater than to less
+	// than for radians though
+	float fvLightCutoffangle = light_cutoffangle;
+	if(dot(L, fvLightDirection.xyz) > cos(fvLightCutoffangle))
+	//if(dot(L, fvLightDirection.xyz) > 0.94)
+	{
+		diffuse = vec4(1.0, 1.0, 1.0, 1.0);
+		//diffuse = fvLightColor * color * max(0.0, dot(L, N));
+	}
 
 	if (dot (L, N) < 0)
 	{
@@ -41,4 +49,5 @@ void main()
 	}
 
 	fColor = ambient + diffuse + specular;
+	fColor.a = 1.0;
 }

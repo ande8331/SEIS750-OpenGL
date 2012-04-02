@@ -660,6 +660,7 @@ void display(void)
 		if (staticCameraCenterOfStage == true)
 		{
 			mv = LookAt(vec4(0, CAR_HEIGHT+(WHEEL_RADIUS), dolly, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
+			//mv = LookAt(vec4(0, 20, 0, 1.0), vec4(0, 0, 0, 1.0), vec4(1, 0, 0, 0.0));
 		}
 		else
 		{
@@ -710,7 +711,7 @@ void display(void)
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
 
 	// Setup the ambient light
-	glUniform4fv(ambient_light, 1, vec4(0.2, 0.2, 0.2, 1));
+	glUniform4fv(ambient_light, 1, vec4(0.1, 0.1, 0.2, 1));
 	//glVertexAttrib4fv(vAmbientDiffuseColor, vec4(0, 0.5, 0, 1));
 
 		float Angle = (M_PI*(carAngle)/180);
@@ -718,15 +719,34 @@ void display(void)
 		float Z = cos(Angle);
 
 	// Confirmed light_position is placed with the next block of code
-	glUniform4fv(light_position, 1, vec4(xPosition-(X*CAR_LENGTH), CAR_HEIGHT*1.5, zPosition-(Z*CAR_LENGTH), 1.0));
-	glUniform4fv(light_color, 1, vec4(1.0, 1.0, 1.0, 0));	// White light for now
+	//mv = mv*Translate(-X*CAR_LENGTH, 0, -Z*CAR_LENGTH);
+
+	mv = mv*Translate(0.0, CAR_HEIGHT+WHEEL_RADIUS, 0.0);
+	mv = mv*Translate(xPosition, yPosition, zPosition);
+	mv = mv*RotateY(carAngle);
+	mv = mv*Translate(0, 0, -CAR_LENGTH);
+
+	//glUniform4fv(light_position, 1, mv*vec4(xPosition-(X*CAR_LENGTH), CAR_HEIGHT*1.5, zPosition-(Z*CAR_LENGTH), 1.0));
+	vec4 lightPos = mv*vec4(0, 0, 0, 1.0);
+	glUniform4fv(light_position, 1, lightPos);
+	glUniform4fv(light_color, 1, vec4(1.0, 1.0, 1.0, 1.0));	// White light for now
 	//glUniform4fv(light_direction, 1, vec4(xPosition-(3*X*CAR_LENGTH), -3, zPosition-(3*Z*CAR_LENGTH), 0));
-	glUniform4fv(light_direction, 1, vec4(-X, -0.2, -Z, 0));
-	glUniform4fv(light_cuttoffangle, 1, vec4(20, 0, 0, 0));	// Just using x as the angle for now
+	vec4 lightVector = mv*vec4(0,0,-10, 1.0);
+	lightVector.y = -4;
+	lightVector = lightPos - lightVector;
+	
+	lightVector.w = 0;
+	glUniform4fv(light_direction, 1, lightVector);
+	//glUniform4fv(light_cuttoffangle, 1, vec4( (M_PI*20) / 180, 0, 0, 0));	// Just using x as the angle for now
+	//float cutoffangle = 20.0;
+	float cutoffangle = (M_PI*20)/180;
+	glUniform1f(light_cuttoffangle, cutoffangle);	// Just using x as the angle for now
+	//glUniform4fv(light_position, 1, mv*vec4(0, 10, 0, 1.0));
+	//glUniform4fv(light_direction, 1, vec4(0, 1, 0, 0));
 
 	/* Debug to draw a white ball where the light position is at */
-	mv = original;
-	mv = mv*Translate(xPosition-(X*CAR_LENGTH), CAR_HEIGHT*1.5, zPosition-(Z*CAR_LENGTH)); 
+	//mv = original;
+	//mv = mv*Translate(0, 0, -CAR_LENGTH); 
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[HEAD] );
 	glDrawArrays(GL_TRIANGLES, 0, headVertCount);
