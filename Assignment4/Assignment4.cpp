@@ -175,6 +175,7 @@ vec4 pylonSpecular[4][PYLON_POINT_COUNT];
 void generateCar(){
 	for(int i=0; i<6; i++){
 		carColors[i] = vec4(0.0, 1.0, 1.0, 1.0); //back
+		carNormals[i] = vec3(0, 0, 1);
 	}
 	carVerts[0] = vec4(CAR_WIDTH, -CAR_HEIGHT, CAR_LENGTH, 1.0);
 	carVerts[1] = vec4(CAR_WIDTH, CAR_HEIGHT, CAR_LENGTH, 1.0);
@@ -183,9 +184,9 @@ void generateCar(){
 	carVerts[4] = vec4(-CAR_WIDTH, -CAR_HEIGHT, CAR_LENGTH, 1.0);
 	carVerts[5] = vec4(CAR_WIDTH, -CAR_HEIGHT, CAR_LENGTH, 1.0);
 
-
 	for(int i=6; i<12; i++){
 		carColors[i] = vec4(0.0, 1.0, 0.0, 1.0); //front
+		carNormals[i] = vec3(0, 0, -1);
 	}
 	carVerts[6] = vec4(-CAR_WIDTH, -CAR_HEIGHT, -CAR_LENGTH, 1.0);
 	carVerts[7] = vec4(-CAR_WIDTH, CAR_HEIGHT, -CAR_LENGTH, 1.0);
@@ -196,6 +197,7 @@ void generateCar(){
 
 	for(int i=12; i<18; i++){
 		carColors[i] = vec4(1.0, 1.0, 0.0, 1.0); //left
+		carNormals[i] = vec3(1, 0, 0);
 	}
 	carVerts[12] = vec4(CAR_WIDTH, CAR_HEIGHT, CAR_LENGTH, 1.0);
 	carVerts[13] = vec4(CAR_WIDTH, -CAR_HEIGHT, CAR_LENGTH, 1.0);
@@ -206,6 +208,7 @@ void generateCar(){
 
 	for(int i=18; i<24; i++){
 		carColors[i] = vec4(1.0, 0.0, 0.0, 1.0); //right
+		carNormals[i] = vec3(-1, 0, 0);
 	}
 	carVerts[18] = vec4(-CAR_WIDTH, CAR_HEIGHT, -CAR_LENGTH, 1.0);
 	carVerts[19] = vec4(-CAR_WIDTH, -CAR_HEIGHT, -CAR_LENGTH, 1.0);
@@ -216,6 +219,7 @@ void generateCar(){
 
 	for(int i=24; i<30; i++){
 		carColors[i] = vec4(0.0, 0.0, 1.0, 1.0); //top
+		carNormals[i] = vec3(0, 1, 0);
 	}
 	carVerts[24] = vec4(CAR_WIDTH, CAR_HEIGHT, CAR_LENGTH, 1.0);
 	carVerts[25] = vec4(CAR_WIDTH, CAR_HEIGHT, -CAR_LENGTH, 1.0);
@@ -226,6 +230,7 @@ void generateCar(){
 
 	for(int i=30; i<36; i++){
 		carColors[i] = vec4(0.0, 1.0, 0.0, 1.0); //bottom
+		carNormals[i] = vec3(0, -1, 0);
 	}
 	carVerts[30] = vec4(CAR_WIDTH, -CAR_HEIGHT, -CAR_LENGTH, 1.0);
 	carVerts[31] = vec4(CAR_WIDTH, -CAR_HEIGHT, CAR_LENGTH, 1.0);
@@ -257,6 +262,12 @@ void generateCar(){
 	}
 
 	int i = 36;
+
+	for (int j = i; j < i+12; j++)
+	{
+		carNormals[j] = vec3(0, 0, 1);
+	}
+
 	// Front Racing Stipes
 	carVerts[i++] = vec4(CAR_WIDTH*.3, -CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
 	carVerts[i++] = vec4(CAR_WIDTH*.3, CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
@@ -270,6 +281,11 @@ void generateCar(){
 	carVerts[i++] = vec4(-CAR_WIDTH*.6, CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
 	carVerts[i++] = vec4(-CAR_WIDTH*.3, -CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
 	carVerts[i++] = vec4(-CAR_WIDTH*.6, -CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
+
+	for (int j = i; j < i+12; j++)
+	{
+		carNormals[j] = vec3(0, 1, 0);
+	}
 	
 	// Middle Racing Stripes
 	carVerts[i++] = vec4(CAR_WIDTH*.3, CAR_HEIGHT+.001, -CAR_LENGTH, 1.0);
@@ -285,6 +301,11 @@ void generateCar(){
 	carVerts[i++] = vec4(-CAR_WIDTH*.3, CAR_HEIGHT+.001, -CAR_LENGTH, 1.0);
 	carVerts[i++] = vec4(-CAR_WIDTH*.6, CAR_HEIGHT+.001, -CAR_LENGTH, 1.0);
 
+	for (int j = i; j < i+12; j++)
+	{
+		carNormals[j] = vec3(0, 0, 1);
+	}
+
 	// Back Racing Stripes
 	carVerts[i++] = vec4(CAR_WIDTH*.3, -CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
 	carVerts[i++] = vec4(CAR_WIDTH*.3, CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
@@ -298,12 +319,6 @@ void generateCar(){
 	carVerts[i++] = vec4(-CAR_WIDTH*.6, CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
 	carVerts[i++] = vec4(-CAR_WIDTH*.3, -CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
 	carVerts[i++] = vec4(-CAR_WIDTH*.6, -CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
-
-	for (int j = 0; j < i; j++)
-	{
-		carNormals[j] = vec3(carVerts[j].x, carVerts[j].y, carVerts[j].z);
-		
-	}
 }
 void generateStage()
 {
@@ -410,6 +425,7 @@ void generateWheel()
 	for (int i = 0; i < WHEEL_CONNECTOR_POINT_COUNT; i++)
 	{
 		wheelConColors[i] = vec4(0.05, 0.05, 0.05, 1.0);
+		//wheelConNormals[i] = vec3(wheelConVerts[i].x, wheelConVerts[i].y, wheelConVerts[i].z);
 		wheelConNormals[i] = vec3(wheelConVerts[i].x, wheelConVerts[i].y, wheelConVerts[i].z);
 		
 		float ambientFactor = 1.0;
