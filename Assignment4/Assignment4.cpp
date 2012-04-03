@@ -78,6 +78,7 @@ GLdouble steering = 0.0f;
 GLdouble headAngle = 180.0f;
 GLdouble wheelRollAngle = 0.0f;
 GLdouble wheelRollRate = 0.0f;
+GLdouble policeLightAngle = 0.0f;
 GLdouble carAngle = 0.0;
 GLdouble carAngleRate = 0.0;
 GLdouble xPosition = 0.0f;
@@ -119,7 +120,7 @@ vec4 wheelStripeColors[WHEEL_STRIPE_POINT_COUNT];
 vec4 wheelStripeAmbient[WHEEL_STRIPE_POINT_COUNT];
 vec4 wheelStripeDiffuse[WHEEL_STRIPE_POINT_COUNT];
 vec4 wheelStripeSpecular[WHEEL_STRIPE_POINT_COUNT];
-#define WHEEL_CONNECTOR_POINT_COUNT 360*6
+#define WHEEL_CONNECTOR_POINT_COUNT (360*6)+6
 vec4 wheelConVerts[WHEEL_CONNECTOR_POINT_COUNT];
 vec3 wheelConNormals[WHEEL_CONNECTOR_POINT_COUNT];
 vec4 wheelConColors[WHEEL_CONNECTOR_POINT_COUNT];
@@ -348,7 +349,7 @@ void generateStage()
 		stageColors[i] = vec4(0.25, 0.25, 0.25, 1.0);
 		stageNormals[i] = vec3(stageVerts[i].x, stageVerts[i].y, stageVerts[i].z);
 		
-		float ambientFactor = 1.0;
+		float ambientFactor = 0.7;
 		float diffuseFactor = 1.0;
 		float specularFactor = 0.2;
 		stageAmbient[i] = vec4(stageColors[i].x * ambientFactor, stageColors[i].y * ambientFactor, stageColors[i].z * ambientFactor, stageColors[i].w);
@@ -411,9 +412,9 @@ void generateWheel()
 		wheelConColors[i] = vec4(0.05, 0.05, 0.05, 1.0);
 		wheelConNormals[i] = vec3(wheelConVerts[i].x, wheelConVerts[i].y, wheelConVerts[i].z);
 		
-		float ambientFactor = 0.2;
-		float diffuseFactor = 0.2;
-		float specularFactor = 0.2;
+		float ambientFactor = 1.0;
+		float diffuseFactor = 2.0;
+		float specularFactor = 1.0;
 		wheelConAmbient[i] = vec4(wheelConColors[i].x * ambientFactor, wheelConColors[i].y * ambientFactor, wheelConColors[i].z * ambientFactor, wheelConColors[i].w);
 		wheelConDiffuse[i] = vec4(wheelConColors[i].x * diffuseFactor, wheelConColors[i].y * diffuseFactor, wheelConColors[i].z * diffuseFactor, wheelConColors[i].w);
 		wheelConSpecular[i] = vec4(wheelConColors[i].x * specularFactor, wheelConColors[i].y * specularFactor, wheelConColors[i].z * specularFactor, wheelConColors[i].w);
@@ -426,9 +427,9 @@ void generateWheel()
 	wheelStripeNormals[0] = vec3(-WHEEL_RADIUS*.75, -WHEEL_RADIUS*.75, WHEEL_THICKNESS+0.001);
 	wheelStripeNormals[1] = vec3(WHEEL_RADIUS*.75, -WHEEL_RADIUS*.75, WHEEL_THICKNESS+0.001);
 	wheelStripeNormals[2] = vec3(0.0, WHEEL_RADIUS*.75, WHEEL_THICKNESS+0.001);
-	wheelStripeColors[0] = vec4(0.0, 0.0, 0.0, 1.0);
-	wheelStripeColors[1] = vec4(0.0, 0.0, 0.0, 1.0);
-	wheelStripeColors[2] = vec4(0.0, 0.0, 0.0, 1.0);
+	wheelStripeColors[0] = vec4(1.0, 0.0, 0.0, 1.0);
+	wheelStripeColors[1] = vec4(0.0, 1.0, 0.0, 1.0);
+	wheelStripeColors[2] = vec4(0.0, 0.0, 1.0, 1.0);
 
 	for (int i = 0; i<3; i++)
 	{
@@ -497,7 +498,7 @@ void generateHead()
 	{
 		headColors[i] = vec4(1.0, 1.0, 1.0, 1.0);
 		headNormals[i] = vec3(headVerts[i].x, headVerts[i].y, headVerts[i].z);
-		float ambientFactor = 0.8;
+		float ambientFactor = 1.0;
 		float diffuseFactor = 1.0;
 		float specularFactor = 1.0;
 		headAmbient[i] = vec4(headColors[i].x * ambientFactor, headColors[i].y * ambientFactor, headColors[i].z * ambientFactor, headColors[i].w);
@@ -724,38 +725,76 @@ void display(void)
 	mv = mv*Translate(0.0, CAR_HEIGHT+WHEEL_RADIUS, 0.0);
 	mv = mv*Translate(xPosition, yPosition, zPosition);
 	mv = mv*RotateY(carAngle);
+	mat4 carCenter = mv;
 	mv = mv*Translate(-0.75*CAR_WIDTH, 0, -CAR_LENGTH);
-
-	//glUniform4fv(light_position, 1, mv*vec4(xPosition-(X*CAR_LENGTH), CAR_HEIGHT*1.5, zPosition-(Z*CAR_LENGTH), 1.0));
-	vec4 lightPos = mv*vec4(0, 0, 0, 1.0);
-
-	//mv = mv*Translate(0.75*CAR_WIDTH*2, 0, 0);
-	//vec4 lightPos = mv*vec4(0, 0, 0, 1.0);
-
-	glUniform4fv(light_position, 1, lightPos);
-
-	glUniform4fv(light_color, 1, vec4(1.0, 1.0, 1.0, 1.0));	// White light for now
-	//glUniform4fv(light_direction, 1, vec4(xPosition-(3*X*CAR_LENGTH), -3, zPosition-(3*Z*CAR_LENGTH), 0));
-	vec4 lightVector = mv*vec4(0,-10,-20, 1.0);
-	//lightVector.y = -4;
-	lightVector = lightPos - lightVector;
+	mat4 lights[4];
+	lights[0] = mv;
+	int numLightsToSend = 1;
+	vec4 lightPos[4];
+	vec4 lightVector[4];
+	lightPos[0] = mv*vec4(0, 0, 0, 1.0);
+	lightVector[0] = mv*vec4(0,-10,-20, 1.0);
+	lightVector[0] = lightVector[0]*-1;
 	
-	lightVector.w = 0;
-	glUniform4fv(light_direction, 1, lightVector);
+	mv = mv*Translate(0.75*CAR_WIDTH*2, 0, 0);
+	lightPos[1] = mv*vec4(0, 0, 0, 1.0);
+	lights[1] = mv;
+	lightVector[1] = mv*vec4(0,-10,-20, 1.0);
+	lightVector[1] = lightVector[1]*-1;
+
+	mv = carCenter;
+	mv = mv*Translate(-CAR_WIDTH, CAR_HEIGHT, 0);
+	mv = mv*RotateY(policeLightAngle);
+	lights[2] = mv;
+	lightVector[2] = mv*vec4(-20,-10,0, 1.0);
+	lightVector[2] = lightVector[2]*-1;
+
+
+	mv = carCenter;
+	mv = mv*Translate(CAR_WIDTH, CAR_HEIGHT, 0);
+	mv = mv*RotateY(-policeLightAngle);
+	lights[3] = mv;
+	lightVector[3] = mv*vec4(20,-10, 0, 1.0);
+	lightVector[3] = lightVector[3]*-1;
+
+	glUniform4fv(light_position, numLightsToSend, lightPos[0]);
+	vec4 lightColor[4];
+	lightColor[0] = vec4(1.0, 1.0, 1.0, 1.0);
+	lightColor[1] = vec4(1.0, 1.0, 1.0, 1.0);
+	if (copLightsOn)
+	{
+		lightColor[2] = vec4(1.0, 0.0, 0.0, 1.0);
+		lightColor[3] = vec4(0.0, 0.0, 1.0, 1.0);
+	}
+	else
+	{
+		lightColor[2] = vec4(0.0, 0.0, 0.0, 1.0);
+		lightColor[3] = vec4(0.0, 0.0, 0.0, 1.0);
+	}
+	glUniform4fv(light_color, numLightsToSend, lightColor[0]);	// White light for now
+	//glUniform4fv(light_direction, 1, vec4(xPosition-(3*X*CAR_LENGTH), -3, zPosition-(3*Z*CAR_LENGTH), 0));
+
+	//lightVector.y = -4;
+	//lightVector[0] = lightPos[0] - lightVector[0];
+	
+	lightVector[0].w = 0;
+	glUniform4fv(light_direction, numLightsToSend, lightVector[0]);
 	//glUniform4fv(light_cuttoffangle, 1, vec4( (M_PI*20) / 180, 0, 0, 0));	// Just using x as the angle for now
 	//float cutoffangle = 20.0;
 	float cutoffangle[4] = {(M_PI*20)/180, (M_PI*20)/180, (M_PI*90)/180, (M_PI*90)/180};
-	glUniform1fv(light_cuttoffangle, 1, cutoffangle);	// Just using x as the angle for now
+	glUniform1fv(light_cuttoffangle, numLightsToSend, cutoffangle);	// Just using x as the angle for now
 	//glUniform4fv(light_position, 1, mv*vec4(0, 10, 0, 1.0));
 	//glUniform4fv(light_direction, 1, vec4(0, 1, 0, 0));
 
 	/* Debug to draw a white ball where the light position is at */
 	//mv = original;
 	//mv = mv*Translate(0, 0, -CAR_LENGTH); 
-	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
-	glBindVertexArray( vao[HEAD] );
-	glDrawArrays(GL_TRIANGLES, 0, headVertCount);
-
+	for (int i = 0; i < 4; i++)
+	{
+		glUniformMatrix4fv(model_view, 1, GL_TRUE, lights[i]);
+		glBindVertexArray( vao[HEAD] );
+		glDrawArrays(GL_TRIANGLES, 0, headVertCount);
+	}
 
 	mv = original;
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
@@ -1322,6 +1361,11 @@ void my_timer(int v)
 			temp *= -1;
 		}
 		carAngle += temp * 0.03;	// Throttle back the angle as well.
+	}
+
+	if (copLightsOn)
+	{
+		policeLightAngle += 5.0;
 	}
 
 	/* Checks to see if we are off the stage.  
