@@ -47,7 +47,7 @@ vec3 fvLightDirection = normalize(light_direction[0].xyz);
 		specular = vec4(0, 0, 0, 1); // Certain positionings cause problems (being on wrong side of object), test for it, throw it out
 	}
 
-	//fColor = ambient + diffuse + specular;
-	fColor = vec4(N, 1);
+	fColor = ambient + diffuse + specular;
+	//fColor = vec4(N, 1);		// Debugging - Check the normals out
 	fColor.a = 1.0;
 }
