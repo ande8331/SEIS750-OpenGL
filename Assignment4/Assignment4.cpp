@@ -347,7 +347,7 @@ void generateStage()
 	for (int i = 0; i < 36; i++)
 	{
 		stageColors[i] = vec4(0.25, 0.25, 0.25, 1.0);
-		stageNormals[i] = vec3(stageVerts[i].x, stageVerts[i].y, stageVerts[i].z);
+		stageNormals[i] = vec3(0, 1, 0);
 		
 		float ambientFactor = 1.0;
 		float diffuseFactor = 4.0;
@@ -831,19 +831,19 @@ void display(void)
 	mv = mv*Translate(20, 0, -20);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[PYLON] );
-	glDrawArrays( GL_TRIANGLES, PYLON_POINT_COUNT, PYLON_POINT_COUNT*2 );
+	glDrawArrays( GL_TRIANGLES, PYLON_POINT_COUNT, PYLON_POINT_COUNT );
 
 	mv = original;
 	mv = mv*Translate(20, 0, 20);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[PYLON] );
-	glDrawArrays( GL_TRIANGLES, PYLON_POINT_COUNT*2, PYLON_POINT_COUNT*3 );
+	glDrawArrays( GL_TRIANGLES, PYLON_POINT_COUNT*2, PYLON_POINT_COUNT );
 
 	mv = original;
 	mv = mv*Translate(-20, 0, 20);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[PYLON] );
-	glDrawArrays( GL_TRIANGLES, PYLON_POINT_COUNT*3, PYLON_POINT_COUNT*4 );
+	glDrawArrays( GL_TRIANGLES, PYLON_POINT_COUNT*3, PYLON_POINT_COUNT );
 
 	mv = original;
 	mv = mv*Translate(0.0, CAR_HEIGHT+(WHEEL_RADIUS), 0.0);

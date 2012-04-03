@@ -13,6 +13,7 @@ in vec4 fvAmbientLight;
 in vec4 fvLightColor;
 in vec4 fvLightPosition;
 uniform float light_cutoffangle[4];
+uniform vec4 light_direction[4];
 
 in vec3 vL;
 in vec3 vLD;
@@ -25,8 +26,8 @@ void main()
 	vec3 E = normalize (position.xyz);
 	vec3 N = normalize (vN);
 	vec3 H = normalize (L+E);
-	vec3 fvLightDirection = normalize (vLD);
-
+//	vec3 fvLightDirection = normalize (vLD);
+vec3 fvLightDirection = normalize(light_direction[0].xyz);
 	vec4 ambient = fvAmbient * fvAmbientLight;
 	//vec4 ambient = fvAmbientLight*color;
 	//ambient = color;
@@ -46,6 +47,7 @@ void main()
 		specular = vec4(0, 0, 0, 1); // Certain positionings cause problems (being on wrong side of object), test for it, throw it out
 	}
 
-	fColor = ambient + diffuse + specular;
+	//fColor = ambient + diffuse + specular;
+	fColor = vec4(N, 1);
 	fColor.a = 1.0;
 }
