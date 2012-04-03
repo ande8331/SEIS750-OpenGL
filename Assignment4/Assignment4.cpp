@@ -258,7 +258,6 @@ void generateCar(){
 		carAmbient[i] = vec4(carColors[i].x * ambientFactor, carColors[i].y * ambientFactor, carColors[i].z * ambientFactor, carColors[i].w);
 		carDiffuse[i] = vec4(carColors[i].x * diffuseFactor, carColors[i].y * diffuseFactor, carColors[i].z * diffuseFactor, carColors[i].w);
 		carSpecular[i] = vec4(carColors[i].x * specularFactor, carColors[i].y * specularFactor, carColors[i].z * specularFactor, carColors[i].w);
-
 	}
 
 	int i = 36;
@@ -397,7 +396,7 @@ void generateWheel()
 	}
 
 	wheelVerts[0] = vec4(0.0, 0.0, WHEEL_THICKNESS, 1.0);
-	wheelNormals[0] = vec3(wheelVerts[0].x, wheelVerts[0].y, wheelVerts[0].z);
+	wheelNormals[0] = vec3(0, 0, 1);
 	wheelVerts[0+WHEEL_POINT_COUNT] = vec4(0.0, 0.0, -WHEEL_THICKNESS, 1.0);
 	wheelNormals[0+WHEEL_POINT_COUNT] = vec3(wheelVerts[0+WHEEL_POINT_COUNT].x, wheelVerts[0+WHEEL_POINT_COUNT].y, wheelVerts[0+WHEEL_POINT_COUNT].z);
 
@@ -408,9 +407,9 @@ void generateWheel()
 		float X = cos(Angle)*WHEEL_RADIUS;
 		float Y = sin(Angle)*WHEEL_RADIUS;
 		wheelVerts[i] = vec4(X, Y, 0.5, 1.0);
-		wheelNormals[i] = vec3(wheelVerts[i].x, wheelVerts[i].y, wheelVerts[i].z);
+		wheelNormals[i] = vec3(0, 0, 1);
 		wheelVerts[i+WHEEL_POINT_COUNT] = vec4(X, Y, -WHEEL_THICKNESS, 1.0);
-		wheelNormals[i+WHEEL_POINT_COUNT] = vec3(wheelVerts[i+WHEEL_POINT_COUNT].x, wheelVerts[i+WHEEL_POINT_COUNT].y, wheelVerts[i+WHEEL_POINT_COUNT].z);
+		wheelNormals[i+WHEEL_POINT_COUNT] = vec3(0, 0, -1);
 		Angle = i * (2.0*M_PI/180);
 		float XNext = cos(Angle) * WHEEL_RADIUS;
 		float YNext = sin(Angle) * WHEEL_RADIUS;
@@ -426,7 +425,7 @@ void generateWheel()
 	{
 		wheelConColors[i] = vec4(0.05, 0.05, 0.05, 1.0);
 		//wheelConNormals[i] = vec3(wheelConVerts[i].x, wheelConVerts[i].y, wheelConVerts[i].z);
-		wheelConNormals[i] = vec3(wheelConVerts[i].x, wheelConVerts[i].y, wheelConVerts[i].z);
+		wheelConNormals[i] = vec3(wheelConVerts[i].x, wheelConVerts[i].y, 0);
 		
 		float ambientFactor = 1.0;
 		float diffuseFactor = 2.0;
@@ -440,9 +439,9 @@ void generateWheel()
 	wheelStripeVerts[0] = vec4(-WHEEL_RADIUS*.75, -WHEEL_RADIUS*.75, WHEEL_THICKNESS+0.001, 1.0);
 	wheelStripeVerts[1] = vec4(WHEEL_RADIUS*.75, -WHEEL_RADIUS*.75, WHEEL_THICKNESS+0.001, 1.0);
 	wheelStripeVerts[2] = vec4(0.0, WHEEL_RADIUS*.75, WHEEL_THICKNESS+0.001, 1.0);
-	wheelStripeNormals[0] = vec3(-WHEEL_RADIUS*.75, -WHEEL_RADIUS*.75, WHEEL_THICKNESS+0.001);
-	wheelStripeNormals[1] = vec3(WHEEL_RADIUS*.75, -WHEEL_RADIUS*.75, WHEEL_THICKNESS+0.001);
-	wheelStripeNormals[2] = vec3(0.0, WHEEL_RADIUS*.75, WHEEL_THICKNESS+0.001);
+	wheelStripeNormals[0] = vec3(0, 0, 1);
+	wheelStripeNormals[1] = vec3(0, 0, 1);
+	wheelStripeNormals[2] = vec3(0, 0, 1);
 	wheelStripeColors[0] = vec4(1.0, 0.0, 0.0, 1.0);
 	wheelStripeColors[1] = vec4(0.0, 1.0, 0.0, 1.0);
 	wheelStripeColors[2] = vec4(0.0, 0.0, 1.0, 1.0);
@@ -595,36 +594,73 @@ void generatePylon()
 {
 	for (int i = 0; i < 4; i++)
 	{
+		int j = 0;
+		for (; j < 6; j++)
+		{
+			pylonNormals[i][j] = vec3(0, 0, 1);
+		}
 		pylonVerts[i][0] = vec4(PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
 		pylonVerts[i][1] = vec4(PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
 		pylonVerts[i][2] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
 		pylonVerts[i][3] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
 		pylonVerts[i][4] = vec4(-PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
 		pylonVerts[i][5] = vec4(PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
+
+		for (; j < 12; j++)
+		{
+			pylonNormals[i][j] = vec3(0, 0, -1);
+		}
+
 		pylonVerts[i][6] = vec4(-PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][7] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][8] = vec4(PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][9] = vec4(PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][10] = vec4(PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][11] = vec4(-PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
+
+		for (; j < 18; j++)
+		{
+			pylonNormals[i][j] = vec3(1, 0, 0);
+		}
+
 		pylonVerts[i][12] = vec4(PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
 		pylonVerts[i][13] = vec4(PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
 		pylonVerts[i][14] = vec4(PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][15] = vec4(PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][16] = vec4(PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][17] = vec4(PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
+
+		for (; j < 24; j++)
+		{
+			pylonNormals[i][j] = vec3(-1, 0, 0);
+		}
+
 		pylonVerts[i][18] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][19] = vec4(-PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][20] = vec4(-PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
 		pylonVerts[i][21] = vec4(-PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
 		pylonVerts[i][22] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
 		pylonVerts[i][23] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
+
+		for (; j < 30; j++)
+		{
+			pylonNormals[i][j] = vec3(0, 1, 0);
+		}
+
+
 		pylonVerts[i][24] = vec4(PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
 		pylonVerts[i][25] = vec4(PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][26] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][27] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][28] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
 		pylonVerts[i][29] = vec4(PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
+
+		for (; j < 26; j++)
+		{
+			pylonNormals[i][j] = vec3(0, -1, 0);
+		}
+
+
 		pylonVerts[i][30] = vec4(PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][31] = vec4(PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
 		pylonVerts[i][32] = vec4(-PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
@@ -641,7 +677,7 @@ void generatePylon()
 
 		for (int j=0; j < 4; j++)
 		{
-			pylonNormals[j][i] = vec3(pylonVerts[j][i].x, pylonVerts[j][i].y, pylonVerts[j][i].z);
+			//pylonNormals[j][i] = vec3(pylonVerts[j][i].x, pylonVerts[j][i].y, pylonVerts[j][i].z);
 
 			float ambientFactor = 0.8;
 			float diffuseFactor = 1.0;
