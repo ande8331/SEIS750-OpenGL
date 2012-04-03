@@ -729,19 +729,26 @@ void display(void)
 	mv = mv*Translate(-0.75*CAR_WIDTH, 0, -CAR_LENGTH);
 	mat4 lights[4];
 	lights[0] = mv;
-	int numLightsToSend = 1;
+
 	vec4 lightPos[4];
 	vec4 lightVector[4];
+	vec4 lightColor[4];
+
+	// Left Headlight
 	lightPos[0] = mv*vec4(0, 0, 0, 1.0);
 	lightVector[0] = mv*vec4(0,-10,-20, 1.0);
 	lightVector[0] = lightVector[0]*-1;
+	lightColor[0] = vec4(1.0, 1.0, 1.0, 1.0);
 	
+	// Right Headlight
 	mv = mv*Translate(0.75*CAR_WIDTH*2, 0, 0);
 	lightPos[1] = mv*vec4(0, 0, 0, 1.0);
 	lights[1] = mv;
 	lightVector[1] = mv*vec4(0,-10,-20, 1.0);
 	lightVector[1] = lightVector[1]*-1;
+	lightColor[1] = vec4(1.0, 1.0, 1.0, 1.0);
 
+	// Red Police Light
 	mv = carCenter;
 	mv = mv*Translate(-CAR_WIDTH, CAR_HEIGHT, 0);
 	mv = mv*RotateY(policeLightAngle);
@@ -750,7 +757,7 @@ void display(void)
 	lightVector[2] = mv*vec4(-20,-10,0, 1.0);
 	lightVector[2] = lightVector[2]*-1;
 
-
+	// Blue Police Light
 	mv = carCenter;
 	mv = mv*Translate(CAR_WIDTH, CAR_HEIGHT, 0);
 	mv = mv*RotateY(-policeLightAngle);
@@ -759,14 +766,7 @@ void display(void)
 	lightVector[3] = mv*vec4(20,-10, 0, 1.0);
 	lightVector[3] = lightVector[3]*-1;
 
-	for (int i = 0; i < numLightsToSend; i++)
-	{
-		glUniform4fv(light_position[i], 1, lightPos[i]);
-	}
-
-	vec4 lightColor[4];
-	lightColor[0] = vec4(1.0, 1.0, 1.0, 1.0);
-	lightColor[1] = vec4(1.0, 1.0, 1.0, 1.0);
+		
 	if (copLightsOn)
 	{
 		lightColor[2] = vec4(1.0, 0.0, 0.0, 1.0);
@@ -778,34 +778,39 @@ void display(void)
 		lightColor[3] = vec4(0.0, 0.0, 0.0, 1.0);
 	}
 
-	for (int i = 0; i < numLightsToSend; i++)
-	{
-		glUniform4fv(light_color[i], 1, lightColor[i]);	// White light for now
-	}
-	//glUniform4fv(light_direction, 1, vec4(xPosition-(3*X*CAR_LENGTH), -3, zPosition-(3*Z*CAR_LENGTH), 0));
+	float tmp[4*4];
 
-	//lightVector.y = -4;
-	//lightVector[0] = lightPos[0] - lightVector[0];
-	
-	lightVector[0].w = 0;
-
-	for (int i = 0; i < numLightsToSend; i++)
+	for (int i = 0; i < 4; i++)
 	{
-		glUniform4fv(light_direction[i], 1, lightVector[i]);
+		tmp[(i*4)] = lightPos[i].x;
+		tmp[(i*4)+1] = lightPos[i].y;
+		tmp[(i*4)+2] = lightPos[i].z;
+		tmp[(i*4)+3] = lightPos[i].w;
 	}
-	//glUniform4fv(light_cuttoffangle, 1, vec4( (M_PI*20) / 180, 0, 0, 0));	// Just using x as the angle for now
-	//float cutoffangle = 20.0;
+	glUniform4fv(light_position[0], 4, tmp);
+
+	for (int i = 0; i < 4; i++)
+	{
+		tmp[(i*4)] = lightColor[i].x;
+		tmp[(i*4)+1] = lightColor[i].y;
+		tmp[(i*4)+2] = lightColor[i].z;
+		tmp[(i*4)+3] = lightColor[i].w;
+	}
+	glUniform4fv(light_color[0], 4, tmp);
+
+	for (int i = 0; i < 4; i++)
+	{
+		tmp[(i*4)] = lightVector[i].x;
+		tmp[(i*4)+1] = lightVector[i].y;
+		tmp[(i*4)+2] = lightVector[i].z;
+		tmp[(i*4)+3] = lightVector[i].w;
+	}
+	glUniform4fv(light_direction[0], 4, tmp);
+
 	float cutoffangle[4] = {(M_PI*20)/180, (M_PI*20)/180, (M_PI*90)/180, (M_PI*90)/180};
-	for (int i = 0; i < numLightsToSend; i++)
-	{
-		glUniform1f(light_cuttoffangle[i], cutoffangle[i]);	// Just using x as the angle for now
-	}
-	//glUniform4fv(light_position, 1, mv*vec4(0, 10, 0, 1.0));
-	//glUniform4fv(light_direction, 1, vec4(0, 1, 0, 0));
+	glUniform1fv(light_cuttoffangle[0], 4, cutoffangle);
 
-	/* Debug to draw a white ball where the light position is at */
-	//mv = original;
-	//mv = mv*Translate(0, 0, -CAR_LENGTH); 
+	/* Debug to draw a white ball where each light position is at */ 
 	for (int i = 0; i < 4; i++)
 	{
 		glUniformMatrix4fv(model_view, 1, GL_TRUE, lights[i]);

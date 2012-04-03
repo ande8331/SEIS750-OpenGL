@@ -12,7 +12,7 @@ in vec4 fvSpecular;
 in vec4 fvAmbientLight;
 in vec4 fvLightColor;
 in vec4 fvLightPosition;
-uniform float light_cutoffangle;
+uniform float light_cutoffangle[4];
 
 in vec3 vL;
 in vec3 vLD;
@@ -33,7 +33,7 @@ void main()
 	vec4 diffuse = vec4(0,0,0,1);
 	vec4 specular = vec4(0,0,0,1);
 
-	if(dot(L, fvLightDirection.xyz) > cos(light_cutoffangle))
+	if(dot(L, fvLightDirection.xyz) > cos(light_cutoffangle[0]))
 	{
 		//diffuse = vec4(1.0, 1.0, 1.0, 1.0);
 		diffuse = fvLightColor * fvDiffuse * max(0.0, dot(L, N));

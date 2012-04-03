@@ -9,9 +9,9 @@ uniform mat4 projection;
 uniform vec4 ambient_light;
 out vec4 color;
 
-uniform vec4 light_position;
-uniform vec4 light_color;
-uniform vec4 light_direction;
+uniform vec4 light_position[4];
+uniform vec4 light_color[4];
+uniform vec4 light_direction[4];
 //uniform vec4 light_cutoffangle;
 
 in vec4 vAmbient;
@@ -40,11 +40,11 @@ main()
 {
 	veyepos = model_view*vPosition;
 	vec4 normal = vec4(vNormal, 0);		// Converts the vec3 to a vec4
-	vec3 L = normalize( light_position.xyz - veyepos.xyz ); // use vec3 because it works better in a dot product
+	vec3 L = normalize( light_position[0].xyz - veyepos.xyz ); // use vec3 because it works better in a dot product
 	
 	vec3 N = normalize(( model_view * normal).xyz);  // apply any mv transformations to the normal (needed to be vec4 to allow 4x4 to multiply it
 	
-	vec3 LD = normalize(light_direction.xyz);
+	vLD = normalize(light_direction[0].xyz);
 
     gl_Position = projection*model_view*vPosition;
 	position = veyepos;
@@ -55,15 +55,15 @@ main()
 	fvAmbientLight = ambient_light;
 
 	// Spot
-	fvLightColor=light_color;
+	fvLightColor=light_color[0];
 	//fvLightCutoffangle =light_cutoffangle;
-	fvLightPosition = light_position;
+	fvLightPosition = light_position[0];
 
 	fvPosition = vPosition;
 
 	vN = N;
 	vL = L;
-	vLD = LD;
+	//vLD = LD;
 	fvAmbient = vAmbient;
 	fvDiffuse = vDiffuse;
 	fvSpecular = vSpecular;
