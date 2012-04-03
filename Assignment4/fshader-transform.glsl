@@ -5,7 +5,9 @@ in vec3 vN;
 in vec4 position;
 in vec4 fvPosition;
 
-uniform vec4 vAmbient, vDiffuse, vSpecular;
+in vec4 fvAmbient;
+in vec4 fvDiffuse;
+in vec4 fvSpecular;
 
 in vec4 fvAmbientLight;
 in vec4 fvLightColor;
@@ -23,9 +25,8 @@ void main()
 	vec3 fvLightDirection = normalize (vLD);
 
 	// This is the line it should be, but it goes completely black right now	
-	//vec4 ambient = vAmbient * fvAmbientLight;
-	vec4 ambient = fvAmbientLight*color;
-
+	vec4 ambient = fvAmbient * fvAmbientLight;
+	//vec4 ambient = fvAmbientLight*color;
 	vec4 diffuse = vec4(0,0,0,1);
 	vec4 specular = vec4(0,0,0,0);
 	
@@ -39,8 +40,9 @@ void main()
 	if(dot(L, fvLightDirection.xyz) > cos(fvLightCutoffangle))
 	//if(dot(L, fvLightDirection.xyz) > 0.94)
 	{
-		diffuse = vec4(1.0, 1.0, 1.0, 1.0);
-		//diffuse = fvLightColor * color * max(0.0, dot(L, N));
+		//diffuse = vec4(1.0, 1.0, 1.0, 1.0);
+		diffuse = fvLightColor * fvDiffuse * max(0.0, dot(L, N));
+		//diffuse = color * max(0.0, dot(L, N));
 	}
 
 	if (dot (L, N) < 0)

@@ -348,8 +348,8 @@ void generateStage()
 		stageColors[i] = vec4(0.25, 0.25, 0.25, 1.0);
 		stageNormals[i] = vec3(stageVerts[i].x, stageVerts[i].y, stageVerts[i].z);
 		
-		float ambientFactor = 0.2;
-		float diffuseFactor = 0.8;
+		float ambientFactor = 1.0;
+		float diffuseFactor = 1.0;
 		float specularFactor = 0.2;
 		stageAmbient[i] = vec4(stageColors[i].x * ambientFactor, stageColors[i].y * ambientFactor, stageColors[i].z * ambientFactor, stageColors[i].w);
 		stageDiffuse[i] = vec4(stageColors[i].x * diffuseFactor, stageColors[i].y * diffuseFactor, stageColors[i].z * diffuseFactor, stageColors[i].w);
@@ -711,7 +711,7 @@ void display(void)
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
 
 	// Setup the ambient light
-	glUniform4fv(ambient_light, 1, vec4(0.1, 0.1, 0.2, 1));
+	glUniform4fv(ambient_light, 1, vec4(0.3, 0.3, 0.3, 1));
 	//glVertexAttrib4fv(vAmbientDiffuseColor, vec4(0, 0.5, 0, 1));
 
 		float Angle = (M_PI*(carAngle)/180);
@@ -724,23 +724,28 @@ void display(void)
 	mv = mv*Translate(0.0, CAR_HEIGHT+WHEEL_RADIUS, 0.0);
 	mv = mv*Translate(xPosition, yPosition, zPosition);
 	mv = mv*RotateY(carAngle);
-	mv = mv*Translate(0, 0, -CAR_LENGTH);
+	mv = mv*Translate(-0.75*CAR_WIDTH, 0, -CAR_LENGTH);
 
 	//glUniform4fv(light_position, 1, mv*vec4(xPosition-(X*CAR_LENGTH), CAR_HEIGHT*1.5, zPosition-(Z*CAR_LENGTH), 1.0));
 	vec4 lightPos = mv*vec4(0, 0, 0, 1.0);
+
+	//mv = mv*Translate(0.75*CAR_WIDTH*2, 0, 0);
+	//vec4 lightPos = mv*vec4(0, 0, 0, 1.0);
+
 	glUniform4fv(light_position, 1, lightPos);
+
 	glUniform4fv(light_color, 1, vec4(1.0, 1.0, 1.0, 1.0));	// White light for now
 	//glUniform4fv(light_direction, 1, vec4(xPosition-(3*X*CAR_LENGTH), -3, zPosition-(3*Z*CAR_LENGTH), 0));
-	vec4 lightVector = mv*vec4(0,0,-10, 1.0);
-	lightVector.y = -4;
+	vec4 lightVector = mv*vec4(0,-10,-20, 1.0);
+	//lightVector.y = -4;
 	lightVector = lightPos - lightVector;
 	
 	lightVector.w = 0;
 	glUniform4fv(light_direction, 1, lightVector);
 	//glUniform4fv(light_cuttoffangle, 1, vec4( (M_PI*20) / 180, 0, 0, 0));	// Just using x as the angle for now
 	//float cutoffangle = 20.0;
-	float cutoffangle = (M_PI*20)/180;
-	glUniform1f(light_cuttoffangle, cutoffangle);	// Just using x as the angle for now
+	float cutoffangle[4] = {(M_PI*20)/180, (M_PI*20)/180, (M_PI*90)/180, (M_PI*90)/180};
+	glUniform1fv(light_cuttoffangle, 1, cutoffangle);	// Just using x as the angle for now
 	//glUniform4fv(light_position, 1, mv*vec4(0, 10, 0, 1.0));
 	//glUniform4fv(light_direction, 1, vec4(0, 1, 0, 0));
 
@@ -1039,17 +1044,17 @@ void init()
 	glBufferData( GL_ARRAY_BUFFER, sizeof(carAmbient), carAmbient, GL_STATIC_DRAW );
 	vAmbient = glGetAttribLocation(program, "vAmbient");
 	glEnableVertexAttribArray(vAmbient);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vAmbient, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(carDiffuse), carDiffuse, GL_STATIC_DRAW );
 	vDiffuse = glGetAttribLocation(program, "vDiffuse");
 	glEnableVertexAttribArray(vDiffuse);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vDiffuse, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(carSpecular), carSpecular, GL_STATIC_DRAW );
 	vSpecular = glGetAttribLocation(program, "vSpecular");
 	glEnableVertexAttribArray(vSpecular);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[STAGE] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -1071,17 +1076,17 @@ void init()
 	glBufferData( GL_ARRAY_BUFFER, sizeof(stageAmbient), stageAmbient, GL_STATIC_DRAW );
 	vAmbient = glGetAttribLocation(program, "vAmbient");
 	glEnableVertexAttribArray(vAmbient);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vAmbient, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(stageDiffuse), stageDiffuse, GL_STATIC_DRAW );
 	vDiffuse = glGetAttribLocation(program, "vDiffuse");
 	glEnableVertexAttribArray(vDiffuse);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vDiffuse, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(stageSpecular), stageSpecular, GL_STATIC_DRAW );
 	vSpecular = glGetAttribLocation(program, "vSpecular");
 	glEnableVertexAttribArray(vSpecular);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[WHEEL] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -1103,17 +1108,17 @@ void init()
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelAmbient), wheelAmbient, GL_STATIC_DRAW );
 	vAmbient = glGetAttribLocation(program, "vAmbient");
 	glEnableVertexAttribArray(vAmbient);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vAmbient, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelDiffuse), wheelDiffuse, GL_STATIC_DRAW );
 	vDiffuse = glGetAttribLocation(program, "vDiffuse");
 	glEnableVertexAttribArray(vDiffuse);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vDiffuse, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelSpecular), wheelSpecular, GL_STATIC_DRAW );
 	vSpecular = glGetAttribLocation(program, "vSpecular");
 	glEnableVertexAttribArray(vSpecular);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 
 	glBindVertexArray( vao[HEAD] );
@@ -1136,17 +1141,17 @@ void init()
 	glBufferData( GL_ARRAY_BUFFER, sizeof(headAmbient), headAmbient, GL_STATIC_DRAW );
 	vAmbient = glGetAttribLocation(program, "vAmbient");
 	glEnableVertexAttribArray(vAmbient);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vAmbient, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(headDiffuse), headDiffuse, GL_STATIC_DRAW );
 	vDiffuse = glGetAttribLocation(program, "vDiffuse");
 	glEnableVertexAttribArray(vDiffuse);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vDiffuse, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(headSpecular), headSpecular, GL_STATIC_DRAW );
 	vSpecular = glGetAttribLocation(program, "vSpecular");
 	glEnableVertexAttribArray(vSpecular);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[EYE] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -1168,17 +1173,17 @@ void init()
 	glBufferData( GL_ARRAY_BUFFER, sizeof(eyeAmbient), eyeAmbient, GL_STATIC_DRAW );
 	vAmbient = glGetAttribLocation(program, "vAmbient");
 	glEnableVertexAttribArray(vAmbient);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vAmbient, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(eyeDiffuse), eyeDiffuse, GL_STATIC_DRAW );
 	vDiffuse = glGetAttribLocation(program, "vDiffuse");
 	glEnableVertexAttribArray(vDiffuse);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vDiffuse, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(eyeSpecular), eyeSpecular, GL_STATIC_DRAW );
 	vSpecular = glGetAttribLocation(program, "vSpecular");
 	glEnableVertexAttribArray(vSpecular);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[WHEEL_STRIPE] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -1200,17 +1205,17 @@ void init()
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelStripeAmbient), wheelStripeAmbient, GL_STATIC_DRAW );
 	vAmbient = glGetAttribLocation(program, "vAmbient");
 	glEnableVertexAttribArray(vAmbient);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vAmbient, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelStripeDiffuse), wheelStripeDiffuse, GL_STATIC_DRAW );
 	vDiffuse = glGetAttribLocation(program, "vDiffuse");
 	glEnableVertexAttribArray(vDiffuse);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vDiffuse, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelStripeSpecular), wheelStripeSpecular, GL_STATIC_DRAW );
 	vSpecular = glGetAttribLocation(program, "vSpecular");
 	glEnableVertexAttribArray(vSpecular);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[WHEEL_CONNECTORS] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -1232,17 +1237,17 @@ void init()
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelAmbient), wheelAmbient, GL_STATIC_DRAW );
 	vAmbient = glGetAttribLocation(program, "vAmbient");
 	glEnableVertexAttribArray(vAmbient);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vAmbient, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelDiffuse), wheelDiffuse, GL_STATIC_DRAW );
 	vDiffuse = glGetAttribLocation(program, "vDiffuse");
 	glEnableVertexAttribArray(vDiffuse);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vDiffuse, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelSpecular), wheelSpecular, GL_STATIC_DRAW );
 	vSpecular = glGetAttribLocation(program, "vSpecular");
 	glEnableVertexAttribArray(vSpecular);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[PYLON] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -1264,17 +1269,17 @@ void init()
 	glBufferData( GL_ARRAY_BUFFER, sizeof(pylonAmbient), pylonAmbient, GL_STATIC_DRAW );
 	vAmbient = glGetAttribLocation(program, "vAmbient");
 	glEnableVertexAttribArray(vAmbient);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vAmbient, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(pylonDiffuse), pylonDiffuse, GL_STATIC_DRAW );
 	vDiffuse = glGetAttribLocation(program, "vDiffuse");
 	glEnableVertexAttribArray(vDiffuse);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vDiffuse, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(pylonSpecular), pylonSpecular, GL_STATIC_DRAW );
 	vSpecular = glGetAttribLocation(program, "vSpecular");
 	glEnableVertexAttribArray(vSpecular);
-	glVertexAttribPointer(vAmbient, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	//grab pointers for our modelview and perspecive uniform matrices
 	model_view = glGetUniformLocation(program, "model_view");

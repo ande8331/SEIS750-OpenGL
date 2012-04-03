@@ -14,6 +14,12 @@ uniform vec4 light_color;
 uniform vec4 light_direction;
 //uniform vec4 light_cutoffangle;
 
+in vec4 vAmbient, vDiffuse, vSpecular;
+out vec4 fvAmbient;
+out vec4 fvDiffuse;
+out vec4 fvSpecular;
+
+
 out vec4 fvAmbientLight;
 
 out vec4 fvLightColor;
@@ -52,4 +58,7 @@ main()
 	vN = N;
 	vL = L;
 	vLD = LD;
+	fvAmbient = vAmbient;
+	fvDiffuse = vDiffuse;
+	fvSpecular = vSpecular;
 }
