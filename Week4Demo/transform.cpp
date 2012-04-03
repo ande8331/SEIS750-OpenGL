@@ -49,12 +49,15 @@ void generateCube(){
 		cubeColors[i] = vec4(0.0, 1.0, 1.0, 1.0); //front
 	}
 	
-	cubeVerts[0] = vec4(1.0f, -1.0f, 1.0f, 1.0);
-	cubeVerts[1] = vec4(1.0f, 1.0f, 1.0f, 1.0);
-	cubeVerts[2] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
-	cubeVerts[3] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
-	cubeVerts[4] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
 	cubeVerts[5] = vec4(1.0f, -1.0f, 1.0f, 1.0);
+	cubeVerts[4] = vec4(1.0f, 1.0f, 1.0f, 1.0);
+	cubeVerts[3] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
+	cubeVerts[2] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
+	cubeVerts[1] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
+	cubeVerts[0] = vec4(1.0f, -1.0f, 1.0f, 1.0);
+
+	glCullFace(GL_FRONT);
+	glEnable(GL_CULL_FACE);
 
 	cubeColors[0] = vec4(0.0, 1.0, 1.0, 1.0);
 	cubeColors[1] = vec4(0.0, 1.0, 1.0, 1.0);
