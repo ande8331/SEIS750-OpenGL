@@ -27,16 +27,18 @@ out vec4 fvAmbientLight;
 out vec4 fvLightColor;
 //out vec4 fvLightDirection;
 //out vec4 fvLightCutoffangle;
+out vec4 fvLightPosition;
 out vec4 position;
 out vec3 vN;
 out vec4 fvPosition;
 out vec3 vL;
 out vec3 vLD;
+out vec4 veyepos;
 
 void
 main()
 {
-	vec4 veyepos = model_view*vPosition;
+	veyepos = model_view*vPosition;
 	vec4 normal = vec4(vNormal, 0);		// Converts the vec3 to a vec4
 	vec3 L = normalize( light_position.xyz - veyepos.xyz ); // use vec3 because it works better in a dot product
 	
@@ -55,6 +57,8 @@ main()
 	// Spot
 	fvLightColor=light_color;
 	//fvLightCutoffangle =light_cutoffangle;
+	fvLightPosition = light_position;
+
 	fvPosition = vPosition;
 
 	vN = N;

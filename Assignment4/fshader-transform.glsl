@@ -11,22 +11,25 @@ in vec4 fvSpecular;
 
 in vec4 fvAmbientLight;
 in vec4 fvLightColor;
+in vec4 fvLightPosition;
 uniform float light_cutoffangle;
 
 in vec3 vL;
 in vec3 vLD;
+in vec4 veyepos;
 
 void main()
 {
-	vec3 L = normalize(vL);
+	//vec3 L = normalize(vL);
+	vec3 L = normalize( fvLightPosition.xyz - veyepos.xyz ); // use vec3 because it works better in a dot product
 	vec3 E = normalize (position.xyz);
 	vec3 N = normalize (vN);
 	vec3 H = normalize (L+E);
 	vec3 fvLightDirection = normalize (vLD);
 
-	// This is the line it should be, but it goes completely black right now	
 	vec4 ambient = fvAmbient * fvAmbientLight;
 	//vec4 ambient = fvAmbientLight*color;
+	//ambient = color;
 	vec4 diffuse = vec4(0,0,0,1);
 	vec4 specular = vec4(0,0,0,1);
 
@@ -35,6 +38,7 @@ void main()
 		//diffuse = vec4(1.0, 1.0, 1.0, 1.0);
 		diffuse = fvLightColor * fvDiffuse * max(0.0, dot(L, N));
 		//diffuse = color * max(0.0, dot(L, N));
+		//diffuse = color;
 	}
 
 	if (dot (L, N) < 0)

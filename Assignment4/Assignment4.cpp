@@ -55,10 +55,10 @@ GLuint vSpecular;
 GLuint ambient_light;
 GLuint vAmbientDiffuseColor;
 
-GLuint light_position;
-GLuint light_color;
-GLuint light_direction;
-GLuint light_cuttoffangle;
+GLuint light_position[4];
+GLuint light_color[4];
+GLuint light_direction[4];
+GLuint light_cuttoffangle[4];
 
 /* Not all the t,r,s globals used at this point, but leave them in in case they are
 needed for viewing in debug mode */
@@ -349,8 +349,8 @@ void generateStage()
 		stageColors[i] = vec4(0.25, 0.25, 0.25, 1.0);
 		stageNormals[i] = vec3(stageVerts[i].x, stageVerts[i].y, stageVerts[i].z);
 		
-		float ambientFactor = 0.7;
-		float diffuseFactor = 1.0;
+		float ambientFactor = 1.0;
+		float diffuseFactor = 4.0;
 		float specularFactor = 0.2;
 		stageAmbient[i] = vec4(stageColors[i].x * ambientFactor, stageColors[i].y * ambientFactor, stageColors[i].z * ambientFactor, stageColors[i].w);
 		stageDiffuse[i] = vec4(stageColors[i].x * diffuseFactor, stageColors[i].y * diffuseFactor, stageColors[i].z * diffuseFactor, stageColors[i].w);
@@ -745,6 +745,7 @@ void display(void)
 	mv = carCenter;
 	mv = mv*Translate(-CAR_WIDTH, CAR_HEIGHT, 0);
 	mv = mv*RotateY(policeLightAngle);
+	lightPos[2] = mv*vec4(0, 0, 0, 1.0);
 	lights[2] = mv;
 	lightVector[2] = mv*vec4(-20,-10,0, 1.0);
 	lightVector[2] = lightVector[2]*-1;
@@ -753,11 +754,16 @@ void display(void)
 	mv = carCenter;
 	mv = mv*Translate(CAR_WIDTH, CAR_HEIGHT, 0);
 	mv = mv*RotateY(-policeLightAngle);
+	lightPos[3] = mv*vec4(0, 0, 0, 1.0);
 	lights[3] = mv;
 	lightVector[3] = mv*vec4(20,-10, 0, 1.0);
 	lightVector[3] = lightVector[3]*-1;
 
-	glUniform4fv(light_position, numLightsToSend, lightPos[0]);
+	for (int i = 0; i < numLightsToSend; i++)
+	{
+		glUniform4fv(light_position[i], 1, lightPos[i]);
+	}
+
 	vec4 lightColor[4];
 	lightColor[0] = vec4(1.0, 1.0, 1.0, 1.0);
 	lightColor[1] = vec4(1.0, 1.0, 1.0, 1.0);
@@ -771,18 +777,29 @@ void display(void)
 		lightColor[2] = vec4(0.0, 0.0, 0.0, 1.0);
 		lightColor[3] = vec4(0.0, 0.0, 0.0, 1.0);
 	}
-	glUniform4fv(light_color, numLightsToSend, lightColor[0]);	// White light for now
+
+	for (int i = 0; i < numLightsToSend; i++)
+	{
+		glUniform4fv(light_color[i], 1, lightColor[i]);	// White light for now
+	}
 	//glUniform4fv(light_direction, 1, vec4(xPosition-(3*X*CAR_LENGTH), -3, zPosition-(3*Z*CAR_LENGTH), 0));
 
 	//lightVector.y = -4;
 	//lightVector[0] = lightPos[0] - lightVector[0];
 	
 	lightVector[0].w = 0;
-	glUniform4fv(light_direction, numLightsToSend, lightVector[0]);
+
+	for (int i = 0; i < numLightsToSend; i++)
+	{
+		glUniform4fv(light_direction[i], 1, lightVector[i]);
+	}
 	//glUniform4fv(light_cuttoffangle, 1, vec4( (M_PI*20) / 180, 0, 0, 0));	// Just using x as the angle for now
 	//float cutoffangle = 20.0;
 	float cutoffangle[4] = {(M_PI*20)/180, (M_PI*20)/180, (M_PI*90)/180, (M_PI*90)/180};
-	glUniform1fv(light_cuttoffangle, numLightsToSend, cutoffangle);	// Just using x as the angle for now
+	for (int i = 0; i < numLightsToSend; i++)
+	{
+		glUniform1f(light_cuttoffangle[i], cutoffangle[i]);	// Just using x as the angle for now
+	}
 	//glUniform4fv(light_position, 1, mv*vec4(0, 10, 0, 1.0));
 	//glUniform4fv(light_direction, 1, vec4(0, 1, 0, 0));
 
@@ -839,8 +856,7 @@ void display(void)
 	mv = mv*RotateY(headAngle);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[HEAD] );
-	//glDrawArrays( GL_LINE_LOOP, 0, HEAD_POINT_COUNT );    // draw the head 
-	glDrawArrays(GL_TRIANGLES, 0, headVertCount);
+	glDrawArrays(GL_TRIANGLES, 0, headVertCount); // draw the head 
 	
 	mat4 headOriginal = mv;
 	mv = mv*Translate(.4*HEAD_RADIUS, 0.0, HEAD_RADIUS);
@@ -1327,10 +1343,13 @@ void init()
 	ambient_light = glGetUniformLocation(program, "ambient_light");
 	vAmbientDiffuseColor = glGetAttribLocation(program, "vAmbientDiffuseColor");
 
-	light_position = glGetUniformLocation(program, "light_position");
-	light_color = glGetUniformLocation(program, "light_color");
-	light_direction = glGetUniformLocation(program, "light_direction");
-	light_cuttoffangle = glGetUniformLocation(program, "light_cutoffangle");
+	for (int i = 0; i < 4; i++)
+	{
+		light_position[i] = glGetUniformLocation(program, "light_position");
+		light_color[i] = glGetUniformLocation(program, "light_color");
+		light_direction[i] = glGetUniformLocation(program, "light_direction");
+		light_cuttoffangle[i] = glGetUniformLocation(program, "light_cutoffangle");
+	}
 
 	//Only draw the things in the front layer
 	glEnable(GL_DEPTH_TEST);
