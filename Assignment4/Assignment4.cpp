@@ -55,10 +55,10 @@ GLuint vSpecular;
 GLuint ambient_light;
 GLuint vAmbientDiffuseColor;
 
-GLuint light_position[4];
-GLuint light_color[4];
-GLuint light_direction[4];
-GLuint light_cuttoffangle[4];
+GLuint light_position;
+GLuint light_color;
+GLuint light_direction;
+GLuint light_cuttoffangle;
 
 /* Not all the t,r,s globals used at this point, but leave them in in case they are
 needed for viewing in debug mode */
@@ -727,15 +727,15 @@ void display(void)
 	mv = mv*RotateY(carAngle);
 	mat4 carCenter = mv;
 	mv = mv*Translate(-0.75*CAR_WIDTH, 0, -CAR_LENGTH);
-	mat4 lights[4];
-	lights[0] = mv;
-
+	
+	mat4 lights[4];		// Track the point of each light for placing a ball there later
 	vec4 lightPos[4];
 	vec4 lightVector[4];
 	vec4 lightColor[4];
 
 	// Left Headlight
 	lightPos[0] = mv*vec4(0, 0, 0, 1.0);
+	lights[0] = mv;
 	lightVector[0] = mv*vec4(0,-10,-20, 1.0);
 	lightVector[0] = lightVector[0]*-1;
 	lightColor[0] = vec4(1.0, 1.0, 1.0, 1.0);
@@ -765,7 +765,6 @@ void display(void)
 	lights[3] = mv;
 	lightVector[3] = mv*vec4(20,-10, 0, 1.0);
 	lightVector[3] = lightVector[3]*-1;
-
 		
 	if (copLightsOn)
 	{
@@ -787,7 +786,7 @@ void display(void)
 		tmp[(i*4)+2] = lightPos[i].z;
 		tmp[(i*4)+3] = lightPos[i].w;
 	}
-	glUniform4fv(light_position[0], 4, tmp);
+	glUniform4fv(light_position, 4, tmp);
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -796,7 +795,7 @@ void display(void)
 		tmp[(i*4)+2] = lightColor[i].z;
 		tmp[(i*4)+3] = lightColor[i].w;
 	}
-	glUniform4fv(light_color[0], 4, tmp);
+	glUniform4fv(light_color, 4, tmp);
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -805,10 +804,10 @@ void display(void)
 		tmp[(i*4)+2] = lightVector[i].z;
 		tmp[(i*4)+3] = lightVector[i].w;
 	}
-	glUniform4fv(light_direction[0], 4, tmp);
+	glUniform4fv(light_direction, 4, tmp);
 
 	float cutoffangle[4] = {(M_PI*20)/180, (M_PI*20)/180, (M_PI*90)/180, (M_PI*90)/180};
-	glUniform1fv(light_cuttoffangle[0], 4, cutoffangle);
+	glUniform1fv(light_cuttoffangle, 4, cutoffangle);
 
 	/* Debug to draw a white ball where each light position is at */ 
 	for (int i = 0; i < 4; i++)
@@ -1348,13 +1347,10 @@ void init()
 	ambient_light = glGetUniformLocation(program, "ambient_light");
 	vAmbientDiffuseColor = glGetAttribLocation(program, "vAmbientDiffuseColor");
 
-	for (int i = 0; i < 4; i++)
-	{
-		light_position[i] = glGetUniformLocation(program, "light_position");
-		light_color[i] = glGetUniformLocation(program, "light_color");
-		light_direction[i] = glGetUniformLocation(program, "light_direction");
-		light_cuttoffangle[i] = glGetUniformLocation(program, "light_cutoffangle");
-	}
+	light_position = glGetUniformLocation(program, "light_position");
+	light_color = glGetUniformLocation(program, "light_color");
+	light_direction = glGetUniformLocation(program, "light_direction");
+	light_cuttoffangle = glGetUniformLocation(program, "light_cutoffangle");
 
 	//Only draw the things in the front layer
 	glEnable(GL_DEPTH_TEST);
