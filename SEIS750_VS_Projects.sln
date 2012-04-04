@@ -1,8 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SEIS750_VS_Projects", "SEIS750_VS_Projects\SEIS750_VS_Projects.vcxproj", "{3290E3D5-9E79-44EC-9D68-1F823B2AD3EA}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Week3Demo", "Week3Demo\Week3Demo.vcxproj", "{502CAC51-080F-48FA-AD5D-1967E34B26BB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Assignment1", "Assignment1\Assignment1.vcxproj", "{76DC83ED-DF98-4466-9831-21B45587D36D}"
@@ -23,16 +21,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Assignment4", "Assignment4\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Week7Demo", "Week7Demo\Week7Demo.vcxproj", "{B4E2030C-F353-4520-8565-7893EC4BF003}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Week9Demo-Alpha", "Week9Demo-Alpha\Week9Demo-Alpha.vcxproj", "{013B3F59-D5E6-4DC8-987F-53E01B401E56}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3290E3D5-9E79-44EC-9D68-1F823B2AD3EA}.Debug|Win32.ActiveCfg = Debug|Win32
-		{3290E3D5-9E79-44EC-9D68-1F823B2AD3EA}.Debug|Win32.Build.0 = Debug|Win32
-		{3290E3D5-9E79-44EC-9D68-1F823B2AD3EA}.Release|Win32.ActiveCfg = Release|Win32
-		{3290E3D5-9E79-44EC-9D68-1F823B2AD3EA}.Release|Win32.Build.0 = Release|Win32
 		{502CAC51-080F-48FA-AD5D-1967E34B26BB}.Debug|Win32.ActiveCfg = Debug|Win32
 		{502CAC51-080F-48FA-AD5D-1967E34B26BB}.Debug|Win32.Build.0 = Debug|Win32
 		{502CAC51-080F-48FA-AD5D-1967E34B26BB}.Release|Win32.ActiveCfg = Release|Win32
@@ -73,6 +69,10 @@ Global
 		{B4E2030C-F353-4520-8565-7893EC4BF003}.Debug|Win32.Build.0 = Debug|Win32
 		{B4E2030C-F353-4520-8565-7893EC4BF003}.Release|Win32.ActiveCfg = Release|Win32
 		{B4E2030C-F353-4520-8565-7893EC4BF003}.Release|Win32.Build.0 = Release|Win32
+		{013B3F59-D5E6-4DC8-987F-53E01B401E56}.Debug|Win32.ActiveCfg = Debug|Win32
+		{013B3F59-D5E6-4DC8-987F-53E01B401E56}.Debug|Win32.Build.0 = Debug|Win32
+		{013B3F59-D5E6-4DC8-987F-53E01B401E56}.Release|Win32.ActiveCfg = Release|Win32
+		{013B3F59-D5E6-4DC8-987F-53E01B401E56}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

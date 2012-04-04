@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{3290E3D5-9E79-44EC-9D68-1F823B2AD3EA}</ProjectGuid>
-    <RootNamespace>SEIS750_VS_Projects</RootNamespace>
+    <ProjectGuid>{62FAAA29-951C-4AFD-A878-174B3A9CEB5D}</ProjectGuid>
+    <RootNamespace>EarlyWeekDemo</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -60,6 +60,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="hello.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
