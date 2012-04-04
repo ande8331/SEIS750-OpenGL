@@ -1,6 +1,7 @@
 /*
 * Assignment 2 (Car) - Ross Anderson
 * Assignment 3 (Car with Camera Work)
+* Assignment 4 (Car with Camera Work and Lighting)
 * SEIS750
 * Spring 2012
 **/
@@ -19,6 +20,9 @@ typedef enum
 	STAGE,
 	WHEEL,
 	HEAD,
+	HEAD_LIGHT,
+	RED_LIGHT,
+	BLUE_LIGHT,
 	EYE,
 	WHEEL_STRIPE,
 	WHEEL_CONNECTORS,
@@ -35,7 +39,7 @@ typedef enum
 } cameraAnglesEnum;
 
 GLuint vao[VAO_COUNT];
-GLuint vbo[VAO_COUNT*2];  // Two vbo's per vao may not always be true, but for now it is
+GLuint vbo[VAO_COUNT*7];
 
 //our modelview and perspective matrices
 mat4 mv, p;
@@ -45,6 +49,20 @@ GLuint model_view;
 GLuint projection;
 GLuint vPosition;
 GLuint vColor;
+GLuint vNormal;
+GLuint vAmbient;
+GLuint vDiffuse;
+GLuint vSpecular;
+GLuint vSpecularExponent;
+
+//Ambient Light Pointers
+GLuint ambient_light;
+GLuint vAmbientDiffuseColor;
+
+GLuint light_position;
+GLuint light_color;
+GLuint light_direction;
+GLuint light_cuttoffangle;
 
 /* Not all the t,r,s globals used at this point, but leave them in in case they are
 needed for viewing in debug mode */
@@ -64,6 +82,7 @@ GLdouble steering = 0.0f;
 GLdouble headAngle = 180.0f;
 GLdouble wheelRollAngle = 0.0f;
 GLdouble wheelRollRate = 0.0f;
+GLdouble policeLightAngle = 0.0f;
 GLdouble carAngle = 0.0;
 GLdouble carAngleRate = 0.0;
 GLdouble xPosition = 0.0f;
@@ -75,31 +94,84 @@ GLdouble zoom = 45;
 GLdouble dolly = 50;
 cameraAnglesEnum camera = STATIC_CAMERA;
 bool staticCameraCenterOfStage = true;
+bool copLightsOn = false;
 
 #define CAR_POINT_COUNT 72
 vec4 carVerts[CAR_POINT_COUNT];
+vec3 carNormals[CAR_POINT_COUNT];
 vec4 carColors[CAR_POINT_COUNT];
+vec4 carAmbient[CAR_POINT_COUNT];
+vec4 carDiffuse[CAR_POINT_COUNT];
+vec4 carSpecular[CAR_POINT_COUNT];
+float carSpecExp[CAR_POINT_COUNT];
 #define STAGE_POINT_COUNT 36
 vec4 stageVerts[STAGE_POINT_COUNT];
+vec3 stageNormals[STAGE_POINT_COUNT];
 vec4 stageColors[STAGE_POINT_COUNT];
+vec4 stageAmbient[STAGE_POINT_COUNT];
+vec4 stageDiffuse[STAGE_POINT_COUNT];
+vec4 stageSpecular[STAGE_POINT_COUNT];
+float stageSpecExp[STAGE_POINT_COUNT];
 #define WHEEL_POINT_COUNT 362
 vec4 wheelVerts[WHEEL_POINT_COUNT*2];
+vec3 wheelNormals[WHEEL_POINT_COUNT*2];
 vec4 wheelColors[WHEEL_POINT_COUNT*2];
+vec4 wheelAmbient[WHEEL_POINT_COUNT*2];
+vec4 wheelDiffuse[WHEEL_POINT_COUNT*2];
+vec4 wheelSpecular[WHEEL_POINT_COUNT*2];
+float wheelSpecExp[WHEEL_POINT_COUNT*2];
 #define WHEEL_STRIPE_POINT_COUNT 3
 vec4 wheelStripeVerts[WHEEL_STRIPE_POINT_COUNT];
+vec3 wheelStripeNormals[WHEEL_STRIPE_POINT_COUNT];
 vec4 wheelStripeColors[WHEEL_STRIPE_POINT_COUNT];
-#define WHEEL_CONNECTOR_POINT_COUNT 360*6
+vec4 wheelStripeAmbient[WHEEL_STRIPE_POINT_COUNT];
+vec4 wheelStripeDiffuse[WHEEL_STRIPE_POINT_COUNT];
+vec4 wheelStripeSpecular[WHEEL_STRIPE_POINT_COUNT];
+float wheelStripeSpecExp[WHEEL_STRIPE_POINT_COUNT];
+#define WHEEL_CONNECTOR_POINT_COUNT (360*6)+6
 vec4 wheelConVerts[WHEEL_CONNECTOR_POINT_COUNT];
+vec3 wheelConNormals[WHEEL_CONNECTOR_POINT_COUNT];
 vec4 wheelConColors[WHEEL_CONNECTOR_POINT_COUNT];
+vec4 wheelConAmbient[WHEEL_CONNECTOR_POINT_COUNT];
+vec4 wheelConDiffuse[WHEEL_CONNECTOR_POINT_COUNT];
+vec4 wheelConSpecular[WHEEL_CONNECTOR_POINT_COUNT];
+float wheelConSpecExp[WHEEL_CONNECTOR_POINT_COUNT];
 int headVertCount;
 vec4* headVerts;
+vec3* headNormals;
 vec4 *headColors;
+vec4* headAmbient;
+vec4* headDiffuse;
+vec4* headSpecular;
+float* headSpecExp;
+vec4* headLightAmbient;
+vec4* headLightDiffuse;
+vec4* headLightSpecular;
+float* headLightSpecExp;
+vec4* redLightAmbient;
+vec4* redLightDiffuse;
+vec4* redLightSpecular;
+float* redLightSpecExp;
+vec4* blueLightAmbient;
+vec4* blueLightDiffuse;
+vec4* blueLightSpecular;
+float* blueLightSpecExp;
 int eyeVertCount;
 vec4* eyeVerts;
+vec3* eyeNormals;
 vec4* eyeColors;
+vec4* eyeAmbient;
+vec4* eyeDiffuse;
+vec4* eyeSpecular;
+float* eyeSpecExp;
 #define PYLON_POINT_COUNT 36
 vec4 pylonVerts[4][PYLON_POINT_COUNT];
+vec3 pylonNormals[4][PYLON_POINT_COUNT];
 vec4 pylonColors[4][PYLON_POINT_COUNT];
+vec4 pylonAmbient[4][PYLON_POINT_COUNT];
+vec4 pylonDiffuse[4][PYLON_POINT_COUNT];
+vec4 pylonSpecular[4][PYLON_POINT_COUNT];
+float pylonSpecExp[4][PYLON_POINT_COUNT];
 
 #define CAR_WIDTH 2.5
 #define CAR_HEIGHT 2.
@@ -127,6 +199,7 @@ vec4 pylonColors[4][PYLON_POINT_COUNT];
 void generateCar(){
 	for(int i=0; i<6; i++){
 		carColors[i] = vec4(0.0, 1.0, 1.0, 1.0); //back
+		carNormals[i] = vec3(0, 0, 1);
 	}
 	carVerts[0] = vec4(CAR_WIDTH, -CAR_HEIGHT, CAR_LENGTH, 1.0);
 	carVerts[1] = vec4(CAR_WIDTH, CAR_HEIGHT, CAR_LENGTH, 1.0);
@@ -135,9 +208,9 @@ void generateCar(){
 	carVerts[4] = vec4(-CAR_WIDTH, -CAR_HEIGHT, CAR_LENGTH, 1.0);
 	carVerts[5] = vec4(CAR_WIDTH, -CAR_HEIGHT, CAR_LENGTH, 1.0);
 
-
 	for(int i=6; i<12; i++){
 		carColors[i] = vec4(0.0, 1.0, 0.0, 1.0); //front
+		carNormals[i] = vec3(0, 0, -1);
 	}
 	carVerts[6] = vec4(-CAR_WIDTH, -CAR_HEIGHT, -CAR_LENGTH, 1.0);
 	carVerts[7] = vec4(-CAR_WIDTH, CAR_HEIGHT, -CAR_LENGTH, 1.0);
@@ -148,6 +221,7 @@ void generateCar(){
 
 	for(int i=12; i<18; i++){
 		carColors[i] = vec4(1.0, 1.0, 0.0, 1.0); //left
+		carNormals[i] = vec3(1, 0, 0);
 	}
 	carVerts[12] = vec4(CAR_WIDTH, CAR_HEIGHT, CAR_LENGTH, 1.0);
 	carVerts[13] = vec4(CAR_WIDTH, -CAR_HEIGHT, CAR_LENGTH, 1.0);
@@ -158,6 +232,7 @@ void generateCar(){
 
 	for(int i=18; i<24; i++){
 		carColors[i] = vec4(1.0, 0.0, 0.0, 1.0); //right
+		carNormals[i] = vec3(-1, 0, 0);
 	}
 	carVerts[18] = vec4(-CAR_WIDTH, CAR_HEIGHT, -CAR_LENGTH, 1.0);
 	carVerts[19] = vec4(-CAR_WIDTH, -CAR_HEIGHT, -CAR_LENGTH, 1.0);
@@ -168,6 +243,7 @@ void generateCar(){
 
 	for(int i=24; i<30; i++){
 		carColors[i] = vec4(0.0, 0.0, 1.0, 1.0); //top
+		carNormals[i] = vec3(0, 1, 0);
 	}
 	carVerts[24] = vec4(CAR_WIDTH, CAR_HEIGHT, CAR_LENGTH, 1.0);
 	carVerts[25] = vec4(CAR_WIDTH, CAR_HEIGHT, -CAR_LENGTH, 1.0);
@@ -178,6 +254,7 @@ void generateCar(){
 
 	for(int i=30; i<36; i++){
 		carColors[i] = vec4(0.0, 1.0, 0.0, 1.0); //bottom
+		carNormals[i] = vec3(0, -1, 0);
 	}
 	carVerts[30] = vec4(CAR_WIDTH, -CAR_HEIGHT, -CAR_LENGTH, 1.0);
 	carVerts[31] = vec4(CAR_WIDTH, -CAR_HEIGHT, CAR_LENGTH, 1.0);
@@ -186,12 +263,36 @@ void generateCar(){
 	carVerts[34] = vec4(-CAR_WIDTH, -CAR_HEIGHT, -CAR_LENGTH, 1.0);
 	carVerts[35] = vec4(CAR_WIDTH, -CAR_HEIGHT, -CAR_LENGTH, 1.0);
 
+	for (int i = 0; i < 36; i++)
+	{
+		float ambientFactor = 0.3;
+		float diffuseFactor = 0.5;
+		float specularFactor = 0.5;
+		carAmbient[i] = vec4(carColors[i].x * ambientFactor, carColors[i].y * ambientFactor, carColors[i].z * ambientFactor, carColors[i].w);
+		carDiffuse[i] = vec4(carColors[i].x * diffuseFactor, carColors[i].y * diffuseFactor, carColors[i].z * diffuseFactor, carColors[i].w);
+		carSpecular[i] = vec4(carColors[i].x * specularFactor, carColors[i].y * specularFactor, carColors[i].z * specularFactor, carColors[i].w);
+		carSpecExp[i] = 0.5;
+	}
+
 	for(int i=36; i<72; i++){
 		carColors[i] = vec4(1.0, 1.0, 1.0, 1.0);
+
+		float ambientFactor = 0.2;
+		float diffuseFactor = 0.4;
+		float specularFactor = 0.4;
+		carAmbient[i] = vec4(carColors[i].x * ambientFactor, carColors[i].y * ambientFactor, carColors[i].z * ambientFactor, carColors[i].w);
+		carDiffuse[i] = vec4(carColors[i].x * diffuseFactor, carColors[i].y * diffuseFactor, carColors[i].z * diffuseFactor, carColors[i].w);
+		carSpecular[i] = vec4(carColors[i].x * specularFactor, carColors[i].y * specularFactor, carColors[i].z * specularFactor, carColors[i].w);
+		carSpecExp[i] = 2000;
 	}
 
 	int i = 36;
+
 	// Front Racing Stipes
+	for (int j = i; j < i+12; j++)
+	{
+		carNormals[j] = vec3(0, 0, 1);
+	}
 	carVerts[i++] = vec4(CAR_WIDTH*.3, -CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
 	carVerts[i++] = vec4(CAR_WIDTH*.3, CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
 	carVerts[i++] = vec4(CAR_WIDTH*.6, CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
@@ -204,8 +305,12 @@ void generateCar(){
 	carVerts[i++] = vec4(-CAR_WIDTH*.6, CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
 	carVerts[i++] = vec4(-CAR_WIDTH*.3, -CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
 	carVerts[i++] = vec4(-CAR_WIDTH*.6, -CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
-	
+
 	// Middle Racing Stripes
+	for (int j = i; j < i+12; j++)
+	{
+		carNormals[j] = vec3(0, 1, 0);
+	}
 	carVerts[i++] = vec4(CAR_WIDTH*.3, CAR_HEIGHT+.001, -CAR_LENGTH, 1.0);
 	carVerts[i++] = vec4(CAR_WIDTH*.3, CAR_HEIGHT+.001, CAR_LENGTH, 1.0);
 	carVerts[i++] = vec4(CAR_WIDTH*.6, CAR_HEIGHT+.001, CAR_LENGTH, 1.0);
@@ -220,6 +325,10 @@ void generateCar(){
 	carVerts[i++] = vec4(-CAR_WIDTH*.6, CAR_HEIGHT+.001, -CAR_LENGTH, 1.0);
 
 	// Back Racing Stripes
+	for (int j = i; j < i+12; j++)
+	{
+		carNormals[j] = vec3(0, 0, 1);
+	}	
 	carVerts[i++] = vec4(CAR_WIDTH*.3, -CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
 	carVerts[i++] = vec4(CAR_WIDTH*.3, CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
 	carVerts[i++] = vec4(CAR_WIDTH*.6, CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
@@ -233,10 +342,8 @@ void generateCar(){
 	carVerts[i++] = vec4(-CAR_WIDTH*.3, -CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
 	carVerts[i++] = vec4(-CAR_WIDTH*.6, -CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
 }
-void generateStage(){
-	for(int i=0; i<36; i++){
-		stageColors[i] = vec4(0.25, 0.25, 0.25, 1.0);
-	}
+void generateStage()
+{
 	stageVerts[0] = vec4(STAGE_WIDTH, -STAGE_HEIGHT, STAGE_DEPTH, 1.0);
 	stageVerts[1] = vec4(STAGE_WIDTH, STAGE_HEIGHT, STAGE_DEPTH, 1.0);
 	stageVerts[2] = vec4(-STAGE_WIDTH, STAGE_HEIGHT, STAGE_DEPTH, 1.0);
@@ -273,13 +380,40 @@ void generateStage(){
 	stageVerts[33] = vec4(-STAGE_WIDTH, -STAGE_HEIGHT, STAGE_DEPTH, 1.0);
 	stageVerts[34] = vec4(-STAGE_WIDTH, -STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
 	stageVerts[35] = vec4(STAGE_WIDTH, -STAGE_HEIGHT, -STAGE_DEPTH, 1.0);
+
+	for (int i = 0; i < 36; i++)
+	{
+		stageColors[i] = vec4(0.25, 0.25, 0.25, 1.0);
+		stageNormals[i] = vec3(0, 1, 0);
+		
+		float ambientFactor = 1.0;
+		float diffuseFactor = 1.0;
+		float specularFactor = 1.0;
+		stageAmbient[i] = vec4(stageColors[i].x * ambientFactor, stageColors[i].y * ambientFactor, stageColors[i].z * ambientFactor, stageColors[i].w);
+		stageDiffuse[i] = vec4(stageColors[i].x * diffuseFactor, stageColors[i].y * diffuseFactor, stageColors[i].z * diffuseFactor, stageColors[i].w);
+		stageSpecular[i] = vec4(stageColors[i].x * specularFactor, stageColors[i].y * specularFactor, stageColors[i].z * specularFactor, stageColors[i].w);
+		stageSpecExp[i] = 2;
+	}
 }
 void generateWheel()
 {
+	float wheel_ambient, wheel_diffuse, wheel_specular;
+	wheel_ambient = 0.3;
+	wheel_diffuse = 0.1;
+	wheel_specular = 0.9;
+
 	int i;
 	for (i = 0; i < WHEEL_POINT_COUNT; i++)
 	{
 		wheelColors[i] = vec4(0.75, 0.75, 0.75, 1.0);
+
+		float ambientFactor = 0.8;
+		float diffuseFactor = 1.0;
+		float specularFactor = 1.0;
+		wheelAmbient[i] = vec4(wheelColors[i].x * ambientFactor, wheelColors[i].y * ambientFactor, wheelColors[i].z * ambientFactor, wheelColors[i].w);
+		wheelDiffuse[i] = vec4(wheelColors[i].x * diffuseFactor, wheelColors[i].y * diffuseFactor, wheelColors[i].z * diffuseFactor, wheelColors[i].w);
+		wheelSpecular[i] = vec4(wheelColors[i].x * specularFactor, wheelColors[i].y * specularFactor, wheelColors[i].z * specularFactor, wheelColors[i].w);
+		wheelSpecExp[i] = 0.3;
 	}
 	for ( ; i < WHEEL_POINT_COUNT*2; i++)
 	{
@@ -287,7 +421,10 @@ void generateWheel()
 	}
 
 	wheelVerts[0] = vec4(0.0, 0.0, WHEEL_THICKNESS, 1.0);
+	wheelNormals[0] = vec3(0, 0, 1);
 	wheelVerts[0+WHEEL_POINT_COUNT] = vec4(0.0, 0.0, -WHEEL_THICKNESS, 1.0);
+	wheelNormals[0+WHEEL_POINT_COUNT] = vec3(wheelVerts[0+WHEEL_POINT_COUNT].x, wheelVerts[0+WHEEL_POINT_COUNT].y, wheelVerts[0+WHEEL_POINT_COUNT].z);
+
 	int connectorCount = 0;
 	for ( i = 1; i < WHEEL_POINT_COUNT; i++)
 	{
@@ -295,7 +432,9 @@ void generateWheel()
 		float X = cos(Angle)*WHEEL_RADIUS;
 		float Y = sin(Angle)*WHEEL_RADIUS;
 		wheelVerts[i] = vec4(X, Y, 0.5, 1.0);
+		wheelNormals[i] = vec3(0, 0, 1);
 		wheelVerts[i+WHEEL_POINT_COUNT] = vec4(X, Y, -WHEEL_THICKNESS, 1.0);
+		wheelNormals[i+WHEEL_POINT_COUNT] = vec3(0, 0, -1);
 		Angle = i * (2.0*M_PI/180);
 		float XNext = cos(Angle) * WHEEL_RADIUS;
 		float YNext = sin(Angle) * WHEEL_RADIUS;
@@ -310,18 +449,38 @@ void generateWheel()
 	for (int i = 0; i < WHEEL_CONNECTOR_POINT_COUNT; i++)
 	{
 		wheelConColors[i] = vec4(0.05, 0.05, 0.05, 1.0);
+		wheelConNormals[i] = vec3(wheelConVerts[i].x, wheelConVerts[i].y, wheelConVerts[i].z);
+		
+		float ambientFactor = 1.0;
+		float diffuseFactor = 2.0;
+		float specularFactor = 1.0;
+		wheelConAmbient[i] = vec4(wheelConColors[i].x * ambientFactor, wheelConColors[i].y * ambientFactor, wheelConColors[i].z * ambientFactor, wheelConColors[i].w);
+		wheelConDiffuse[i] = vec4(wheelConColors[i].x * diffuseFactor, wheelConColors[i].y * diffuseFactor, wheelConColors[i].z * diffuseFactor, wheelConColors[i].w);
+		wheelConSpecular[i] = vec4(wheelConColors[i].x * specularFactor, wheelConColors[i].y * specularFactor, wheelConColors[i].z * specularFactor, wheelConColors[i].w);
+		wheelConSpecExp[i] = 0.1;
 	}
-
 
 	wheelStripeVerts[0] = vec4(-WHEEL_RADIUS*.75, -WHEEL_RADIUS*.75, WHEEL_THICKNESS+0.001, 1.0);
 	wheelStripeVerts[1] = vec4(WHEEL_RADIUS*.75, -WHEEL_RADIUS*.75, WHEEL_THICKNESS+0.001, 1.0);
 	wheelStripeVerts[2] = vec4(0.0, WHEEL_RADIUS*.75, WHEEL_THICKNESS+0.001, 1.0);
-	wheelStripeColors[0] = vec4(0.0, 0.0, 0.0, 1.0);
-	wheelStripeColors[1] = vec4(0.0, 0.0, 0.0, 1.0);
-	wheelStripeColors[2] = vec4(0.0, 0.0, 0.0, 1.0);
+	wheelStripeNormals[0] = vec3(0, 0, 1);
+	wheelStripeNormals[1] = vec3(0, 0, 1);
+	wheelStripeNormals[2] = vec3(0, 0, 1);
+	wheelStripeColors[0] = vec4(1.0, 0.0, 0.0, 1.0);
+	wheelStripeColors[1] = vec4(0.0, 1.0, 0.0, 1.0);
+	wheelStripeColors[2] = vec4(0.0, 0.0, 1.0, 1.0);
 
+	for (int i = 0; i<3; i++)
+	{
+		float ambientFactor = 0.8;
+		float diffuseFactor = 1.0;
+		float specularFactor = 1.0;
+		wheelStripeAmbient[i] = vec4(wheelStripeColors[i].x * ambientFactor, wheelStripeColors[i].y * ambientFactor, wheelStripeColors[i].z * ambientFactor, wheelStripeColors[i].w);
+		wheelStripeDiffuse[i] = vec4(wheelStripeColors[i].x * diffuseFactor, wheelStripeColors[i].y * diffuseFactor, wheelStripeColors[i].z * diffuseFactor, wheelStripeColors[i].w);
+		wheelStripeSpecular[i] = vec4(wheelStripeColors[i].x * specularFactor, wheelStripeColors[i].y * specularFactor, wheelStripeColors[i].z * specularFactor, wheelStripeColors[i].w);
+		wheelStripeSpecExp[i] = 0.9;
+	}
 }
-
 void generateHead()
 {
 	float radius = HEAD_RADIUS;
@@ -339,32 +498,134 @@ void generateHead()
 	for(float i = -M_PI/2; i<=M_PI/2; i+=step){
 		for(float j = -M_PI; j<=M_PI; j+=step){
 			//triangle 1
-			headVerts[k]=   vec4(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i), 1.0);
-			k++;
+			headVerts[k++]=   vec4(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i), 1.0);
 	
-			headVerts[k]=   vec4(radius*sin(j)*cos(i+step), radius*cos(j)*cos(i+step), radius*sin(i+step), 1.0);
-			k++;
+			headVerts[k++]=   vec4(radius*sin(j)*cos(i+step), radius*cos(j)*cos(i+step), radius*sin(i+step), 1.0);
 			
-			headVerts[k]=   vec4(radius*sin((j+step))*cos((i+step)), radius*cos(j+step)*cos(i+step), radius*sin(i+step), 1.0);
-			k++;
-
+			headVerts[k++]=   vec4(radius*sin((j+step))*cos((i+step)), radius*cos(j+step)*cos(i+step), radius*sin(i+step), 1.0);
+			
 			//triangle 2
-			headVerts[k]=   vec4(radius*sin((j+step))*cos((i+step)), radius*cos(j+step)*cos(i+step), radius*sin(i+step), 1.0);
-			k++;
-
-			headVerts[k]=   vec4(radius*sin(j+step)*cos(i), radius*cos(j+step)*cos(i), radius*sin(i), 1.0);
-			k++;
-
-			headVerts[k]=   vec4(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i), 1.0);
-			k++;
+			headVerts[k++]=   vec4(radius*sin((j+step))*cos((i+step)), radius*cos(j+step)*cos(i+step), radius*sin(i+step), 1.0);
+			
+			headVerts[k++]=   vec4(radius*sin(j+step)*cos(i), radius*cos(j+step)*cos(i), radius*sin(i), 1.0);
+			
+			headVerts[k++]=   vec4(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i), 1.0);
 		}
 	}
 
-
+	if (headColors){
+		delete[] headColors;
+	}
 	headColors = new vec4[headVertCount];
+	if (headNormals){
+		delete[] headNormals;
+	}
+	headNormals = new vec3[headVertCount];
+	if (headAmbient){
+		delete[] headAmbient;
+	}
+	headAmbient= new vec4[headVertCount];
+	if (headDiffuse){
+		delete[] headDiffuse;
+	}
+	headDiffuse = new vec4[headVertCount];
+	if (headSpecular){
+		delete[] headSpecular;
+	}
+	headSpecular = new vec4[headVertCount];
+	if (headSpecExp){
+		delete[] headSpecExp;
+	}
+	headSpecExp = new float[headVertCount];
+
+	if (headLightAmbient){
+		delete[] headLightAmbient;
+	}
+	headLightAmbient = new vec4[headVertCount];
+
+	if (headLightDiffuse){
+		delete[] headLightDiffuse;
+	}
+	headLightDiffuse = new vec4[headVertCount];
+
+	if (headLightSpecular){
+		delete[] headLightSpecular;
+	}
+	headLightSpecular = new vec4[headVertCount];
+
+	if (headLightSpecExp){
+		delete[] headLightSpecExp;
+	}
+	headLightSpecExp = new float[headVertCount];
+
+
+	if (redLightAmbient){
+		delete[] redLightAmbient;
+	}
+	redLightAmbient = new vec4[headVertCount];
+
+	if (redLightDiffuse){
+		delete[] redLightDiffuse;
+	}
+	redLightDiffuse = new vec4[headVertCount];
+
+	if (redLightSpecular){
+		delete[] redLightSpecular;
+	}
+	redLightSpecular = new vec4[headVertCount];
+
+	if (redLightSpecExp){
+		delete[] redLightSpecExp;
+	}
+	redLightSpecExp = new float[headVertCount];
+
+	if (blueLightAmbient){
+		delete[] blueLightAmbient;
+	}
+	blueLightAmbient = new vec4[headVertCount];
+
+	if (blueLightDiffuse){
+		delete[] blueLightDiffuse;
+	}
+	blueLightDiffuse = new vec4[headVertCount];
+
+	if (blueLightSpecular){
+		delete[] blueLightSpecular;
+	}
+	blueLightSpecular = new vec4[headVertCount];
+
+	if (blueLightSpecExp){
+		delete[] blueLightSpecExp;
+	}
+	blueLightSpecExp = new float[headVertCount];
+
+
 	for (int i = 0; i < headVertCount; i++)
 	{
 		headColors[i] = vec4(1.0, 1.0, 1.0, 1.0);
+		headNormals[i] = vec3(headVerts[i].x, headVerts[i].y, headVerts[i].z);
+		float ambientFactor = 0.15;
+		float diffuseFactor = 0.15;
+		float specularFactor = 0.75;
+		headAmbient[i] = vec4(headColors[i].x * ambientFactor, headColors[i].y * ambientFactor, headColors[i].z * ambientFactor, headColors[i].w);
+		headDiffuse[i] = vec4(headColors[i].x * diffuseFactor, headColors[i].y * diffuseFactor, headColors[i].z * diffuseFactor, headColors[i].w);
+		headSpecular[i] = vec4(headColors[i].x * specularFactor, headColors[i].y * specularFactor, headColors[i].z * specularFactor, headColors[i].w);
+		headSpecExp[i] = 100.0;
+
+		headLightAmbient[i] = vec4(0.8, 0.8, 0.8, 1.0);
+		headLightDiffuse[i] = vec4(0.1, 0.1, 0.1, 1.0);
+		headLightSpecular[i] = vec4(0.1, 0.1, 0.1, 1.0);
+		headLightSpecExp[i] = 100;
+
+		redLightAmbient[i] = vec4(0.8, 0.0, 0.0, 1.0);
+		redLightDiffuse[i] = vec4(0.1, 0.0, 0.0, 1.0);
+		redLightSpecular[i] = vec4(0.1, 0.4, 0.4, 1.0);
+		redLightSpecExp[i] = 100;
+
+		blueLightAmbient[i] = vec4(0.0, 0.0, 0.8, 1.0);
+		blueLightDiffuse[i] = vec4(0.0, 0.0, 0.1, 1.0);
+		blueLightSpecular[i] = vec4(0.4, 0.4, 0.1, 1.0);
+		blueLightSpecExp[i] = 100;
 	}
 }
 void generateEye()
@@ -384,83 +645,159 @@ void generateEye()
 	for(float i = -M_PI/2; i<=M_PI/2; i+=step){
 		for(float j = -M_PI; j<=M_PI; j+=step){
 			//triangle 1
-			eyeVerts[k]=   vec4(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i), 1.0);
-			k++;
-	
-			eyeVerts[k]=   vec4(radius*sin(j)*cos(i+step), radius*cos(j)*cos(i+step), radius*sin(i+step), 1.0);
-			k++;
+			eyeVerts[k++]=   vec4(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i), 1.0);
 			
-			eyeVerts[k]=   vec4(radius*sin((j+step))*cos((i+step)), radius*cos(j+step)*cos(i+step), radius*sin(i+step), 1.0);
-			k++;
-
+			eyeVerts[k++]=   vec4(radius*sin(j)*cos(i+step), radius*cos(j)*cos(i+step), radius*sin(i+step), 1.0);
+			
+			eyeVerts[k++]=   vec4(radius*sin((j+step))*cos((i+step)), radius*cos(j+step)*cos(i+step), radius*sin(i+step), 1.0);
+			
 			//triangle 2
-			eyeVerts[k]=   vec4(radius*sin((j+step))*cos((i+step)), radius*cos(j+step)*cos(i+step), radius*sin(i+step), 1.0);
-			k++;
+			eyeVerts[k++]=   vec4(radius*sin((j+step))*cos((i+step)), radius*cos(j+step)*cos(i+step), radius*sin(i+step), 1.0);
 
-			eyeVerts[k]=   vec4(radius*sin(j+step)*cos(i), radius*cos(j+step)*cos(i), radius*sin(i), 1.0);
-			k++;
+			eyeVerts[k++]=   vec4(radius*sin(j+step)*cos(i), radius*cos(j+step)*cos(i), radius*sin(i), 1.0);
 
-			eyeVerts[k]=   vec4(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i), 1.0);
-			k++;
+			eyeVerts[k++]=   vec4(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i), 1.0);
 		}
 	}
 
-
+	if (eyeColors){
+		delete[] eyeColors;
+	}
 	eyeColors = new vec4[eyeVertCount];
+
+	if (eyeNormals){
+		delete[] eyeNormals;
+	}
+	eyeNormals = new vec3[eyeVertCount];
+	
+	if (eyeAmbient){
+		delete[] eyeAmbient;
+	}
+	eyeAmbient = new vec4[eyeVertCount];
+
+	if (eyeDiffuse){
+		delete[] eyeDiffuse;
+	}
+	eyeDiffuse = new vec4[eyeVertCount];
+
+	if (eyeSpecular){
+		delete[] eyeSpecular;
+	}
+	eyeSpecular = new vec4[eyeVertCount];
+	
+	if (eyeSpecExp){
+		delete[] eyeSpecExp;
+	}
+	eyeSpecExp = new float[eyeVertCount];
+
 	for (int i = 0; i < eyeVertCount; i++)
 	{
-		eyeColors[i] = vec4(0.0, 0.0, 0.0, 1.0);
+		eyeColors[i] = vec4(0.3, 0.3, 0.3, 1.0);
+		eyeNormals[i] = vec3(eyeVerts[i].x, eyeVerts[i].y, eyeVerts[i].z);
+		float ambientFactor = 0.2;
+		float diffuseFactor = 0.2;
+		float specularFactor = 1.0;
+		eyeAmbient[i] = vec4(eyeColors[i].x * ambientFactor, eyeColors[i].y * ambientFactor, eyeColors[i].z * ambientFactor, eyeColors[i].w);
+		eyeDiffuse[i] = vec4(eyeColors[i].x * diffuseFactor, eyeColors[i].y * diffuseFactor, eyeColors[i].z * diffuseFactor, eyeColors[i].w);
+		eyeSpecular[i] = vec4(eyeColors[i].x * specularFactor, eyeColors[i].y * specularFactor, eyeColors[i].z * specularFactor, eyeColors[i].w);
+		eyeSpecExp[i] = 0.9;
 	}
-
-
 }
 void generatePylon()
 {
-	for(int i=0; i<36; i++){
-		pylonColors[0][i] = vec4(1.0, 0.0, 0.0, 1.0);
-		pylonColors[1][i] = vec4(0.0, 1.0, 0.0, 1.0);
-		pylonColors[2][i] = vec4(0.0, 0.0, 1.0, 1.0);
-		pylonColors[3][i] = vec4(0.0, 1.0, 1.0, 1.0);
-	}
-
 	for (int i = 0; i < 4; i++)
 	{
+		int j = 0;
+		for (; j < 6; j++)
+		{
+			pylonNormals[i][j] = vec3(0, 0, 1);
+		}
 		pylonVerts[i][0] = vec4(PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
 		pylonVerts[i][1] = vec4(PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
 		pylonVerts[i][2] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
 		pylonVerts[i][3] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
 		pylonVerts[i][4] = vec4(-PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
 		pylonVerts[i][5] = vec4(PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
+
+		for (; j < 12; j++)
+		{
+			pylonNormals[i][j] = vec3(0, 0, -1);
+		}
+
 		pylonVerts[i][6] = vec4(-PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][7] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][8] = vec4(PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][9] = vec4(PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][10] = vec4(PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][11] = vec4(-PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
+
+		for (; j < 18; j++)
+		{
+			pylonNormals[i][j] = vec3(1, 0, 0);
+		}
+
 		pylonVerts[i][12] = vec4(PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
 		pylonVerts[i][13] = vec4(PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
 		pylonVerts[i][14] = vec4(PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][15] = vec4(PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][16] = vec4(PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][17] = vec4(PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
+
+		for (; j < 24; j++)
+		{
+			pylonNormals[i][j] = vec3(-1, 0, 0);
+		}
+
 		pylonVerts[i][18] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][19] = vec4(-PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][20] = vec4(-PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
 		pylonVerts[i][21] = vec4(-PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
 		pylonVerts[i][22] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
 		pylonVerts[i][23] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
+
+		for (; j < 30; j++)
+		{
+			pylonNormals[i][j] = vec3(0, 1, 0);
+		}
+
 		pylonVerts[i][24] = vec4(PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
 		pylonVerts[i][25] = vec4(PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][26] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][27] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][28] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
 		pylonVerts[i][29] = vec4(PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
+
+		for (; j < 26; j++)
+		{
+			pylonNormals[i][j] = vec3(0, -1, 0);
+		}
+
 		pylonVerts[i][30] = vec4(PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][31] = vec4(PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
 		pylonVerts[i][32] = vec4(-PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
 		pylonVerts[i][33] = vec4(-PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
 		pylonVerts[i][34] = vec4(-PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][35] = vec4(PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
+	}
+
+	for(int i=0; i<36; i++)
+	{
+		pylonColors[0][i] = vec4(1.0, 0.0, 0.0, 1.0);
+		pylonColors[1][i] = vec4(0.0, 1.0, 0.0, 1.0);
+		pylonColors[2][i] = vec4(0.0, 0.0, 1.0, 1.0);
+		pylonColors[3][i] = vec4(0.0, 1.0, 1.0, 1.0);
+
+		for (int j=0; j < 4; j++)
+		{
+			float ambientFactor = 0.3;
+			float diffuseFactor = 0.3;
+			float specularFactor = 0.3;
+			pylonAmbient[j][i] = vec4(pylonColors[j][i].x * ambientFactor, pylonColors[j][i].y * ambientFactor, pylonColors[j][i].z * ambientFactor, pylonColors[j][i].w);
+			// Don't factor in color to try to get at least some white reflection off it, and make things a little more interesting
+			pylonDiffuse[j][i] = vec4(diffuseFactor, diffuseFactor, diffuseFactor, pylonColors[j][i].w);
+			pylonSpecular[j][i] = vec4(specularFactor, specularFactor, specularFactor, pylonColors[j][i].w);	
+			pylonSpecExp[j][i] = 400000;
+		}
 	}
 }
 /* Since the wheel is kind of complex, use this helper function to draw it 
@@ -504,8 +841,8 @@ void display(void)
 	else if (camera == CHASE_CAMERA)
 	{
 		float Angle = (M_PI*(carAngle)/180);
-		float X = sin(Angle)*20;
-		float Z = cos(Angle)*20;
+		float X = sin(Angle)*25;
+		float Z = cos(Angle)*25;
 		mv = LookAt(vec4(xPosition+X, 20, zPosition+Z, 1.0), 
 			vec4(xPosition-X, 1, zPosition-Z, 1.0), vec4(0, 1, 0, 0.0));
 	}
@@ -517,11 +854,10 @@ void display(void)
 	mv = mv*Scale(sx, sy, sz);
 
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+	mat4 original = mv;
 
 	// and we also need to send our projection matrix, which again is more appropriately
 	// a uniform instead of an attribute since it's the same for every vertex
-	
-
 	if (camera == STATIC_CAMERA)
 	{
 		p = Perspective(zoom, (float)ww/(float)wh, 1.0, 100.0);
@@ -537,10 +873,108 @@ void display(void)
 
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
 
+	// Setup the ambient light
+	glUniform4fv(ambient_light, 1, vec4(0.3, 0.3, 0.3, 1));
+
+	// Set position of car to get the lights placed relative to it
+	mv = mv*Translate(0.0, CAR_HEIGHT+WHEEL_RADIUS, 0.0);
+	mv = mv*Translate(xPosition, yPosition, zPosition);
+	mv = mv*RotateY(carAngle);
+	mat4 carCenter = mv;
+	
+	mat4 lights[4];		// Track the point of each light for placing a ball there later
+	vertexArrayObjectsEnum lightsEnum[4];
+	vec4 lightPos[4];
+	vec4 lightVector[4];
+	vec4 lightColor[4];
+
+	// Left Headlight
+	mv = mv*Translate(-0.9*CAR_WIDTH, 0, -CAR_LENGTH-.2);
+	lightPos[0] = mv*vec4(0, 0, 0, 1.0);
+	lights[0] = mv;
+	lightsEnum[0] = HEAD_LIGHT;
+	lightVector[0] = mv*vec4(-3,-10,-30, 1.0);
+	lightVector[0] = lightVector[0]*-1;
+	lightColor[0] = vec4(1.0, 1.0, 1.0, 1.0);
+	
+	// Right Headlight
+	mv = mv*Translate(0.9*CAR_WIDTH*2, 0, 0);
+	lightPos[1] = mv*vec4(0, 0, 0, 1.0);
+	lights[1] = mv;
+	lightsEnum[1] = HEAD_LIGHT;
+	lightVector[1] = mv*vec4(3,-10,-30, 1.0);
+	lightVector[1] = lightVector[1]*-1;
+	lightColor[1] = vec4(1.0, 1.0, 1.0, 1.0);
+
+	// Red Police Light
+	mv = carCenter;
+	mv = mv*Translate(-CAR_WIDTH*.8, CAR_HEIGHT+1, 4);
+	mv = mv*RotateY(policeLightAngle);
+	lightPos[2] = mv*vec4(0, 0, 0, 1.0);
+	lights[2] = mv;
+	lightsEnum[2] = RED_LIGHT;
+	lightVector[2] = mv*vec4(-20,0,0, 1.0);
+	lightVector[2] = lightVector[2]*-1;
+
+	// Blue Police Light
+	mv = carCenter;
+	mv = mv*Translate(CAR_WIDTH*.8, CAR_HEIGHT+1, 4);
+	mv = mv*RotateY(180);
+	mv = mv*RotateY(policeLightAngle+45);
+	lightPos[3] = mv*vec4(0, 0, 0, 1.0);
+	lights[3] = mv;
+	lightsEnum[3] = BLUE_LIGHT;
+	lightVector[3] = mv*vec4(-20,0, 0, 1.0);
+	lightVector[3] = lightVector[3]*-1;
+
+	lightColor[2] = vec4(1.0, 0.01, 0.01, 1.0);
+	lightColor[3] = vec4(0.01, 0.01, 1.0, 1.0);
+
+	float tmp[4*4];
+
+	for (int i = 0; i < 4; i++)
+	{
+		tmp[(i*4)] = lightPos[i].x;
+		tmp[(i*4)+1] = lightPos[i].y;
+		tmp[(i*4)+2] = lightPos[i].z;
+		tmp[(i*4)+3] = lightPos[i].w;
+	}
+	glUniform4fv(light_position, 4, tmp);
+
+	for (int i = 0; i < 4; i++)
+	{
+		tmp[(i*4)] = lightColor[i].x;
+		tmp[(i*4)+1] = lightColor[i].y;
+		tmp[(i*4)+2] = lightColor[i].z;
+		tmp[(i*4)+3] = lightColor[i].w;
+	}
+	glUniform4fv(light_color, 4, tmp);
+
+	for (int i = 0; i < 4; i++)
+	{
+		tmp[(i*4)] = lightVector[i].x;
+		tmp[(i*4)+1] = lightVector[i].y;
+		tmp[(i*4)+2] = lightVector[i].z;
+		tmp[(i*4)+3] = lightVector[i].w;
+	}
+	glUniform4fv(light_direction, 4, tmp);
+
+	float cutoffangle[4] = {(M_PI*20)/180, (M_PI*20)/180, (M_PI*30)/180, (M_PI*30)/180};
+	glUniform1fv(light_cuttoffangle, 4, cutoffangle);
+
+	/* Debug to draw a white ball where each light position is at */ 
+	for (int i = 0; i < 4; i++)
+	{
+		glUniformMatrix4fv(model_view, 1, GL_TRUE, lights[i]);
+		glBindVertexArray( vao[lightsEnum[i]] );
+		glDrawArrays(GL_TRIANGLES, 0, headVertCount);
+	}
+
+	mv = original;
+	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[STAGE] );
 	glDrawArrays( GL_TRIANGLES, 0, STAGE_POINT_COUNT );    // draw the stage
 
-	mat4 original = mv;
 	mv = mv*Translate(-20, 0, -20);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[PYLON] );
@@ -550,19 +984,19 @@ void display(void)
 	mv = mv*Translate(20, 0, -20);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[PYLON] );
-	glDrawArrays( GL_TRIANGLES, PYLON_POINT_COUNT, PYLON_POINT_COUNT*2 );
+	glDrawArrays( GL_TRIANGLES, PYLON_POINT_COUNT, PYLON_POINT_COUNT );
 
 	mv = original;
 	mv = mv*Translate(20, 0, 20);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[PYLON] );
-	glDrawArrays( GL_TRIANGLES, PYLON_POINT_COUNT*2, PYLON_POINT_COUNT*3 );
+	glDrawArrays( GL_TRIANGLES, PYLON_POINT_COUNT*2, PYLON_POINT_COUNT );
 
 	mv = original;
 	mv = mv*Translate(-20, 0, 20);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[PYLON] );
-	glDrawArrays( GL_TRIANGLES, PYLON_POINT_COUNT*3, PYLON_POINT_COUNT*4 );
+	glDrawArrays( GL_TRIANGLES, PYLON_POINT_COUNT*3, PYLON_POINT_COUNT );
 
 	mv = original;
 	mv = mv*Translate(0.0, CAR_HEIGHT+(WHEEL_RADIUS), 0.0);
@@ -579,8 +1013,7 @@ void display(void)
 	mv = mv*RotateY(headAngle);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	glBindVertexArray( vao[HEAD] );
-	//glDrawArrays( GL_LINE_LOOP, 0, HEAD_POINT_COUNT );    // draw the head 
-	glDrawArrays(GL_TRIANGLES, 0, headVertCount);
+	glDrawArrays(GL_TRIANGLES, 0, headVertCount); // draw the head 
 	
 	mat4 headOriginal = mv;
 	mv = mv*Translate(.4*HEAD_RADIUS, 0.0, HEAD_RADIUS);
@@ -696,6 +1129,11 @@ void Keyboard(unsigned char key, int x, int y) {
 		stopCar();
 	}
 
+	if (key == 'l')
+	{
+		copLightsOn = !copLightsOn;
+	}
+
 	if (camera == STATIC_CAMERA)
 	{
 		if (key == 'a')
@@ -739,7 +1177,6 @@ void Keyboard(unsigned char key, int x, int y) {
 	}
 
 
-
 #ifdef DEBUG		// Used for creating objects to see all sides
 	if (key == 'q')
 	{
@@ -749,6 +1186,22 @@ void Keyboard(unsigned char key, int x, int y) {
 	if (key == 'w')
 	{
 		rx -= 1.0;
+	}
+	if (key == 'o')
+	{
+		tz += 1.0;
+	}
+	if(key == 'p')
+	{
+		tz -= 1.0;
+	}
+	if (key == '[')
+	{
+		ty += 1.0;
+	}
+	if(key == ']')
+	{
+		ty -= 1.0;
 	}
 
 	if (key == 'e')
@@ -795,7 +1248,7 @@ void init()
 
 	// Create all vertex array object
 	glGenVertexArrays( VAO_COUNT, &vao[0] );
-	glGenBuffers(VAO_COUNT*2, &vbo[0]);
+	glGenBuffers(VAO_COUNT*7, &vbo[0]);
 
 	// Create and initialize any buffer objects
 	glBindVertexArray( vao[CAR] );
@@ -809,6 +1262,32 @@ void init()
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(carNormals), carNormals, GL_STATIC_DRAW );
+	vNormal = glGetAttribLocation(program, "vNormal");
+	glEnableVertexAttribArray(vNormal);
+	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(carAmbient), carAmbient, GL_STATIC_DRAW );
+	vAmbient = glGetAttribLocation(program, "vAmbient");
+	glEnableVertexAttribArray(vAmbient);
+	glVertexAttribPointer(vAmbient, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(carDiffuse), carDiffuse, GL_STATIC_DRAW );
+	vDiffuse = glGetAttribLocation(program, "vDiffuse");
+	glEnableVertexAttribArray(vDiffuse);
+	glVertexAttribPointer(vDiffuse, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(carSpecular), carSpecular, GL_STATIC_DRAW );
+	vSpecular = glGetAttribLocation(program, "vSpecular");
+	glEnableVertexAttribArray(vSpecular);
+	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(carSpecExp), carSpecExp, GL_STATIC_DRAW );
+	vSpecularExponent = glGetAttribLocation(program, "vSpecularExponent");
+	glEnableVertexAttribArray(vSpecularExponent);
+	glVertexAttribPointer(vSpecularExponent, 1, GL_FLOAT, GL_FALSE, 0, 0);
+
 
 	glBindVertexArray( vao[STAGE] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -821,6 +1300,31 @@ void init()
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(stageNormals), stageNormals, GL_STATIC_DRAW );
+	vNormal = glGetAttribLocation(program, "vNormal");
+	glEnableVertexAttribArray(vNormal);
+	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(stageAmbient), stageAmbient, GL_STATIC_DRAW );
+	vAmbient = glGetAttribLocation(program, "vAmbient");
+	glEnableVertexAttribArray(vAmbient);
+	glVertexAttribPointer(vAmbient, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(stageDiffuse), stageDiffuse, GL_STATIC_DRAW );
+	vDiffuse = glGetAttribLocation(program, "vDiffuse");
+	glEnableVertexAttribArray(vDiffuse);
+	glVertexAttribPointer(vDiffuse, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(stageSpecular), stageSpecular, GL_STATIC_DRAW );
+	vSpecular = glGetAttribLocation(program, "vSpecular");
+	glEnableVertexAttribArray(vSpecular);
+	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(stageSpecExp), stageSpecExp, GL_STATIC_DRAW );
+	vSpecularExponent = glGetAttribLocation(program, "vSpecularExponent");
+	glEnableVertexAttribArray(vSpecularExponent);
+	glVertexAttribPointer(vSpecularExponent, 1, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[WHEEL] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -833,6 +1337,31 @@ void init()
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelNormals), wheelNormals, GL_STATIC_DRAW );
+	vNormal = glGetAttribLocation(program, "vNormal");
+	glEnableVertexAttribArray(vNormal);
+	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelAmbient), wheelAmbient, GL_STATIC_DRAW );
+	vAmbient = glGetAttribLocation(program, "vAmbient");
+	glEnableVertexAttribArray(vAmbient);
+	glVertexAttribPointer(vAmbient, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelDiffuse), wheelDiffuse, GL_STATIC_DRAW );
+	vDiffuse = glGetAttribLocation(program, "vDiffuse");
+	glEnableVertexAttribArray(vDiffuse);
+	glVertexAttribPointer(vDiffuse, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelSpecular), wheelSpecular, GL_STATIC_DRAW );
+	vSpecular = glGetAttribLocation(program, "vSpecular");
+	glEnableVertexAttribArray(vSpecular);
+	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelSpecExp), wheelSpecExp, GL_STATIC_DRAW );
+	vSpecularExponent = glGetAttribLocation(program, "vSpecularExponent");
+	glEnableVertexAttribArray(vSpecularExponent);
+	glVertexAttribPointer(vSpecularExponent, 1, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[HEAD] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -842,12 +1371,145 @@ void init()
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
 	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec4), headColors, GL_STATIC_DRAW );
-
-	
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec3), headNormals, GL_STATIC_DRAW );
+	vNormal = glGetAttribLocation(program, "vNormal");
+	glEnableVertexAttribArray(vNormal);
+	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec4), headAmbient, GL_STATIC_DRAW );
+	vAmbient = glGetAttribLocation(program, "vAmbient");
+	glEnableVertexAttribArray(vAmbient);
+	glVertexAttribPointer(vAmbient, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec4), headDiffuse, GL_STATIC_DRAW );
+	vDiffuse = glGetAttribLocation(program, "vDiffuse");
+	glEnableVertexAttribArray(vDiffuse);
+	glVertexAttribPointer(vDiffuse, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec4), headSpecular, GL_STATIC_DRAW );
+	vSpecular = glGetAttribLocation(program, "vSpecular");
+	glEnableVertexAttribArray(vSpecular);
+	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(float), headSpecExp, GL_STATIC_DRAW );
+	vSpecularExponent = glGetAttribLocation(program, "vSpecularExponent");
+	glEnableVertexAttribArray(vSpecularExponent);
+	glVertexAttribPointer(vSpecularExponent, 1, GL_FLOAT, GL_FALSE, 0, 0);
 
+	glBindVertexArray( vao[HEAD_LIGHT] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec4), headVerts, GL_STATIC_DRAW);
+	vPosition = glGetAttribLocation(program, "vPosition");
+	glEnableVertexAttribArray(vPosition);
+	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec4), headColors, GL_STATIC_DRAW );
+	vColor = glGetAttribLocation(program, "vColor");
+	glEnableVertexAttribArray(vColor);
+	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec3), headNormals, GL_STATIC_DRAW );
+	vNormal = glGetAttribLocation(program, "vNormal");
+	glEnableVertexAttribArray(vNormal);
+	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec4), headLightAmbient, GL_STATIC_DRAW );
+	vAmbient = glGetAttribLocation(program, "vAmbient");
+	glEnableVertexAttribArray(vAmbient);
+	glVertexAttribPointer(vAmbient, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec4), headLightDiffuse, GL_STATIC_DRAW );
+	vDiffuse = glGetAttribLocation(program, "vDiffuse");
+	glEnableVertexAttribArray(vDiffuse);
+	glVertexAttribPointer(vDiffuse, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec4), headLightSpecular, GL_STATIC_DRAW );
+	vSpecular = glGetAttribLocation(program, "vSpecular");
+	glEnableVertexAttribArray(vSpecular);
+	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(float), headLightSpecExp, GL_STATIC_DRAW );
+	vSpecularExponent = glGetAttribLocation(program, "vSpecularExponent");
+	glEnableVertexAttribArray(vSpecularExponent);
+	glVertexAttribPointer(vSpecularExponent, 1, GL_FLOAT, GL_FALSE, 0, 0);
+
+	glBindVertexArray( vao[RED_LIGHT] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec4), headVerts, GL_STATIC_DRAW);
+	vPosition = glGetAttribLocation(program, "vPosition");
+	glEnableVertexAttribArray(vPosition);
+	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec4), headColors, GL_STATIC_DRAW );
+	vColor = glGetAttribLocation(program, "vColor");
+	glEnableVertexAttribArray(vColor);
+	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec3), headNormals, GL_STATIC_DRAW );
+	vNormal = glGetAttribLocation(program, "vNormal");
+	glEnableVertexAttribArray(vNormal);
+	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec4), redLightAmbient, GL_STATIC_DRAW );
+	vAmbient = glGetAttribLocation(program, "vAmbient");
+	glEnableVertexAttribArray(vAmbient);
+	glVertexAttribPointer(vAmbient, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec4), redLightDiffuse, GL_STATIC_DRAW );
+	vDiffuse = glGetAttribLocation(program, "vDiffuse");
+	glEnableVertexAttribArray(vDiffuse);
+	glVertexAttribPointer(vDiffuse, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec4), redLightSpecular, GL_STATIC_DRAW );
+	vSpecular = glGetAttribLocation(program, "vSpecular");
+	glEnableVertexAttribArray(vSpecular);
+	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(float), redLightSpecExp, GL_STATIC_DRAW );
+	vSpecularExponent = glGetAttribLocation(program, "vSpecularExponent");
+	glEnableVertexAttribArray(vSpecularExponent);
+	glVertexAttribPointer(vSpecularExponent, 1, GL_FLOAT, GL_FALSE, 0, 0);
+
+	glBindVertexArray( vao[BLUE_LIGHT] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec4), headVerts, GL_STATIC_DRAW);
+	vPosition = glGetAttribLocation(program, "vPosition");
+	glEnableVertexAttribArray(vPosition);
+	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec4), headColors, GL_STATIC_DRAW );
+	vColor = glGetAttribLocation(program, "vColor");
+	glEnableVertexAttribArray(vColor);
+	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec3), headNormals, GL_STATIC_DRAW );
+	vNormal = glGetAttribLocation(program, "vNormal");
+	glEnableVertexAttribArray(vNormal);
+	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec4), blueLightAmbient, GL_STATIC_DRAW );
+	vAmbient = glGetAttribLocation(program, "vAmbient");
+	glEnableVertexAttribArray(vAmbient);
+	glVertexAttribPointer(vAmbient, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec4), blueLightDiffuse, GL_STATIC_DRAW );
+	vDiffuse = glGetAttribLocation(program, "vDiffuse");
+	glEnableVertexAttribArray(vDiffuse);
+	glVertexAttribPointer(vDiffuse, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(vec4), blueLightSpecular, GL_STATIC_DRAW );
+	vSpecular = glGetAttribLocation(program, "vSpecular");
+	glEnableVertexAttribArray(vSpecular);
+	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(float), blueLightSpecExp, GL_STATIC_DRAW );
+	vSpecularExponent = glGetAttribLocation(program, "vSpecularExponent");
+	glEnableVertexAttribArray(vSpecularExponent);
+	glVertexAttribPointer(vSpecularExponent, 1, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[EYE] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -860,6 +1522,31 @@ void init()
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, eyeVertCount*sizeof(vec3), eyeNormals, GL_STATIC_DRAW );
+	vNormal = glGetAttribLocation(program, "vNormal");
+	glEnableVertexAttribArray(vNormal);
+	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, eyeVertCount*sizeof(vec4), eyeAmbient, GL_STATIC_DRAW );
+	vAmbient = glGetAttribLocation(program, "vAmbient");
+	glEnableVertexAttribArray(vAmbient);
+	glVertexAttribPointer(vAmbient, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, eyeVertCount*sizeof(vec4), eyeDiffuse, GL_STATIC_DRAW );
+	vDiffuse = glGetAttribLocation(program, "vDiffuse");
+	glEnableVertexAttribArray(vDiffuse);
+	glVertexAttribPointer(vDiffuse, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, eyeVertCount*sizeof(vec4), eyeSpecular, GL_STATIC_DRAW );
+	vSpecular = glGetAttribLocation(program, "vSpecular");
+	glEnableVertexAttribArray(vSpecular);
+	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, eyeVertCount*sizeof(float), eyeSpecExp, GL_STATIC_DRAW );
+	vSpecularExponent = glGetAttribLocation(program, "vSpecularExponent");
+	glEnableVertexAttribArray(vSpecularExponent);
+	glVertexAttribPointer(vSpecularExponent, 1, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[WHEEL_STRIPE] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -872,6 +1559,31 @@ void init()
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelStripeNormals), wheelStripeNormals, GL_STATIC_DRAW );
+	vNormal = glGetAttribLocation(program, "vNormal");
+	glEnableVertexAttribArray(vNormal);
+	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelStripeAmbient), wheelStripeAmbient, GL_STATIC_DRAW );
+	vAmbient = glGetAttribLocation(program, "vAmbient");
+	glEnableVertexAttribArray(vAmbient);
+	glVertexAttribPointer(vAmbient, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelStripeDiffuse), wheelStripeDiffuse, GL_STATIC_DRAW );
+	vDiffuse = glGetAttribLocation(program, "vDiffuse");
+	glEnableVertexAttribArray(vDiffuse);
+	glVertexAttribPointer(vDiffuse, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelStripeSpecular), wheelStripeSpecular, GL_STATIC_DRAW );
+	vSpecular = glGetAttribLocation(program, "vSpecular");
+	glEnableVertexAttribArray(vSpecular);
+	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelStripeSpecExp), wheelStripeSpecExp, GL_STATIC_DRAW );
+	vSpecularExponent = glGetAttribLocation(program, "vSpecularExponent");
+	glEnableVertexAttribArray(vSpecularExponent);
+	glVertexAttribPointer(vSpecularExponent, 1, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[WHEEL_CONNECTORS] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -884,6 +1596,31 @@ void init()
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelConNormals), wheelConNormals, GL_STATIC_DRAW );
+	vNormal = glGetAttribLocation(program, "vNormal");
+	glEnableVertexAttribArray(vNormal);
+	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelConAmbient), wheelConAmbient, GL_STATIC_DRAW );
+	vAmbient = glGetAttribLocation(program, "vAmbient");
+	glEnableVertexAttribArray(vAmbient);
+	glVertexAttribPointer(vAmbient, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelConDiffuse), wheelConDiffuse, GL_STATIC_DRAW );
+	vDiffuse = glGetAttribLocation(program, "vDiffuse");
+	glEnableVertexAttribArray(vDiffuse);
+	glVertexAttribPointer(vDiffuse, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelConSpecular), wheelConSpecular, GL_STATIC_DRAW );
+	vSpecular = glGetAttribLocation(program, "vSpecular");
+	glEnableVertexAttribArray(vSpecular);
+	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelConSpecExp), wheelConSpecExp, GL_STATIC_DRAW );
+	vSpecularExponent = glGetAttribLocation(program, "vSpecularExponent");
+	glEnableVertexAttribArray(vSpecularExponent);
+	glVertexAttribPointer(vSpecularExponent, 1, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[PYLON] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -896,15 +1633,47 @@ void init()
 	vColor = glGetAttribLocation(program, "vColor");
 	glEnableVertexAttribArray(vColor);
 	glVertexAttribPointer(vColor, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(pylonNormals), pylonNormals, GL_STATIC_DRAW );
+	vNormal = glGetAttribLocation(program, "vNormal");
+	glEnableVertexAttribArray(vNormal);
+	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(pylonAmbient), pylonAmbient, GL_STATIC_DRAW );
+	vAmbient = glGetAttribLocation(program, "vAmbient");
+	glEnableVertexAttribArray(vAmbient);
+	glVertexAttribPointer(vAmbient, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(pylonDiffuse), pylonDiffuse, GL_STATIC_DRAW );
+	vDiffuse = glGetAttribLocation(program, "vDiffuse");
+	glEnableVertexAttribArray(vDiffuse);
+	glVertexAttribPointer(vDiffuse, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(pylonSpecular), pylonSpecular, GL_STATIC_DRAW );
+	vSpecular = glGetAttribLocation(program, "vSpecular");
+	glEnableVertexAttribArray(vSpecular);
+	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(pylonSpecExp), pylonSpecExp, GL_STATIC_DRAW );
+	vSpecularExponent = glGetAttribLocation(program, "vSpecularExponent");
+	glEnableVertexAttribArray(vSpecularExponent);
+	glVertexAttribPointer(vSpecularExponent, 1, GL_FLOAT, GL_FALSE, 0, 0);
 
 	//grab pointers for our modelview and perspecive uniform matrices
 	model_view = glGetUniformLocation(program, "model_view");
 	projection = glGetUniformLocation(program, "projection");
 
+	ambient_light = glGetUniformLocation(program, "ambient_light");
+	vAmbientDiffuseColor = glGetAttribLocation(program, "vAmbientDiffuseColor");
+
+	light_position = glGetUniformLocation(program, "light_position");
+	light_color = glGetUniformLocation(program, "light_color");
+	light_direction = glGetUniformLocation(program, "light_direction");
+	light_cuttoffangle = glGetUniformLocation(program, "light_cutoffangle");
+
 	//Only draw the things in the front layer
 	glEnable(GL_DEPTH_TEST);
 }
-
 
 void reshape(int width, int height){
 	ww= width;
@@ -931,6 +1700,19 @@ void my_timer(int v)
 			temp *= -1;
 		}
 		carAngle += temp * 0.03;	// Throttle back the angle as well.
+	}
+
+
+
+	if (copLightsOn)
+	{
+		static float policeLightRate = 2.0;
+		//if ((policeLightAngle > 90) || (policeLightAngle < -60))
+		{
+			//policeLightRate *= -1;
+		}
+
+		policeLightAngle += policeLightRate;
 	}
 
 	/* Checks to see if we are off the stage.  
@@ -971,7 +1753,7 @@ int main(int argc, char **argv)
 	glutInitWindowPosition(0, 0); 
 	glutInitWindowSize(ww, wh);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-	glutCreateWindow("Assignment 3 - Ross Anderson");  
+	glutCreateWindow("Assignment 4 - Ross Anderson");  
 
 	glewExperimental = GL_TRUE;
 

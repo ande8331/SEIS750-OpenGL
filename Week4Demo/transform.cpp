@@ -49,12 +49,15 @@ void generateCube(){
 		cubeColors[i] = vec4(0.0, 1.0, 1.0, 1.0); //front
 	}
 	
-	cubeVerts[0] = vec4(1.0f, -1.0f, 1.0f, 1.0);
-	cubeVerts[1] = vec4(1.0f, 1.0f, 1.0f, 1.0);
-	cubeVerts[2] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
-	cubeVerts[3] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
-	cubeVerts[4] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
 	cubeVerts[5] = vec4(1.0f, -1.0f, 1.0f, 1.0);
+	cubeVerts[4] = vec4(1.0f, 1.0f, 1.0f, 1.0);
+	cubeVerts[3] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
+	cubeVerts[2] = vec4(-1.0f, 1.0f, 1.0f, 1.0);
+	cubeVerts[1] = vec4(-1.0f, -1.0f, 1.0f, 1.0);
+	cubeVerts[0] = vec4(1.0f, -1.0f, 1.0f, 1.0);
+
+	glCullFace(GL_FRONT);
+	glEnable(GL_CULL_FACE);
 
 	cubeColors[0] = vec4(0.0, 1.0, 1.0, 1.0);
 	cubeColors[1] = vec4(0.0, 1.0, 1.0, 1.0);
@@ -114,12 +117,21 @@ void generateCube(){
 	cubeVerts[34] = vec4(-1.0f, -1.0f, -1.0f, 1.0);
 	cubeVerts[35] = vec4(1.0f, -1.0f, -1.0f, 1.0);
 }
-
+bool multiSample = false;
 void display(void)
 {
   /*clear all pixels*/
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
+	if (multiSample)
+	{
+		glEnable(GL_MULTISAMPLE);
+	}
+	else
+	{
+		glDisable(GL_MULTISAMPLE);
+	}
+
 	// we'll explain this later, but it's setting our default modelview matrix
     mv = LookAt(vec4(0, 0, dolly, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
 
@@ -337,6 +349,10 @@ void Keyboard(unsigned char key, int x, int y) {
 	{
 		dolly += 1.0;
 	}
+	if (key == 'm')
+	{
+		multiSample = !multiSample;
+	}
 
 	glutPostRedisplay();
 }
@@ -407,7 +423,7 @@ int main(int argc, char **argv)
   glutInit(&argc, argv);
   glutInitWindowPosition(0, 0); 
   glutInitWindowSize(ww, wh);
-  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_MULTISAMPLE);
   glutCreateWindow("Transformations Exercise");  
 
   glewExperimental = GL_TRUE;
