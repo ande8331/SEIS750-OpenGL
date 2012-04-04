@@ -791,9 +791,10 @@ void generatePylon()
 		{
 			float ambientFactor = 0.3;
 			float diffuseFactor = 0.3;
-			float specularFactor = 0.7;
+			float specularFactor = 0.3;
 			pylonAmbient[j][i] = vec4(pylonColors[j][i].x * ambientFactor, pylonColors[j][i].y * ambientFactor, pylonColors[j][i].z * ambientFactor, pylonColors[j][i].w);
-			pylonDiffuse[j][i] = vec4(diffuseFactor, diffuseFactor, diffuseFactor, pylonColors[j][i].w); // Don't factor in color to try to get at least some white reflection off it
+			// Don't factor in color to try to get at least some white reflection off it, and make things a little more interesting
+			pylonDiffuse[j][i] = vec4(diffuseFactor, diffuseFactor, diffuseFactor, pylonColors[j][i].w);
 			pylonSpecular[j][i] = vec4(specularFactor, specularFactor, specularFactor, pylonColors[j][i].w);	
 			pylonSpecExp[j][i] = 400000;
 		}
@@ -1176,7 +1177,6 @@ void Keyboard(unsigned char key, int x, int y) {
 	}
 
 
-#define DEBUG
 #ifdef DEBUG		// Used for creating objects to see all sides
 	if (key == 'q')
 	{
