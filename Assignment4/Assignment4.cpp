@@ -36,7 +36,7 @@ typedef enum
 } cameraAnglesEnum;
 
 GLuint vao[VAO_COUNT];
-GLuint vbo[VAO_COUNT*6];
+GLuint vbo[VAO_COUNT*7];
 
 //our modelview and perspective matrices
 mat4 mv, p;
@@ -50,6 +50,7 @@ GLuint vNormal;
 GLuint vAmbient;
 GLuint vDiffuse;
 GLuint vSpecular;
+GLuint vSpecularExponent;
 
 //Ambient Light Pointers
 GLuint ambient_light;
@@ -99,6 +100,7 @@ vec4 carColors[CAR_POINT_COUNT];
 vec4 carAmbient[CAR_POINT_COUNT];
 vec4 carDiffuse[CAR_POINT_COUNT];
 vec4 carSpecular[CAR_POINT_COUNT];
+float carSpecExp[CAR_POINT_COUNT];
 #define STAGE_POINT_COUNT 36
 vec4 stageVerts[STAGE_POINT_COUNT];
 vec3 stageNormals[STAGE_POINT_COUNT];
@@ -106,6 +108,7 @@ vec4 stageColors[STAGE_POINT_COUNT];
 vec4 stageAmbient[STAGE_POINT_COUNT];
 vec4 stageDiffuse[STAGE_POINT_COUNT];
 vec4 stageSpecular[STAGE_POINT_COUNT];
+float stageSpecExp[STAGE_POINT_COUNT];
 #define WHEEL_POINT_COUNT 362
 vec4 wheelVerts[WHEEL_POINT_COUNT*2];
 vec3 wheelNormals[WHEEL_POINT_COUNT*2];
@@ -113,6 +116,7 @@ vec4 wheelColors[WHEEL_POINT_COUNT*2];
 vec4 wheelAmbient[WHEEL_POINT_COUNT*2];
 vec4 wheelDiffuse[WHEEL_POINT_COUNT*2];
 vec4 wheelSpecular[WHEEL_POINT_COUNT*2];
+float wheelSpecExp[WHEEL_POINT_COUNT*2];
 #define WHEEL_STRIPE_POINT_COUNT 3
 vec4 wheelStripeVerts[WHEEL_STRIPE_POINT_COUNT];
 vec3 wheelStripeNormals[WHEEL_STRIPE_POINT_COUNT];
@@ -120,6 +124,7 @@ vec4 wheelStripeColors[WHEEL_STRIPE_POINT_COUNT];
 vec4 wheelStripeAmbient[WHEEL_STRIPE_POINT_COUNT];
 vec4 wheelStripeDiffuse[WHEEL_STRIPE_POINT_COUNT];
 vec4 wheelStripeSpecular[WHEEL_STRIPE_POINT_COUNT];
+float wheelStripeSpecExp[WHEEL_STRIPE_POINT_COUNT];
 #define WHEEL_CONNECTOR_POINT_COUNT (360*6)+6
 vec4 wheelConVerts[WHEEL_CONNECTOR_POINT_COUNT];
 vec3 wheelConNormals[WHEEL_CONNECTOR_POINT_COUNT];
@@ -127,6 +132,7 @@ vec4 wheelConColors[WHEEL_CONNECTOR_POINT_COUNT];
 vec4 wheelConAmbient[WHEEL_CONNECTOR_POINT_COUNT];
 vec4 wheelConDiffuse[WHEEL_CONNECTOR_POINT_COUNT];
 vec4 wheelConSpecular[WHEEL_CONNECTOR_POINT_COUNT];
+float wheelConSpecExp[WHEEL_CONNECTOR_POINT_COUNT];
 int headVertCount;
 vec4* headVerts;
 vec3* headNormals;
@@ -134,6 +140,7 @@ vec4 *headColors;
 vec4* headAmbient;
 vec4* headDiffuse;
 vec4* headSpecular;
+float* headSpecExp;
 int eyeVertCount;
 vec4* eyeVerts;
 vec3* eyeNormals;
@@ -141,6 +148,7 @@ vec4* eyeColors;
 vec4* eyeAmbient;
 vec4* eyeDiffuse;
 vec4* eyeSpecular;
+float* eyeSpecExp;
 #define PYLON_POINT_COUNT 36
 vec4 pylonVerts[4][PYLON_POINT_COUNT];
 vec3 pylonNormals[4][PYLON_POINT_COUNT];
@@ -148,6 +156,7 @@ vec4 pylonColors[4][PYLON_POINT_COUNT];
 vec4 pylonAmbient[4][PYLON_POINT_COUNT];
 vec4 pylonDiffuse[4][PYLON_POINT_COUNT];
 vec4 pylonSpecular[4][PYLON_POINT_COUNT];
+float pylonSpecExp[4][PYLON_POINT_COUNT];
 
 #define CAR_WIDTH 2.5
 #define CAR_HEIGHT 2.
@@ -241,12 +250,13 @@ void generateCar(){
 
 	for (int i = 0; i < 36; i++)
 	{
-		float ambientFactor = 0.8;
-		float diffuseFactor = 1.0;
-		float specularFactor = 1.0;
+		float ambientFactor = 0.3;
+		float diffuseFactor = 0.5;
+		float specularFactor = 0.5;
 		carAmbient[i] = vec4(carColors[i].x * ambientFactor, carColors[i].y * ambientFactor, carColors[i].z * ambientFactor, carColors[i].w);
 		carDiffuse[i] = vec4(carColors[i].x * diffuseFactor, carColors[i].y * diffuseFactor, carColors[i].z * diffuseFactor, carColors[i].w);
 		carSpecular[i] = vec4(carColors[i].x * specularFactor, carColors[i].y * specularFactor, carColors[i].z * specularFactor, carColors[i].w);
+		carSpecExp[i] = 0.5;
 	}
 
 	for(int i=36; i<72; i++){
@@ -258,16 +268,16 @@ void generateCar(){
 		carAmbient[i] = vec4(carColors[i].x * ambientFactor, carColors[i].y * ambientFactor, carColors[i].z * ambientFactor, carColors[i].w);
 		carDiffuse[i] = vec4(carColors[i].x * diffuseFactor, carColors[i].y * diffuseFactor, carColors[i].z * diffuseFactor, carColors[i].w);
 		carSpecular[i] = vec4(carColors[i].x * specularFactor, carColors[i].y * specularFactor, carColors[i].z * specularFactor, carColors[i].w);
+		carSpecExp[i] = 0.5;
 	}
 
 	int i = 36;
 
+	// Front Racing Stipes
 	for (int j = i; j < i+12; j++)
 	{
 		carNormals[j] = vec3(0, 0, 1);
 	}
-
-	// Front Racing Stipes
 	carVerts[i++] = vec4(CAR_WIDTH*.3, -CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
 	carVerts[i++] = vec4(CAR_WIDTH*.3, CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
 	carVerts[i++] = vec4(CAR_WIDTH*.6, CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
@@ -281,12 +291,11 @@ void generateCar(){
 	carVerts[i++] = vec4(-CAR_WIDTH*.3, -CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
 	carVerts[i++] = vec4(-CAR_WIDTH*.6, -CAR_HEIGHT, CAR_LENGTH+.001, 1.0);
 
+	// Middle Racing Stripes
 	for (int j = i; j < i+12; j++)
 	{
 		carNormals[j] = vec3(0, 1, 0);
 	}
-	
-	// Middle Racing Stripes
 	carVerts[i++] = vec4(CAR_WIDTH*.3, CAR_HEIGHT+.001, -CAR_LENGTH, 1.0);
 	carVerts[i++] = vec4(CAR_WIDTH*.3, CAR_HEIGHT+.001, CAR_LENGTH, 1.0);
 	carVerts[i++] = vec4(CAR_WIDTH*.6, CAR_HEIGHT+.001, CAR_LENGTH, 1.0);
@@ -300,12 +309,11 @@ void generateCar(){
 	carVerts[i++] = vec4(-CAR_WIDTH*.3, CAR_HEIGHT+.001, -CAR_LENGTH, 1.0);
 	carVerts[i++] = vec4(-CAR_WIDTH*.6, CAR_HEIGHT+.001, -CAR_LENGTH, 1.0);
 
+	// Back Racing Stripes
 	for (int j = i; j < i+12; j++)
 	{
 		carNormals[j] = vec3(0, 0, 1);
-	}
-
-	// Back Racing Stripes
+	}	
 	carVerts[i++] = vec4(CAR_WIDTH*.3, -CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
 	carVerts[i++] = vec4(CAR_WIDTH*.3, CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
 	carVerts[i++] = vec4(CAR_WIDTH*.6, CAR_HEIGHT, -CAR_LENGTH-.001, 1.0);
@@ -364,11 +372,12 @@ void generateStage()
 		stageNormals[i] = vec3(0, 1, 0);
 		
 		float ambientFactor = 1.0;
-		float diffuseFactor = 4.0;
-		float specularFactor = 0.2;
+		float diffuseFactor = 1.0;
+		float specularFactor = 1.0;
 		stageAmbient[i] = vec4(stageColors[i].x * ambientFactor, stageColors[i].y * ambientFactor, stageColors[i].z * ambientFactor, stageColors[i].w);
 		stageDiffuse[i] = vec4(stageColors[i].x * diffuseFactor, stageColors[i].y * diffuseFactor, stageColors[i].z * diffuseFactor, stageColors[i].w);
 		stageSpecular[i] = vec4(stageColors[i].x * specularFactor, stageColors[i].y * specularFactor, stageColors[i].z * specularFactor, stageColors[i].w);
+		stageSpecExp[i] = 0.1;
 	}
 }
 void generateWheel()
@@ -389,6 +398,7 @@ void generateWheel()
 		wheelAmbient[i] = vec4(wheelColors[i].x * ambientFactor, wheelColors[i].y * ambientFactor, wheelColors[i].z * ambientFactor, wheelColors[i].w);
 		wheelDiffuse[i] = vec4(wheelColors[i].x * diffuseFactor, wheelColors[i].y * diffuseFactor, wheelColors[i].z * diffuseFactor, wheelColors[i].w);
 		wheelSpecular[i] = vec4(wheelColors[i].x * specularFactor, wheelColors[i].y * specularFactor, wheelColors[i].z * specularFactor, wheelColors[i].w);
+		wheelSpecExp[i] = 0.3;
 	}
 	for ( ; i < WHEEL_POINT_COUNT*2; i++)
 	{
@@ -424,7 +434,6 @@ void generateWheel()
 	for (int i = 0; i < WHEEL_CONNECTOR_POINT_COUNT; i++)
 	{
 		wheelConColors[i] = vec4(0.05, 0.05, 0.05, 1.0);
-		//wheelConNormals[i] = vec3(wheelConVerts[i].x, wheelConVerts[i].y, wheelConVerts[i].z);
 		wheelConNormals[i] = vec3(wheelConVerts[i].x, wheelConVerts[i].y, wheelConVerts[i].z);
 		
 		float ambientFactor = 1.0;
@@ -433,8 +442,8 @@ void generateWheel()
 		wheelConAmbient[i] = vec4(wheelConColors[i].x * ambientFactor, wheelConColors[i].y * ambientFactor, wheelConColors[i].z * ambientFactor, wheelConColors[i].w);
 		wheelConDiffuse[i] = vec4(wheelConColors[i].x * diffuseFactor, wheelConColors[i].y * diffuseFactor, wheelConColors[i].z * diffuseFactor, wheelConColors[i].w);
 		wheelConSpecular[i] = vec4(wheelConColors[i].x * specularFactor, wheelConColors[i].y * specularFactor, wheelConColors[i].z * specularFactor, wheelConColors[i].w);
+		wheelConSpecExp[i] = 0.1;
 	}
-
 
 	wheelStripeVerts[0] = vec4(-WHEEL_RADIUS*.75, -WHEEL_RADIUS*.75, WHEEL_THICKNESS+0.001, 1.0);
 	wheelStripeVerts[1] = vec4(WHEEL_RADIUS*.75, -WHEEL_RADIUS*.75, WHEEL_THICKNESS+0.001, 1.0);
@@ -454,6 +463,7 @@ void generateWheel()
 		wheelStripeAmbient[i] = vec4(wheelStripeColors[i].x * ambientFactor, wheelStripeColors[i].y * ambientFactor, wheelStripeColors[i].z * ambientFactor, wheelStripeColors[i].w);
 		wheelStripeDiffuse[i] = vec4(wheelStripeColors[i].x * diffuseFactor, wheelStripeColors[i].y * diffuseFactor, wheelStripeColors[i].z * diffuseFactor, wheelStripeColors[i].w);
 		wheelStripeSpecular[i] = vec4(wheelStripeColors[i].x * specularFactor, wheelStripeColors[i].y * specularFactor, wheelStripeColors[i].z * specularFactor, wheelStripeColors[i].w);
+		wheelStripeSpecExp[i] = 0.9;
 	}
 }
 void generateHead()
@@ -508,6 +518,10 @@ void generateHead()
 		delete[] headSpecular;
 	}
 	headSpecular = new vec4[headVertCount];
+	if (headSpecExp){
+		delete[] headSpecExp;
+	}
+	headSpecExp = new float[headVertCount];
 
 	for (int i = 0; i < headVertCount; i++)
 	{
@@ -515,10 +529,11 @@ void generateHead()
 		headNormals[i] = vec3(headVerts[i].x, headVerts[i].y, headVerts[i].z);
 		float ambientFactor = 0.5;
 		float diffuseFactor = 0.2;
-		float specularFactor = 0.1;
+		float specularFactor = 0.7;
 		headAmbient[i] = vec4(headColors[i].x * ambientFactor, headColors[i].y * ambientFactor, headColors[i].z * ambientFactor, headColors[i].w);
 		headDiffuse[i] = vec4(headColors[i].x * diffuseFactor, headColors[i].y * diffuseFactor, headColors[i].z * diffuseFactor, headColors[i].w);
 		headSpecular[i] = vec4(headColors[i].x * specularFactor, headColors[i].y * specularFactor, headColors[i].z * specularFactor, headColors[i].w);
+		headSpecExp[i] = 0.9;
 	}
 }
 void generateEye()
@@ -577,6 +592,11 @@ void generateEye()
 		delete[] eyeSpecular;
 	}
 	eyeSpecular = new vec4[eyeVertCount];
+	
+	if (eyeSpecExp){
+		delete[] eyeSpecExp;
+	}
+	eyeSpecExp = new float[eyeVertCount];
 
 	for (int i = 0; i < eyeVertCount; i++)
 	{
@@ -588,6 +608,7 @@ void generateEye()
 		eyeAmbient[i] = vec4(eyeColors[i].x * ambientFactor, eyeColors[i].y * ambientFactor, eyeColors[i].z * ambientFactor, eyeColors[i].w);
 		eyeDiffuse[i] = vec4(eyeColors[i].x * diffuseFactor, eyeColors[i].y * diffuseFactor, eyeColors[i].z * diffuseFactor, eyeColors[i].w);
 		eyeSpecular[i] = vec4(eyeColors[i].x * specularFactor, eyeColors[i].y * specularFactor, eyeColors[i].z * specularFactor, eyeColors[i].w);
+		eyeSpecExp[i] = 0.9;
 	}
 }
 void generatePylon()
@@ -647,7 +668,6 @@ void generatePylon()
 			pylonNormals[i][j] = vec3(0, 1, 0);
 		}
 
-
 		pylonVerts[i][24] = vec4(PYLON_WIDTH, PYLON_HEIGHT, PYLON_DEPTH, 1.0);
 		pylonVerts[i][25] = vec4(PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][26] = vec4(-PYLON_WIDTH, PYLON_HEIGHT, -PYLON_DEPTH, 1.0);
@@ -660,7 +680,6 @@ void generatePylon()
 			pylonNormals[i][j] = vec3(0, -1, 0);
 		}
 
-
 		pylonVerts[i][30] = vec4(PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
 		pylonVerts[i][31] = vec4(PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
 		pylonVerts[i][32] = vec4(-PYLON_WIDTH, 0, PYLON_DEPTH, 1.0);
@@ -669,7 +688,8 @@ void generatePylon()
 		pylonVerts[i][35] = vec4(PYLON_WIDTH, 0, -PYLON_DEPTH, 1.0);
 	}
 
-	for(int i=0; i<36; i++){
+	for(int i=0; i<36; i++)
+	{
 		pylonColors[0][i] = vec4(1.0, 0.0, 0.0, 1.0);
 		pylonColors[1][i] = vec4(0.0, 1.0, 0.0, 1.0);
 		pylonColors[2][i] = vec4(0.0, 0.0, 1.0, 1.0);
@@ -677,17 +697,15 @@ void generatePylon()
 
 		for (int j=0; j < 4; j++)
 		{
-			//pylonNormals[j][i] = vec3(pylonVerts[j][i].x, pylonVerts[j][i].y, pylonVerts[j][i].z);
-
 			float ambientFactor = 0.8;
-			float diffuseFactor = 1.0;
-			float specularFactor = 1.0;
+			float diffuseFactor = 0.5;
+			float specularFactor = 0.5;
 			pylonAmbient[j][i] = vec4(pylonColors[j][i].x * ambientFactor, pylonColors[j][i].y * ambientFactor, pylonColors[j][i].z * ambientFactor, pylonColors[j][i].w);
 			pylonDiffuse[j][i] = vec4(pylonColors[j][i].x * diffuseFactor, pylonColors[j][i].y * diffuseFactor, pylonColors[j][i].z * diffuseFactor, pylonColors[j][i].w);
 			pylonSpecular[j][i] = vec4(pylonColors[j][i].x * specularFactor, pylonColors[j][i].y * specularFactor, pylonColors[j][i].z * specularFactor, pylonColors[j][i].w);
+			pylonSpecExp[j][i] = 0.8;
 		}
 	}
-
 }
 /* Since the wheel is kind of complex, use this helper function to draw it 
 after the draw position has been set up. */
@@ -713,7 +731,6 @@ void display(void)
 		if (staticCameraCenterOfStage == true)
 		{
 			mv = LookAt(vec4(0, CAR_HEIGHT+(WHEEL_RADIUS), dolly, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
-			//mv = LookAt(vec4(0, 20, 0, 1.0), vec4(0, 0, 0, 1.0), vec4(1, 0, 0, 0.0));
 		}
 		else
 		{
@@ -731,8 +748,8 @@ void display(void)
 	else if (camera == CHASE_CAMERA)
 	{
 		float Angle = (M_PI*(carAngle)/180);
-		float X = sin(Angle)*20;
-		float Z = cos(Angle)*20;
+		float X = sin(Angle)*25;
+		float Z = cos(Angle)*25;
 		mv = LookAt(vec4(xPosition+X, 20, zPosition+Z, 1.0), 
 			vec4(xPosition-X, 1, zPosition-Z, 1.0), vec4(0, 1, 0, 0.0));
 	}
@@ -765,15 +782,8 @@ void display(void)
 
 	// Setup the ambient light
 	glUniform4fv(ambient_light, 1, vec4(0.3, 0.3, 0.3, 1));
-	//glVertexAttrib4fv(vAmbientDiffuseColor, vec4(0, 0.5, 0, 1));
 
-		float Angle = (M_PI*(carAngle)/180);
-		float X = sin(Angle);
-		float Z = cos(Angle);
-
-	// Confirmed light_position is placed with the next block of code
-	//mv = mv*Translate(-X*CAR_LENGTH, 0, -Z*CAR_LENGTH);
-
+	// Set position of car to get the lights placed relative to it
 	mv = mv*Translate(0.0, CAR_HEIGHT+WHEEL_RADIUS, 0.0);
 	mv = mv*Translate(xPosition, yPosition, zPosition);
 	mv = mv*RotateY(carAngle);
@@ -793,7 +803,7 @@ void display(void)
 	lightColor[0] = vec4(1.0, 1.0, 1.0, 1.0);
 	
 	// Right Headlight
-	mv = mv*Translate(0.75*CAR_WIDTH*2, 0, 0);
+	mv = mv*Translate(0.75*CAR_WIDTH*2, 1, 0);
 	lightPos[1] = mv*vec4(0, 0, 0, 1.0);
 	lights[1] = mv;
 	lightVector[1] = mv*vec4(0,-10,-20, 1.0);
@@ -802,32 +812,25 @@ void display(void)
 
 	// Red Police Light
 	mv = carCenter;
-	mv = mv*Translate(-CAR_WIDTH, CAR_HEIGHT, 0);
+	mv = mv*Translate(-CAR_WIDTH, CAR_HEIGHT+(HEAD_RADIUS*2), 5);
 	mv = mv*RotateY(policeLightAngle);
 	lightPos[2] = mv*vec4(0, 0, 0, 1.0);
 	lights[2] = mv;
-	lightVector[2] = mv*vec4(-20,-10,0, 1.0);
+	lightVector[2] = mv*vec4(-20,0,0, 1.0);
 	lightVector[2] = lightVector[2]*-1;
 
 	// Blue Police Light
 	mv = carCenter;
-	mv = mv*Translate(CAR_WIDTH, CAR_HEIGHT, 0);
-	mv = mv*RotateY(-policeLightAngle);
+	mv = mv*Translate(CAR_WIDTH, CAR_HEIGHT+1, 5);
+	mv = mv*RotateY(180);
+	mv = mv*RotateY(policeLightAngle+90);
 	lightPos[3] = mv*vec4(0, 0, 0, 1.0);
 	lights[3] = mv;
-	lightVector[3] = mv*vec4(20,-10, 0, 1.0);
+	lightVector[3] = mv*vec4(-20,0, 0, 1.0);
 	lightVector[3] = lightVector[3]*-1;
-		
-	if (copLightsOn)
-	{
-		lightColor[2] = vec4(1.0, 0.0, 0.0, 1.0);
-		lightColor[3] = vec4(0.0, 0.0, 1.0, 1.0);
-	}
-	else
-	{
-		lightColor[2] = vec4(0.0, 0.0, 0.0, 1.0);
-		lightColor[3] = vec4(0.0, 0.0, 0.0, 1.0);
-	}
+
+	lightColor[2] = vec4(1.0, 0.0, 0.0, 1.0);
+	lightColor[3] = vec4(0.0, 0.0, 1.0, 1.0);
 
 	float tmp[4*4];
 
@@ -858,7 +861,7 @@ void display(void)
 	}
 	glUniform4fv(light_direction, 4, tmp);
 
-	float cutoffangle[4] = {(M_PI*20)/180, (M_PI*20)/180, (M_PI*90)/180, (M_PI*90)/180};
+	float cutoffangle[4] = {(M_PI*20)/180, (M_PI*20)/180, (M_PI*30)/180, (M_PI*30)/180};
 	glUniform1fv(light_cuttoffangle, 4, cutoffangle);
 
 	/* Debug to draw a white ball where each light position is at */ 
@@ -1132,7 +1135,7 @@ void init()
 
 	// Create all vertex array object
 	glGenVertexArrays( VAO_COUNT, &vao[0] );
-	glGenBuffers(VAO_COUNT*6, &vbo[0]);
+	glGenBuffers(VAO_COUNT*7, &vbo[0]);
 
 	// Create and initialize any buffer objects
 	glBindVertexArray( vao[CAR] );
@@ -1166,6 +1169,12 @@ void init()
 	vSpecular = glGetAttribLocation(program, "vSpecular");
 	glEnableVertexAttribArray(vSpecular);
 	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(carSpecExp), carSpecExp, GL_STATIC_DRAW );
+	vSpecularExponent = glGetAttribLocation(program, "vSpecularExponent");
+	glEnableVertexAttribArray(vSpecularExponent);
+	glVertexAttribPointer(vSpecularExponent, 1, GL_FLOAT, GL_FALSE, 0, 0);
+
 
 	glBindVertexArray( vao[STAGE] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -1198,6 +1207,12 @@ void init()
 	vSpecular = glGetAttribLocation(program, "vSpecular");
 	glEnableVertexAttribArray(vSpecular);
 	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(stageSpecExp), stageSpecExp, GL_STATIC_DRAW );
+	vSpecularExponent = glGetAttribLocation(program, "vSpecularExponent");
+	glEnableVertexAttribArray(vSpecularExponent);
+	glVertexAttribPointer(vSpecularExponent, 1, GL_FLOAT, GL_FALSE, 0, 0);
+
 
 	glBindVertexArray( vao[WHEEL] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -1230,7 +1245,11 @@ void init()
 	vSpecular = glGetAttribLocation(program, "vSpecular");
 	glEnableVertexAttribArray(vSpecular);
 	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelSpecExp), wheelSpecExp, GL_STATIC_DRAW );
+	vSpecularExponent = glGetAttribLocation(program, "vSpecularExponent");
+	glEnableVertexAttribArray(vSpecularExponent);
+	glVertexAttribPointer(vSpecularExponent, 1, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[HEAD] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -1263,6 +1282,11 @@ void init()
 	vSpecular = glGetAttribLocation(program, "vSpecular");
 	glEnableVertexAttribArray(vSpecular);
 	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, headVertCount*sizeof(float), headSpecExp, GL_STATIC_DRAW );
+	vSpecularExponent = glGetAttribLocation(program, "vSpecularExponent");
+	glEnableVertexAttribArray(vSpecularExponent);
+	glVertexAttribPointer(vSpecularExponent, 1, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[EYE] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -1295,6 +1319,11 @@ void init()
 	vSpecular = glGetAttribLocation(program, "vSpecular");
 	glEnableVertexAttribArray(vSpecular);
 	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, eyeVertCount*sizeof(float), eyeSpecExp, GL_STATIC_DRAW );
+	vSpecularExponent = glGetAttribLocation(program, "vSpecularExponent");
+	glEnableVertexAttribArray(vSpecularExponent);
+	glVertexAttribPointer(vSpecularExponent, 1, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[WHEEL_STRIPE] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -1327,6 +1356,11 @@ void init()
 	vSpecular = glGetAttribLocation(program, "vSpecular");
 	glEnableVertexAttribArray(vSpecular);
 	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelStripeSpecExp), wheelStripeSpecExp, GL_STATIC_DRAW );
+	vSpecularExponent = glGetAttribLocation(program, "vSpecularExponent");
+	glEnableVertexAttribArray(vSpecularExponent);
+	glVertexAttribPointer(vSpecularExponent, 1, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[WHEEL_CONNECTORS] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -1359,6 +1393,11 @@ void init()
 	vSpecular = glGetAttribLocation(program, "vSpecular");
 	glEnableVertexAttribArray(vSpecular);
 	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(wheelConSpecExp), wheelConSpecExp, GL_STATIC_DRAW );
+	vSpecularExponent = glGetAttribLocation(program, "vSpecularExponent");
+	glEnableVertexAttribArray(vSpecularExponent);
+	glVertexAttribPointer(vSpecularExponent, 1, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindVertexArray( vao[PYLON] );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
@@ -1391,6 +1430,11 @@ void init()
 	vSpecular = glGetAttribLocation(program, "vSpecular");
 	glEnableVertexAttribArray(vSpecular);
 	glVertexAttribPointer(vSpecular, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[vboIndex++] );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(pylonSpecExp), pylonSpecExp, GL_STATIC_DRAW );
+	vSpecularExponent = glGetAttribLocation(program, "vSpecularExponent");
+	glEnableVertexAttribArray(vSpecularExponent);
+	glVertexAttribPointer(vSpecularExponent, 1, GL_FLOAT, GL_FALSE, 0, 0);
 
 	//grab pointers for our modelview and perspecive uniform matrices
 	model_view = glGetUniformLocation(program, "model_view");
@@ -1435,9 +1479,17 @@ void my_timer(int v)
 		carAngle += temp * 0.03;	// Throttle back the angle as well.
 	}
 
+
+
 	if (copLightsOn)
 	{
-		policeLightAngle += 5.0;
+		static float policeLightRate = 2.0;
+		//if ((policeLightAngle > 90) || (policeLightAngle < -60))
+		{
+			//policeLightRate *= -1;
+		}
+
+		policeLightAngle += policeLightRate;
 	}
 
 	/* Checks to see if we are off the stage.  
