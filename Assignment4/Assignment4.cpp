@@ -262,13 +262,13 @@ void generateCar(){
 	for(int i=36; i<72; i++){
 		carColors[i] = vec4(1.0, 1.0, 1.0, 1.0);
 
-		float ambientFactor = 0.8;
-		float diffuseFactor = 1.0;
-		float specularFactor = 1.0;
+		float ambientFactor = 0.2;
+		float diffuseFactor = 0.4;
+		float specularFactor = 0.4;
 		carAmbient[i] = vec4(carColors[i].x * ambientFactor, carColors[i].y * ambientFactor, carColors[i].z * ambientFactor, carColors[i].w);
 		carDiffuse[i] = vec4(carColors[i].x * diffuseFactor, carColors[i].y * diffuseFactor, carColors[i].z * diffuseFactor, carColors[i].w);
 		carSpecular[i] = vec4(carColors[i].x * specularFactor, carColors[i].y * specularFactor, carColors[i].z * specularFactor, carColors[i].w);
-		carSpecExp[i] = 0.5;
+		carSpecExp[i] = 2000;
 	}
 
 	int i = 36;
@@ -377,7 +377,7 @@ void generateStage()
 		stageAmbient[i] = vec4(stageColors[i].x * ambientFactor, stageColors[i].y * ambientFactor, stageColors[i].z * ambientFactor, stageColors[i].w);
 		stageDiffuse[i] = vec4(stageColors[i].x * diffuseFactor, stageColors[i].y * diffuseFactor, stageColors[i].z * diffuseFactor, stageColors[i].w);
 		stageSpecular[i] = vec4(stageColors[i].x * specularFactor, stageColors[i].y * specularFactor, stageColors[i].z * specularFactor, stageColors[i].w);
-		stageSpecExp[i] = 0.1;
+		stageSpecExp[i] = 2;
 	}
 }
 void generateWheel()
@@ -527,13 +527,13 @@ void generateHead()
 	{
 		headColors[i] = vec4(1.0, 1.0, 1.0, 1.0);
 		headNormals[i] = vec3(headVerts[i].x, headVerts[i].y, headVerts[i].z);
-		float ambientFactor = 0.5;
-		float diffuseFactor = 0.2;
-		float specularFactor = 0.7;
+		float ambientFactor = 0.15;
+		float diffuseFactor = 0.15;
+		float specularFactor = 0.75;
 		headAmbient[i] = vec4(headColors[i].x * ambientFactor, headColors[i].y * ambientFactor, headColors[i].z * ambientFactor, headColors[i].w);
 		headDiffuse[i] = vec4(headColors[i].x * diffuseFactor, headColors[i].y * diffuseFactor, headColors[i].z * diffuseFactor, headColors[i].w);
 		headSpecular[i] = vec4(headColors[i].x * specularFactor, headColors[i].y * specularFactor, headColors[i].z * specularFactor, headColors[i].w);
-		headSpecExp[i] = 0.9;
+		headSpecExp[i] = 100.0;
 	}
 }
 void generateEye()
@@ -600,7 +600,7 @@ void generateEye()
 
 	for (int i = 0; i < eyeVertCount; i++)
 	{
-		eyeColors[i] = vec4(0.0, 0.0, 0.0, 1.0);
+		eyeColors[i] = vec4(0.3, 0.3, 0.3, 1.0);
 		eyeNormals[i] = vec3(eyeVerts[i].x, eyeVerts[i].y, eyeVerts[i].z);
 		float ambientFactor = 0.2;
 		float diffuseFactor = 0.2;
@@ -788,7 +788,6 @@ void display(void)
 	mv = mv*Translate(xPosition, yPosition, zPosition);
 	mv = mv*RotateY(carAngle);
 	mat4 carCenter = mv;
-	mv = mv*Translate(-0.75*CAR_WIDTH, 0, -CAR_LENGTH);
 	
 	mat4 lights[4];		// Track the point of each light for placing a ball there later
 	vec4 lightPos[4];
@@ -796,23 +795,24 @@ void display(void)
 	vec4 lightColor[4];
 
 	// Left Headlight
+	mv = mv*Translate(-0.9*CAR_WIDTH, 0, -CAR_LENGTH-.2);
 	lightPos[0] = mv*vec4(0, 0, 0, 1.0);
 	lights[0] = mv;
-	lightVector[0] = mv*vec4(0,-10,-20, 1.0);
+	lightVector[0] = mv*vec4(-3,-10,-30, 1.0);
 	lightVector[0] = lightVector[0]*-1;
 	lightColor[0] = vec4(1.0, 1.0, 1.0, 1.0);
 	
 	// Right Headlight
-	mv = mv*Translate(0.75*CAR_WIDTH*2, 1, 0);
+	mv = mv*Translate(0.9*CAR_WIDTH*2, 0, 0);
 	lightPos[1] = mv*vec4(0, 0, 0, 1.0);
 	lights[1] = mv;
-	lightVector[1] = mv*vec4(0,-10,-20, 1.0);
+	lightVector[1] = mv*vec4(3,-10,-30, 1.0);
 	lightVector[1] = lightVector[1]*-1;
 	lightColor[1] = vec4(1.0, 1.0, 1.0, 1.0);
 
 	// Red Police Light
 	mv = carCenter;
-	mv = mv*Translate(-CAR_WIDTH, CAR_HEIGHT+(HEAD_RADIUS*2), 5);
+	mv = mv*Translate(-CAR_WIDTH*.8, CAR_HEIGHT+1, 4);
 	mv = mv*RotateY(policeLightAngle);
 	lightPos[2] = mv*vec4(0, 0, 0, 1.0);
 	lights[2] = mv;
@@ -821,16 +821,16 @@ void display(void)
 
 	// Blue Police Light
 	mv = carCenter;
-	mv = mv*Translate(CAR_WIDTH, CAR_HEIGHT+1, 5);
+	mv = mv*Translate(CAR_WIDTH*.8, CAR_HEIGHT+1, 4);
 	mv = mv*RotateY(180);
-	mv = mv*RotateY(policeLightAngle+90);
+	mv = mv*RotateY(policeLightAngle+45);
 	lightPos[3] = mv*vec4(0, 0, 0, 1.0);
 	lights[3] = mv;
 	lightVector[3] = mv*vec4(-20,0, 0, 1.0);
 	lightVector[3] = lightVector[3]*-1;
 
-	lightColor[2] = vec4(1.0, 0.0, 0.0, 1.0);
-	lightColor[3] = vec4(0.0, 0.0, 1.0, 1.0);
+	lightColor[2] = vec4(1.0, 0.01, 0.01, 1.0);
+	lightColor[3] = vec4(0.01, 0.01, 1.0, 1.0);
 
 	float tmp[4*4];
 
@@ -1079,7 +1079,7 @@ void Keyboard(unsigned char key, int x, int y) {
 	}
 
 
-
+#define DEBUG
 #ifdef DEBUG		// Used for creating objects to see all sides
 	if (key == 'q')
 	{
@@ -1089,6 +1089,22 @@ void Keyboard(unsigned char key, int x, int y) {
 	if (key == 'w')
 	{
 		rx -= 1.0;
+	}
+	if (key == 'o')
+	{
+		tz += 1.0;
+	}
+	if(key == 'p')
+	{
+		tz -= 1.0;
+	}
+	if (key == '[')
+	{
+		ty += 1.0;
+	}
+	if(key == ']')
+	{
+		ty -= 1.0;
 	}
 
 	if (key == 'e')

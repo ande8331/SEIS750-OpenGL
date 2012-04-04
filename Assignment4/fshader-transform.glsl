@@ -46,7 +46,7 @@ void main()
 			{
 				// Certain positionings cause problems (being on wrong side of object), test for it, throw it out
 				specular += light_color[i] * fvSpecular * pow(max(0.0, dot(N, H[i])), fvSpecularExponent); // Specular
-				//specular.x = fvSpecularExponent;
+				//specular += light_color[i] * fvSpecular * pow(1, fvSpecularExponent); // Specular
 			}
 		}
 	}
