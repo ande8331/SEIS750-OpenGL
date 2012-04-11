@@ -54,6 +54,9 @@ GLuint program;
 
 GLubyte texture[texHeight][texWidth][3];
 
+int magFilter = GL_NEAREST;
+int minFilter = GL_NEAREST;
+
 void makeCheckerTexture(void)
 {
  int i, j, c;
@@ -130,10 +133,6 @@ void init(void)
 	glGenTextures(1, texName);
 	//make sure you're bound to the correct texture object
 	glBindTexture(GL_TEXTURE_2D, texName[0]);
-
-	//We'll explain these in a few minutes
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	
 	//Now move the texture data from main memory to texture memory 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, texture);
@@ -148,7 +147,9 @@ void init(void)
 void display(void)
 {
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  
+  	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
 	
 
 	mv =  LookAt(vec4(0,0,5.0+z_distance,1),vec4(0,0,0,1),vec4(0,1,0,0));
@@ -180,9 +181,30 @@ void keyboard (unsigned char key, int x, int y)
       case 27:
          exit(0);
          break;
+	  case 'a':
+		  if (magFilter == GL_NEAREST)
+		  {
+			  magFilter = GL_LINEAR;
+		  }
+		  else
+		  {
+			  magFilter = GL_NEAREST;
+		  }
+		  break;
+	  case 'i':
+		  if (minFilter == GL_NEAREST)
+		  {
+			  minFilter = GL_LINEAR;
+		  }
+		  else
+		  {
+			  minFilter = GL_NEAREST;
+		  }
+		  break;
       default:
          break;
    }
+   glutPostRedisplay();
 }
 
 void mouse_dragged(int x, int y) {
@@ -223,20 +245,20 @@ void mouse(int button, int state, int x, int y) {
 
 int main(int argc, char** argv)
 {
-   glutInit(&argc, argv);
-   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-   glutInitWindowSize(WIDTH, HEIGHT);
-   glutInitWindowPosition(100, 100);
-   glutCreateWindow("Texturing");
-   glewExperimental = GL_TRUE;
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+	glutInitWindowSize(WIDTH, HEIGHT);
+	glutInitWindowPosition(100, 100);
+	glutCreateWindow("Texturing");
+	glewExperimental = GL_TRUE;
 
 	glewInit();
-   init();
-   glutDisplayFunc(display);
-   glutReshapeFunc(reshape);
-   glutKeyboardFunc(keyboard);
+	init();
+	glutDisplayFunc(display);
+	glutReshapeFunc(reshape);
+	glutKeyboardFunc(keyboard);
 	glutMouseFunc(mouse);
 	glutMotionFunc(mouse_dragged);    
-   glutMainLoop();
-   return 0; 
+	glutMainLoop();
+	return 0; 
 }
