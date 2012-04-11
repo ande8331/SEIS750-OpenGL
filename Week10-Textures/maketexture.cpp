@@ -56,6 +56,8 @@ GLubyte texture[texHeight][texWidth][3];
 
 int magFilter = GL_NEAREST;
 int minFilter = GL_NEAREST;
+int sWrap = GL_REPEAT;
+int tWrap = GL_REPEAT;
 
 void makeCheckerTexture(void)
 {
@@ -88,13 +90,13 @@ void init(void)
    squareverts[0] = vec4(-1, -1, 0, 1);
    texcoords[0] = vec2(0, 0);
    squareverts[1] = vec4(1, -1, 0, 1);
-   texcoords[1] = vec2(1, 0);
+   texcoords[1] = vec2(1.5, 0);
    squareverts[2] = vec4(1, 1, 0, 1);
-   texcoords[2] = vec2(1, 1);
+   texcoords[2] = vec2(1.5, 1.5);
    squareverts[3] = vec4(1, 1, 0, 1);
-   texcoords[3] = vec2(1, 1);
+   texcoords[3] = vec2(1.5, 1.5);
    squareverts[4] = vec4(-1, 1, 0, 1);
-   texcoords[4] = vec2(0, 1);
+   texcoords[4] = vec2(0, 1.5);
    squareverts[5] = vec4(-1, -1, 0, 1);
    texcoords[5] = vec2(0, 0);
 
@@ -150,7 +152,8 @@ void display(void)
   	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
-	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, sWrap);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, tWrap);
 
 	mv =  LookAt(vec4(0,0,5.0+z_distance,1),vec4(0,0,0,1),vec4(0,1,0,0));
 	mv = mv * RotateX(view_rotx) * RotateY(view_roty) * RotateZ(view_rotz);
@@ -199,6 +202,26 @@ void keyboard (unsigned char key, int x, int y)
 		  else
 		  {
 			  minFilter = GL_NEAREST;
+		  }
+		  break;
+	  case 's':
+		  if (sWrap == GL_REPEAT)
+		  {
+			  sWrap = GL_CLAMP;
+		  }
+		  else
+		  {
+			  sWrap = GL_REPEAT;
+		  }
+		  break;
+	  case 't':
+		  if (tWrap == GL_REPEAT)
+		  {
+			  tWrap = GL_CLAMP;
+		  }
+		  else
+		  {
+			  tWrap = GL_REPEAT;
 		  }
 		  break;
       default:
