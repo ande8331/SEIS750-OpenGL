@@ -29,5 +29,23 @@
     <None Include="vshader-transform.glsl">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="fshader-lighting.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="vshader-lighting.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="fshader-celshading.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="fshader-phongshading.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="vshader-celshading.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="vshader-phongshading.glsl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
