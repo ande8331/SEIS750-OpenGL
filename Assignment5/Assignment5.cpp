@@ -63,10 +63,10 @@ GLuint ambient_light;
 
 vec4* sphere_verts;
 vec3* sphere_normals;
+vec2* sphere_tex_coords;
 
 
-
-#define RECTANGLE
+//#define RECTANGLE
 
 
 //Modified slightly from the OpenIL tutorials
@@ -139,45 +139,72 @@ int generateSphere(float radius, int subdiv)
 
 	int totalverts = ceil(subdiv/2.0)*subdiv * 6;
 
-	if(sphere_normals){
+	if(sphere_normals)
+	{
 		delete[] sphere_normals;
 	}
 	sphere_normals = new vec3[totalverts];
-	if(sphere_verts){
+	
+	if(sphere_verts)
+	{
 		delete[] sphere_verts;
 	}
 	sphere_verts = new vec4[totalverts];
 
-	int k = 0;
-	for(float i = -M_PI/2; i<=M_PI/2; i+=step){
-		for(float j = -M_PI; j<=M_PI; j+=step){
+	if (sphere_tex_coords)
+	{
+		delete[] sphere_tex_coords;
+	}
+	sphere_tex_coords = new vec2[totalverts];
+
+	int k = 0;	
+	float steps = (2*M_PI)/step;
+	float xLength = 1.0/steps;
+	float yLength = 1.0/steps;
+	int iint = 0;
+	int jint = 0;
+	for(float i = -M_PI/2; i<=M_PI/2; i+=step)
+	{		
+		jint = 0;
+		for(float j = -M_PI; j<=M_PI; j+=step)
+		{			
 			//triangle 1
-			sphere_normals[k]= vec3(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i));
-			sphere_verts[k]=   vec4(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i), 1.0);
+			sphere_normals[k] = vec3(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i));
+			sphere_verts[k] =   vec4(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i), 1.0);
+			sphere_tex_coords[k] = vec2(jint*xLength, iint*yLength);
 			k++;
 	
-			sphere_normals[k]= vec3(radius*sin(j)*cos(i+step), radius*cos(j)*cos(i+step), radius*sin(i+step));
-			sphere_verts[k]=   vec4(radius*sin(j)*cos(i+step), radius*cos(j)*cos(i+step), radius*sin(i+step), 1.0);
+			sphere_normals[k] = vec3(radius*sin(j)*cos(i+step), radius*cos(j)*cos(i+step), radius*sin(i+step));
+			sphere_verts[k] =   vec4(radius*sin(j)*cos(i+step), radius*cos(j)*cos(i+step), radius*sin(i+step), 1.0);
+			sphere_tex_coords[k] = vec2((jint+1) * xLength, (iint)*yLength);
 			k++;
 			
-			sphere_normals[k]= vec3(radius*sin((j+step))*cos((i+step)), radius*cos(j+step)*cos(i+step), radius*sin(i+step));
-			sphere_verts[k]=   vec4(radius*sin((j+step))*cos((i+step)), radius*cos(j+step)*cos(i+step), radius*sin(i+step), 1.0);
+			sphere_normals[k] = vec3(radius*sin((j+step))*cos((i+step)), radius*cos(j+step)*cos(i+step), radius*sin(i+step));
+			sphere_verts[k] =   vec4(radius*sin((j+step))*cos((i+step)), radius*cos(j+step)*cos(i+step), radius*sin(i+step), 1.0);
+			sphere_tex_coords[k] = vec2((jint+1) * xLength, (iint+1)*yLength);
 			k++;
 
 			//triangle 2
-			sphere_normals[k]= vec3(radius*sin((j+step))*cos((i+step)), radius*cos(j+step)*cos(i+step), radius*sin(i+step));
-			sphere_verts[k]=   vec4(radius*sin((j+step))*cos((i+step)), radius*cos(j+step)*cos(i+step), radius*sin(i+step), 1.0);
+			sphere_normals[k] = vec3(radius*sin((j+step))*cos((i+step)), radius*cos(j+step)*cos(i+step), radius*sin(i+step));
+			sphere_verts[k] =   vec4(radius*sin((j+step))*cos((i+step)), radius*cos(j+step)*cos(i+step), radius*sin(i+step), 1.0);
+			sphere_tex_coords[k] = vec2((jint+1) * xLength, (iint+1)*yLength);
 			k++;
 
-			sphere_normals[k]= vec3(radius*sin(j+step)*cos(i), radius*cos(j+step)*cos(i), radius*sin(i));
-			sphere_verts[k]=   vec4(radius*sin(j+step)*cos(i), radius*cos(j+step)*cos(i), radius*sin(i), 1.0);
+			sphere_normals[k] = vec3(radius*sin(j+step)*cos(i), radius*cos(j+step)*cos(i), radius*sin(i));
+			sphere_verts[k] =   vec4(radius*sin(j+step)*cos(i), radius*cos(j+step)*cos(i), radius*sin(i), 1.0);
+			sphere_tex_coords[k] = vec2((jint) * xLength, (iint+1)*yLength);
 			k++;
 
-			sphere_normals[k]= vec3(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i));
-			sphere_verts[k]=   vec4(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i), 1.0);
+			sphere_normals[k] = vec3(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i));
+			sphere_verts[k] =   vec4(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i), 1.0);
+			sphere_tex_coords[k] = vec2(jint*xLength, iint*yLength);
 			k++;
+
+			jint++;
 		}
+		iint++;		
 	}
+
 	return totalverts;
 }
 
@@ -208,6 +235,8 @@ void display(void)
 
 #ifndef RECTANGLE
 	glBindVertexArray( vao[0] );
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texName[0]);
 	glDrawArrays( GL_TRIANGLES, 0, spherevertcount );    // draw the sphere 
 #else
 	glBindVertexArray( vao[0] );
@@ -242,12 +271,12 @@ void setupShader(GLuint prog){
 	vPosition = glGetAttribLocation(prog, "vPosition");
 	glEnableVertexAttribArray(vPosition);
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
-#ifndef RECTANGLE
+
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[1] );
 	vNormal = glGetAttribLocation(prog, "vNormal");
 	glEnableVertexAttribArray(vNormal);
 	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
-#else
+
 	texMap = glGetUniformLocation(prog, "texture");
 	glUniform1i(texMap, 0);//assign this one to texture unit 0
 
@@ -255,8 +284,6 @@ void setupShader(GLuint prog){
 	texCoord = glGetAttribLocation(prog, "texCoord");
 	glEnableVertexAttribArray(texCoord);
 	glVertexAttribPointer(texCoord, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-#endif
 
 	//Don't forget to send the projection matrix to our new shader!
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
@@ -304,20 +331,22 @@ void mouse_dragged(int x, int y) {
 
 void mouse(int button, int state, int x, int y) {
   //establish point of reference for dragging mouse in window
-    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-      left_button_down = TRUE;
-	  prevMouseX= x;
-      prevMouseY = y;
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+	{
+		left_button_down = TRUE;
+		prevMouseX= x;
+		prevMouseY = y;
     }
-
-	else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-      right_button_down = TRUE;
-      prevMouseX = x;
-      prevMouseY = y;
+	else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
+	{
+		right_button_down = TRUE;
+		prevMouseX = x;
+		prevMouseY = y;
     }
-    else if (state == GLUT_UP) {
-      left_button_down = FALSE;
-	  right_button_down = FALSE;
+    else if (state == GLUT_UP) 
+	{
+		left_button_down = FALSE;
+		right_button_down = FALSE;
 	}
 }
 
@@ -342,13 +371,16 @@ void init() {
 
     // Create and initialize any buffer objects
 	glBindVertexArray( vao[0] );
-	glGenBuffers( 2, &vbo[0] );
+	glGenBuffers( 3, &vbo[0] );
     glBindBuffer( GL_ARRAY_BUFFER, vbo[0] );
     glBufferData( GL_ARRAY_BUFFER, spherevertcount*sizeof(vec4), sphere_verts, GL_STATIC_DRAW);	
 
 	//and now our colors for each vertex
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[1] );
 	glBufferData( GL_ARRAY_BUFFER, spherevertcount*sizeof(vec3), sphere_normals, GL_STATIC_DRAW );
+
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[2] );
+    glBufferData( GL_ARRAY_BUFFER, spherevertcount*sizeof(vec2), sphere_tex_coords, GL_STATIC_DRAW);
 
 #else
 	/* Do a rectangle for test */
@@ -375,29 +407,29 @@ void init() {
 
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[2] );
     glBufferData( GL_ARRAY_BUFFER, sizeof(texcoords), texcoords, GL_STATIC_DRAW);
-
+#endif
 	ILuint ilTexID[3]; /* ILuint is a 32bit unsigned integer.
     //Variable texid will be used to store image name. */
 
 	ilInit(); /* Initialization of OpenIL */
-	ilGenImages(3, ilTexID); /* Generation of three image names for OpenIL image loading */
-	glGenTextures(3, texName); //and we eventually want the data in an OpenGL texture
+	ilGenImages(1, ilTexID); /* Generation of three image names for OpenIL image loading */
+	glGenTextures(1, texName); //and we eventually want the data in an OpenGL texture
  
 
 
 	ilBindImage(ilTexID[0]); /* Binding of IL image name */
-	loadTexFile("images/domokun.png");
+	loadTexFile("images/Earth.png");
 	glBindTexture(GL_TEXTURE_2D, texName[0]); //bind OpenGL texture name
 
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-   //Note how we depend on OpenIL to supply information about the file we just loaded in
-   glTexImage2D(GL_TEXTURE_2D, 0, ilGetInteger(IL_IMAGE_BPP), ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT),0,
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//Note how we depend on OpenIL to supply information about the file we just loaded in
+	glTexImage2D(GL_TEXTURE_2D, 0, ilGetInteger(IL_IMAGE_BPP), ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT),0,
 	   ilGetInteger(IL_IMAGE_FORMAT), ilGetInteger(IL_IMAGE_TYPE), ilGetData());
 
-    ilDeleteImages(3, ilTexID); //we're done with OpenIL, so free up the memory
+    ilDeleteImages(1, ilTexID); //we're done with OpenIL, so free up the memory
 
-#endif
+
 
 
 

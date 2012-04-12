@@ -53,5 +53,8 @@
     <None Include="images\domokun.png">
       <Filter>Source Files\images</Filter>
     </None>
+    <None Include="images\Earth.png">
+      <Filter>Source Files\images</Filter>
+    </None>
   </ItemGroup>
 </Project>
