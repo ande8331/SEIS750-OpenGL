@@ -218,8 +218,6 @@ void display(void)
 	glDrawArrays( GL_TRIANGLES, 0, 6 );
 
    glutSwapBuffers();
-
-
 }
 
 void reshape(int w, int h)
