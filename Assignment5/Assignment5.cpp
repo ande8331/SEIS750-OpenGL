@@ -158,6 +158,7 @@ int generateSphere(float radius, int subdiv)
 	sphere_tex_coords = new vec2[totalverts];
 
 	int k = 0;	
+
 	float xLength = 1.0/((2*M_PI)/step);
 	float yLength = 1.0/((M_PI)/step);
 	int iint = 0;
@@ -217,7 +218,7 @@ void display(void)
 
 	//Take care of any mouse rotations or panning
     mv = LookAt(vec4(0, 0, 10+z_distance, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
-
+	mv = mv * RotateX(90);
 	mv = mv * RotateX(view_rotx) * RotateY(view_roty) * RotateZ(view_rotz);
 
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
