@@ -9,7 +9,7 @@
 #pragma comment(lib, "glew32.lib")
 
 //store window width and height
-int ww=500, wh=500;
+int ww=700, wh=700;
 
 #define M_PI 3.14159265358979323846
 
@@ -31,9 +31,6 @@ double view_rotx = 0.0;
 double view_roty = 0.0;
 double view_rotz = 0.0;
 double z_distance;
-
-int mode = 0; //0 is sphere, 1 is teapot
-
 
 //our modelview and perspective matrices
 mat4 mv, p;
@@ -140,22 +137,13 @@ void display(void)
     glVertexAttrib4fv(vSpecularColor, vec4(1, 1, 1, 1));
 	glVertexAttrib1f(vSpecularExponent, 10);
 
-	if(mode == 0){
-		glBindVertexArray( vao[0] );
-		glDrawArrays( GL_TRIANGLES, 0, spherevertcount );    // draw the sphere 
-	}else{
-		//WARNING:
-		//Nvidia kludge: If you want the teapot to show up correctly, make sure that 
-		//vPosition is the first attribute listed in your vertex shader, and vNormal
-		//is the 3rd attribute listed.  Not sure what ATI cards will do with this
-		glBindVertexArray(0);
-		glutSolidTeapot(2); //not very bandwidth efficient
-	}
-
+	glBindVertexArray( vao[0] );
+	glDrawArrays( GL_TRIANGLES, 0, spherevertcount );    // draw the sphere 
     
     glFlush();
-  /*start processing buffered OpenGL routines*/
-  glutSwapBuffers();
+	
+	/*start processing buffered OpenGL routines*/
+	glutSwapBuffers();
 }
 
 //Connect all of the shader variables to local pointers
@@ -206,12 +194,6 @@ void Keyboard(unsigned char key, int x, int y) {
 		setupShader(program3);
 	}
 
-	if (key == 's'){
-		mode = 0;
-	}
-	if (key == 't'){
-		mode = 1;
-	}
 	glutPostRedisplay();
 
 }
@@ -290,25 +272,25 @@ void init() {
 
 int main(int argc, char **argv)
 {
-  /*set up window for display*/
-  glutInit(&argc, argv);
-  glutInitWindowPosition(0, 0); 
-  glutInitWindowSize(ww, wh);
-  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-  glutCreateWindow("Lighting Exercise");  
+	/*set up window for display*/
+	glutInit(&argc, argv);
+	glutInitWindowPosition(0, 0); 
+	glutInitWindowSize(ww, wh);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+	glutCreateWindow("Assignment 5 - Ross Anderson");  
 
-  glewExperimental = GL_TRUE;
+	glewExperimental = GL_TRUE;
 
 	glewInit();
-  init();
+	init();
 
-  glutDisplayFunc(display);
-  glutKeyboardFunc(Keyboard);
-  glutReshapeFunc(reshape);
-  //glutIdleFunc(idle);
-  glutMouseFunc(mouse);
-  glutMotionFunc(mouse_dragged);
+	glutDisplayFunc(display);
+	glutKeyboardFunc(Keyboard);
+	glutReshapeFunc(reshape);
 
-  glutMainLoop();
-  return 0;
+	glutMouseFunc(mouse);
+	glutMotionFunc(mouse_dragged);
+
+	glutMainLoop();
+	return 0;
 }
