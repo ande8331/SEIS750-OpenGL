@@ -158,9 +158,8 @@ int generateSphere(float radius, int subdiv)
 	sphere_tex_coords = new vec2[totalverts];
 
 	int k = 0;	
-	float steps = (2*M_PI)/step;
-	float xLength = 1.0/steps;
-	float yLength = 1.0/steps;
+	float xLength = 1.0/((2*M_PI)/step);
+	float yLength = 1.0/((M_PI)/step);
 	int iint = 0;
 	int jint = 0;
 	for(float i = -M_PI/2; i<=M_PI/2; i+=step)
@@ -356,7 +355,7 @@ void init() {
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 
 	//populate our arrays
-	spherevertcount = generateSphere(2, 20);
+	spherevertcount = generateSphere(2, 40);
 
 	// Load shaders and use the resulting shader program
     program1 = InitShader( "vshader-transform.glsl", "fshader-transform.glsl" );
