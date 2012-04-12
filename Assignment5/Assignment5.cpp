@@ -171,12 +171,12 @@ int generateSphere(float radius, int subdiv)
 			//triangle 1
 			sphere_normals[k] = vec3(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i));
 			sphere_verts[k] =   vec4(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i), 1.0);
-			sphere_tex_coords[k] = vec2(jint*xLength, iint*yLength);
+			sphere_tex_coords[k] = vec2((jint)*xLength, (iint)*yLength);
 			k++;
 	
 			sphere_normals[k] = vec3(radius*sin(j)*cos(i+step), radius*cos(j)*cos(i+step), radius*sin(i+step));
 			sphere_verts[k] =   vec4(radius*sin(j)*cos(i+step), radius*cos(j)*cos(i+step), radius*sin(i+step), 1.0);
-			sphere_tex_coords[k] = vec2((jint+1) * xLength, (iint)*yLength);
+			sphere_tex_coords[k] = vec2((jint) * xLength, (iint+1)*yLength);
 			k++;
 			
 			sphere_normals[k] = vec3(radius*sin((j+step))*cos((i+step)), radius*cos(j+step)*cos(i+step), radius*sin(i+step));
@@ -192,7 +192,7 @@ int generateSphere(float radius, int subdiv)
 
 			sphere_normals[k] = vec3(radius*sin(j+step)*cos(i), radius*cos(j+step)*cos(i), radius*sin(i));
 			sphere_verts[k] =   vec4(radius*sin(j+step)*cos(i), radius*cos(j+step)*cos(i), radius*sin(i), 1.0);
-			sphere_tex_coords[k] = vec2((jint) * xLength, (iint+1)*yLength);
+			sphere_tex_coords[k] = vec2((jint+1) * xLength, (iint)*yLength);
 			k++;
 
 			sphere_normals[k] = vec3(radius*sin(j)*cos(i), radius*cos(j)*cos(i), radius*sin(i));
@@ -356,7 +356,7 @@ void init() {
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 
 	//populate our arrays
-	spherevertcount = generateSphere(2, 10);
+	spherevertcount = generateSphere(2, 20);
 
 	// Load shaders and use the resulting shader program
     program1 = InitShader( "vshader-transform.glsl", "fshader-transform.glsl" );
