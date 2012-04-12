@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\images">
+      <UniqueIdentifier>{b4955e50-8de3-40d3-8bcc-580a3ae5d735}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Assignment5.cpp">
@@ -46,6 +49,9 @@
     </None>
     <None Include="vshader-phongshading.glsl">
       <Filter>Source Files</Filter>
+    </None>
+    <None Include="images\domokun.png">
+      <Filter>Source Files\images</Filter>
     </None>
   </ItemGroup>
 </Project>

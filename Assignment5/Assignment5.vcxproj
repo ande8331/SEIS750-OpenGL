@@ -68,6 +68,7 @@
     <None Include="fshader-lighting.glsl" />
     <None Include="fshader-phongshading.glsl" />
     <None Include="fshader-transform.glsl" />
+    <None Include="images\domokun.png" />
     <None Include="vshader-celshading.glsl" />
     <None Include="vshader-lighting.glsl" />
     <None Include="vshader-phongshading.glsl" />
