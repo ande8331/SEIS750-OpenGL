@@ -38,6 +38,8 @@ double view_roty = 0.0;
 double view_rotz = 0.0;
 double z_distance;
 
+float earthRotation = 0.0;
+
 //our modelview and perspective matrices
 mat4 mv, p;
 
@@ -219,6 +221,7 @@ void display(void)
 	//Take care of any mouse rotations or panning
     mv = LookAt(vec4(0, 0, 10+z_distance, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
 	mv = mv * RotateX(90);
+	mv = mv * RotateZ(earthRotation);
 	mv = mv * RotateX(view_rotx) * RotateY(view_roty) * RotateZ(view_rotz);
 
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
@@ -439,6 +442,15 @@ void init() {
 	glEnable(GL_DEPTH_TEST);
 }
 
+void my_timer(int v) 
+{	
+	earthRotation += 0.05;
+
+	/* calls the display function v times a second */
+	glutPostRedisplay();
+	glutTimerFunc(1000/v, my_timer, v);
+}
+
 int main(int argc, char **argv)
 {
 	/*set up window for display*/
@@ -456,7 +468,7 @@ int main(int argc, char **argv)
 	glutDisplayFunc(display);
 	glutKeyboardFunc(Keyboard);
 	glutReshapeFunc(reshape);
-
+	glutTimerFunc(500, my_timer, 60);
 	glutMouseFunc(mouse);
 	glutMotionFunc(mouse_dragged);
 
