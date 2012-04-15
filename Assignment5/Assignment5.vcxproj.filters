@@ -56,5 +56,8 @@
     <None Include="images\Earth.png">
       <Filter>Source Files\images</Filter>
     </None>
+    <None Include="images\EarthNight.png">
+      <Filter>Source Files\images</Filter>
+    </None>
   </ItemGroup>
 </Project>

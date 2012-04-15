@@ -54,7 +54,8 @@ GLuint vSpecularColor;
 GLuint vSpecularExponent;
 GLuint vNormal; //this is the standard name
 GLuint texCoord;
-GLuint texMap;
+GLuint dayTexMap;
+GLuint nightTexMap;
 
 
 //Some light properties
@@ -66,6 +67,12 @@ GLuint ambient_light;
 vec4* sphere_verts;
 vec3* sphere_normals;
 vec2* sphere_tex_coords;
+
+typedef enum
+{
+	DAY_TEXTURE,
+	NIGHT_TEXTURE
+} textureEnum;
 
 
 //#define RECTANGLE
@@ -220,33 +227,30 @@ void display(void)
 
 	//Take care of any mouse rotations or panning
     mv = LookAt(vec4(0, 0, 10+z_distance, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
-	mv = mv * RotateX(90);
-	mv = mv * RotateZ(earthRotation+90);
+	mat4 lightmat = mv;
+	mv = mv * RotateX(115);
+	mv = mv * RotateZ(-earthRotation-90);
 	mv = mv * RotateX(view_rotx) * RotateY(view_roty) * RotateZ(view_rotz);
 
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 	
 	
 	//You need to send some vertex attributes and uniform variables here
-	glUniform4fv(ambient_light, 1, vec4(0.2, 0.2, 0.2, 1));
+	glUniform4fv(ambient_light, 1, vec4(0.1, 0.1, 0.1, 1));
 	glUniform4fv(light_color, 1, vec4(1, 1, 1, 1));
-	glUniform4fv(light_position, 1, mv*vec4(50, 50, 50, 1));		// Light will follow the object (Because of mv)
+	glUniform4fv(light_position, 1, lightmat*vec4(-50, 25, 50, 1));		// Light will follow the object (Because of mv)
 	
 	glVertexAttrib4fv(vAmbientDiffuseColor, vec4(0.5, 0.5, 0.5, 1));
     glVertexAttrib4fv(vSpecularColor, vec4(1, 1, 1, 1));
 	glVertexAttrib1f(vSpecularExponent, 10);
 
-#ifndef RECTANGLE
 	glBindVertexArray( vao[0] );
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texName[0]);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, texName[1]);
+
 	glDrawArrays( GL_TRIANGLES, 0, spherevertcount );    // draw the sphere 
-#else
-	glBindVertexArray( vao[0] );
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texName[0]); //which texture do we want?
-	glDrawArrays( GL_TRIANGLES, 0, 6 );
-#endif
     
     glFlush();
 	
@@ -280,8 +284,11 @@ void setupShader(GLuint prog){
 	glEnableVertexAttribArray(vNormal);
 	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-	texMap = glGetUniformLocation(prog, "texture");
-	glUniform1i(texMap, 0);//assign this one to texture unit 0
+	dayTexMap = glGetUniformLocation(prog, "dayTexture");
+	glUniform1i(dayTexMap, DAY_TEXTURE);
+
+	nightTexMap = glGetUniformLocation(prog, "nightTexture");
+	glUniform1i(nightTexMap, NIGHT_TEXTURE);
 
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[2] );
 	texCoord = glGetAttribLocation(prog, "texCoord");
@@ -359,7 +366,7 @@ void init() {
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 
 	//populate our arrays
-	spherevertcount = generateSphere(2, 40);
+	spherevertcount = generateSphere(4, 40);
 
 	// Load shaders and use the resulting shader program
     program1 = InitShader( "vshader-transform.glsl", "fshader-transform.glsl" );
@@ -368,9 +375,6 @@ void init() {
 
 	// Create a vertex array object
     glGenVertexArrays( 1, &vao[0] );
-
-#ifndef RECTANGLE
-	/* Do a sphere */
 
     // Create and initialize any buffer objects
 	glBindVertexArray( vao[0] );
@@ -385,40 +389,14 @@ void init() {
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[2] );
     glBufferData( GL_ARRAY_BUFFER, spherevertcount*sizeof(vec2), sphere_tex_coords, GL_STATIC_DRAW);
 
-#else
-	/* Do a rectangle for test */
-	vec4 squareverts[6];
-	vec2 texcoords[6];
-	squareverts[0] = vec4(-1, -1, 0, 1);
-	texcoords[0] = vec2(0, 0);
-	squareverts[1] = vec4(1, -1, 0, 1);
-	texcoords[1] = vec2(1, 0);
-	squareverts[2] = vec4(1, 1, 0, 1);
-	texcoords[2] = vec2(1, 1);
-	squareverts[3] = vec4(1, 1, 0, 1);
-	texcoords[3] = vec2(1, 1);
-	squareverts[4] = vec4(-1, 1, 0, 1);
-	texcoords[4] = vec2(0, 1);
-	squareverts[5] = vec4(-1, -1, 0, 1);
-	texcoords[5] = vec2(0, 0);
-
-    // Create and initialize any buffer objects
-	glBindVertexArray( vao[0] );
-	glGenBuffers( 3, &vbo[0] );
-    glBindBuffer( GL_ARRAY_BUFFER, vbo[0] );
-    glBufferData( GL_ARRAY_BUFFER, sizeof(squareverts), squareverts, GL_STATIC_DRAW);
-
-	glBindBuffer( GL_ARRAY_BUFFER, vbo[2] );
-    glBufferData( GL_ARRAY_BUFFER, sizeof(texcoords), texcoords, GL_STATIC_DRAW);
-#endif
 	ILuint ilTexID[3]; /* ILuint is a 32bit unsigned integer.
     //Variable texid will be used to store image name. */
 
-	ilInit(); /* Initialization of OpenIL */
-	ilGenImages(1, ilTexID); /* Generation of three image names for OpenIL image loading */
-	glGenTextures(1, texName); //and we eventually want the data in an OpenGL texture
- 
+#define IMAGE_LOAD_COUNT 2
 
+	ilInit(); /* Initialization of OpenIL */
+	ilGenImages(IMAGE_LOAD_COUNT, ilTexID); /* Generation of three image names for OpenIL image loading */
+	glGenTextures(IMAGE_LOAD_COUNT, texName); //and we eventually want the data in an OpenGL texture
 
 	ilBindImage(ilTexID[0]); /* Binding of IL image name */
 	loadTexFile("images/Earth.png");
@@ -430,7 +408,19 @@ void init() {
 	glTexImage2D(GL_TEXTURE_2D, 0, ilGetInteger(IL_IMAGE_BPP), ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT),0,
 	   ilGetInteger(IL_IMAGE_FORMAT), ilGetInteger(IL_IMAGE_TYPE), ilGetData());
 
-    ilDeleteImages(1, ilTexID); //we're done with OpenIL, so free up the memory
+	ilBindImage(ilTexID[1]); /* Binding of IL image name */
+	loadTexFile("images/EarthNight.png");
+	glBindTexture(GL_TEXTURE_2D, texName[1]); //bind OpenGL texture name
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//Note how we depend on OpenIL to supply information about the file we just loaded in
+	glTexImage2D(GL_TEXTURE_2D, 0, ilGetInteger(IL_IMAGE_BPP), ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT),0,
+	   ilGetInteger(IL_IMAGE_FORMAT), ilGetInteger(IL_IMAGE_TYPE), ilGetData());
+
+
+
+    ilDeleteImages(IMAGE_LOAD_COUNT, ilTexID); //we're done with OpenIL, so free up the memory
 
 
 

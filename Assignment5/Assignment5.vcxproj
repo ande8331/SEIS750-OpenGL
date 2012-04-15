@@ -44,6 +44,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -70,6 +71,7 @@
     <None Include="fshader-transform.glsl" />
     <None Include="images\domokun.png" />
     <None Include="images\Earth.png" />
+    <None Include="images\EarthNight.png" />
     <None Include="vshader-celshading.glsl" />
     <None Include="vshader-lighting.glsl" />
     <None Include="vshader-phongshading.glsl" />

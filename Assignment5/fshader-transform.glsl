@@ -2,7 +2,8 @@
 in vec4 color;
 out vec4  fColor;
 in vec2 fTexCoord;
-uniform sampler2D texture;
+uniform sampler2D dayTexture;
+uniform sampler2D nightTexture;
 uniform vec4 ambient_light;
 in vec4 fvAmbientDiffuseColor;
 uniform vec4 light_color;
@@ -20,8 +21,19 @@ void main()
 	vec3 N = normalize (vN);
 	vec3 H = normalize (L+E);
 
-	vec4 ambient = ambient_light*fvAmbientDiffuseColor;
-	vec4 diffuse = light_color * fvAmbientDiffuseColor * max(0.0, dot(L, N));
 
-	fColor = (ambient*texture2D(texture, fTexCoord)) + (diffuse * texture2D(texture, fTexCoord));
+	vec4 tmpfvAmbientDiffuseColor = texture2D(nightTexture, fTexCoord);
+	//vec4 tmpfvSpecularColor =  texture2D(nightTexture, fTexCoord);
+	vec4 tmpfvSpecularColor = vec4(0,0,0,0);
+
+	vec4 ambient = ambient_light*tmpfvAmbientDiffuseColor;
+	vec4 diffuse = light_color * tmpfvAmbientDiffuseColor * max(0.0, dot(L, N));
+	vec4 specular = light_color * tmpfvSpecularColor * pow(max(0.0, dot(N, H)), fvSpecularExponent); // Specular
+	
+	if (dot (L, N) < 0)
+	{
+		specular = vec4(0, 0, 0, 1); // Certain positionings cause problems (being on wrong side of object), test for it, throw it out
+	}
+
+	fColor = ambient + diffuse + specular;
 }
