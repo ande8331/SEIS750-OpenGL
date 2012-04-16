@@ -62,5 +62,8 @@
     <None Include="vshader-specular.glsl">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="images\earthcloudmap.png">
+      <Filter>Source Files\images</Filter>
+    </None>
   </ItemGroup>
 </Project>

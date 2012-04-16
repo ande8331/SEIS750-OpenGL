@@ -71,6 +71,7 @@
     <None Include="fshader-transform.glsl" />
     <None Include="images\domokun.png" />
     <None Include="images\Earth.png" />
+    <None Include="images\earthcloudmap.png" />
     <None Include="images\EarthNight.png" />
     <None Include="images\EarthSpec.png" />
     <None Include="vshader-celshading.glsl" />

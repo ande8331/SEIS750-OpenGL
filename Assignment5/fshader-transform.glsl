@@ -22,8 +22,8 @@ void main()
 	vec3 H = normalize (L+E);
 
 
-	vec4 tmpfvAmbientDiffuseColor = texture2D(nightTexture, fTexCoord);
-	//vec4 tmpfvSpecularColor =  texture2D(nightTexture, fTexCoord);
+	vec4 tmpfvAmbientDiffuseColor = texture2D(dayTexture, fTexCoord);
+	//vec4 tmpfvSpecularColor =  texture2D(dayTexture, fTexCoord);
 	vec4 tmpfvSpecularColor = vec4(0,0,0,0);
 
 	vec4 ambient = ambient_light*tmpfvAmbientDiffuseColor;
@@ -32,6 +32,8 @@ void main()
 	
 	if (dot (L, N) < 0)
 	{
+		ambient = texture2D(nightTexture, fTexCoord);
+		diffuse = vec4(0,0,0,1);
 		specular = vec4(0, 0, 0, 1); // Certain positionings cause problems (being on wrong side of object), test for it, throw it out
 	}
 

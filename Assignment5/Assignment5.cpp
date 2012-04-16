@@ -29,10 +29,22 @@ typedef enum
 	NUM_TEXTURES
 } textureEnum;
 
-GLuint vao[1];
-GLuint vbo[3];
+typedef enum
+{
+	EARTH_VERTS,
+	EARTH_NORMALS,
+	EARTH_TEXTURE_COORDS,
+	CLOUD_VERTS,
+	CLOUD_NORMALS,
+	CLOUD_TEXTURE_COORDS,
+	NUM_VBO_ITEMS
+} vboEnum;
+
+GLuint vao[2];
+GLuint vbo[NUM_VBO_ITEMS];
 GLuint texName[NUM_TEXTURES];
 int spherevertcount;
+int cloudspherevertcount;
 
 //Let's have some mouse dragging rotation
 int right_button_down = FALSE;
@@ -65,6 +77,7 @@ GLuint texCoord;
 GLuint dayTexMap;
 GLuint nightTexMap;
 GLuint specularTexMap;
+GLuint cloudTexMap;
 
 
 //Some light properties
@@ -75,9 +88,6 @@ GLuint ambient_light;
 vec4* sphere_verts;
 vec3* sphere_normals;
 vec2* sphere_tex_coords;
-
-
-//#define RECTANGLE
 
 
 //Modified slightly from the OpenIL tutorials
@@ -239,7 +249,7 @@ void display(void)
 	
 	//You need to send some vertex attributes and uniform variables here
 	glUniform4fv(ambient_light, 1, vec4(0.1, 0.1, 0.1, 1));
-	glUniform4fv(light_color, 1, vec4(0.3, 0.3, 0.3, 1));
+	glUniform4fv(light_color, 1, vec4(0.6, 0.6, 0.6, 1));
 	glUniform4fv(light_position, 1, lightmat*vec4(-50, 25, 50, 1));		// Light will follow the object (Because of mv)
 	
 	glVertexAttrib4fv(vAmbientDiffuseColor, vec4(0.5, 0.5, 0.5, 1));
@@ -275,15 +285,15 @@ void setupShader(GLuint prog){
 	light_color = glGetUniformLocation(prog, "light_color");
 	ambient_light = glGetUniformLocation(prog, "ambient_light");
 
-	//Our vertex array has to deal with a different shader now
+	//Setup Earth
 	glBindVertexArray( vao[0] );
 
-	glBindBuffer( GL_ARRAY_BUFFER, vbo[0] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[EARTH_VERTS] );
 	vPosition = glGetAttribLocation(prog, "vPosition");
 	glEnableVertexAttribArray(vPosition);
 	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-	glBindBuffer( GL_ARRAY_BUFFER, vbo[1] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[EARTH_NORMALS] );
 	vNormal = glGetAttribLocation(prog, "vNormal");
 	glEnableVertexAttribArray(vNormal);
 	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -297,7 +307,28 @@ void setupShader(GLuint prog){
 	specularTexMap = glGetUniformLocation(prog, "specularTexture");
 	glUniform1i(specularTexMap, SPECULAR_TEXTURE);
 
-	glBindBuffer( GL_ARRAY_BUFFER, vbo[2] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[EARTH_TEXTURE_COORDS] );
+	texCoord = glGetAttribLocation(prog, "texCoord");
+	glEnableVertexAttribArray(texCoord);
+	glVertexAttribPointer(texCoord, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+	//Setup Cloud
+	glBindVertexArray( vao[1] );
+
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[CLOUD_VERTS] );
+	vPosition = glGetAttribLocation(prog, "vPosition");
+	glEnableVertexAttribArray(vPosition);
+	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[CLOUD_NORMALS] );
+	vNormal = glGetAttribLocation(prog, "vNormal");
+	glEnableVertexAttribArray(vNormal);
+	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	cloudTexMap = glGetUniformLocation(prog, "cloudTexture");
+	glUniform1i(cloudTexMap, SPECULAR_TEXTURE);
+
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[CLOUD_TEXTURE_COORDS] );
 	texCoord = glGetAttribLocation(prog, "texCoord");
 	glEnableVertexAttribArray(texCoord);
 	glVertexAttribPointer(texCoord, 2, GL_FLOAT, GL_FALSE, 0, 0);
@@ -375,7 +406,7 @@ void init() {
 	/*select clearing (background) color*/
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 
-	//populate our arrays
+	// Create the earth
 	spherevertcount = generateSphere(4, 40);
 
 	// Load shaders and use the resulting shader program
@@ -384,20 +415,37 @@ void init() {
 	program3 = InitShader( "vshader-celshading.glsl", "fshader-celshading.glsl" );
 
 	// Create a vertex array object
-    glGenVertexArrays( 1, &vao[0] );
+    glGenVertexArrays( 2, &vao[0] );
 
     // Create and initialize any buffer objects
-	glBindVertexArray( vao[0] );
-	glGenBuffers( 3, &vbo[0] );
-    glBindBuffer( GL_ARRAY_BUFFER, vbo[0] );
+	glBindVertexArray( vao[EARTH_VERTS] );
+	glGenBuffers( NUM_VBO_ITEMS, &vbo[0] );
+    glBindBuffer( GL_ARRAY_BUFFER, vbo[EARTH_VERTS] );
     glBufferData( GL_ARRAY_BUFFER, spherevertcount*sizeof(vec4), sphere_verts, GL_STATIC_DRAW);	
 
 	//and now our colors for each vertex
-	glBindBuffer( GL_ARRAY_BUFFER, vbo[1] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[EARTH_NORMALS] );
 	glBufferData( GL_ARRAY_BUFFER, spherevertcount*sizeof(vec3), sphere_normals, GL_STATIC_DRAW );
 
-	glBindBuffer( GL_ARRAY_BUFFER, vbo[2] );
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[EARTH_TEXTURE_COORDS] );
     glBufferData( GL_ARRAY_BUFFER, spherevertcount*sizeof(vec2), sphere_tex_coords, GL_STATIC_DRAW);
+
+	// Create the cloud
+	cloudspherevertcount = generateSphere(6, 40);
+
+    // Create and initialize any buffer objects
+	glBindVertexArray( vao[1] );
+    glBindBuffer( GL_ARRAY_BUFFER, vbo[CLOUD_VERTS] );
+    glBufferData( GL_ARRAY_BUFFER, spherevertcount*sizeof(vec4), sphere_verts, GL_STATIC_DRAW);	
+
+	//and now our colors for each vertex
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[CLOUD_NORMALS] );
+	glBufferData( GL_ARRAY_BUFFER, spherevertcount*sizeof(vec3), sphere_normals, GL_STATIC_DRAW );
+
+	glBindBuffer( GL_ARRAY_BUFFER, vbo[CLOUD_TEXTURE_COORDS] );
+    glBufferData( GL_ARRAY_BUFFER, spherevertcount*sizeof(vec2), sphere_tex_coords, GL_STATIC_DRAW);
+
+
 
 	ILuint ilTexID[NUM_TEXTURES]; /* ILuint is a 32bit unsigned integer.
     //Variable texid will be used to store image name. */
