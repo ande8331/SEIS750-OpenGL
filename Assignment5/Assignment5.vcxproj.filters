@@ -41,13 +41,7 @@
     <None Include="fshader-celshading.glsl">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="fshader-phongshading.glsl">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="vshader-celshading.glsl">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="vshader-phongshading.glsl">
       <Filter>Source Files</Filter>
     </None>
     <None Include="images\domokun.png">
@@ -58,6 +52,15 @@
     </None>
     <None Include="images\EarthNight.png">
       <Filter>Source Files\images</Filter>
+    </None>
+    <None Include="images\EarthSpec.png">
+      <Filter>Source Files\images</Filter>
+    </None>
+    <None Include="fshader-specular.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="vshader-specular.glsl">
+      <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
 </Project>

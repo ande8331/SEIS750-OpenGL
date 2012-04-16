@@ -67,14 +67,15 @@
   <ItemGroup>
     <None Include="fshader-celshading.glsl" />
     <None Include="fshader-lighting.glsl" />
-    <None Include="fshader-phongshading.glsl" />
+    <None Include="fshader-specular.glsl" />
     <None Include="fshader-transform.glsl" />
     <None Include="images\domokun.png" />
     <None Include="images\Earth.png" />
     <None Include="images\EarthNight.png" />
+    <None Include="images\EarthSpec.png" />
     <None Include="vshader-celshading.glsl" />
     <None Include="vshader-lighting.glsl" />
-    <None Include="vshader-phongshading.glsl" />
+    <None Include="vshader-specular.glsl" />
     <None Include="vshader-transform.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,11 +1,16 @@
 #version 150
 
-in vec4 vPosition;  // must be in position 1
+in vec4 vPosition;
+in vec4 vColor;
+uniform mat4 model_view;
+uniform mat4 projection;
+out vec4 color;
+
+in vec2 texCoord;
+out vec2 fTexCoord;
 
 in vec3 vNormal; // must be in position 3 for teapot
 uniform vec4 light_position;
-uniform mat4 model_view;
-uniform mat4 projection;
 in vec4 vAmbientDiffuseColor;
 in float vSpecularExponent;
 in vec4 vSpecularColor;
@@ -15,6 +20,8 @@ out float fvSpecularExponent;
 out vec4 fvSpecularColor;
 out vec4 position;
 out vec3 vN;
+
+
 void
 main()
 {
@@ -33,4 +40,6 @@ main()
 	fvSpecularExponent = vSpecularExponent;
 	fvSpecularColor = vSpecularColor;
 	vN = N;
+
+	fTexCoord = texCoord;
 }

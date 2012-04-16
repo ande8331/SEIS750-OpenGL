@@ -21,9 +21,17 @@ int ww=700, wh=700;
 //If you want more than one type of shader, store references to your shader program objects
 GLuint program1, program2, program3;
 
+typedef enum
+{
+	DAY_TEXTURE,
+	NIGHT_TEXTURE,
+	SPECULAR_TEXTURE,
+	NUM_TEXTURES
+} textureEnum;
+
 GLuint vao[1];
 GLuint vbo[3];
-GLuint texName[3];
+GLuint texName[NUM_TEXTURES];
 int spherevertcount;
 
 //Let's have some mouse dragging rotation
@@ -56,6 +64,7 @@ GLuint vNormal; //this is the standard name
 GLuint texCoord;
 GLuint dayTexMap;
 GLuint nightTexMap;
+GLuint specularTexMap;
 
 
 //Some light properties
@@ -63,16 +72,9 @@ GLuint light_position;
 GLuint light_color;
 GLuint ambient_light;
 
-
 vec4* sphere_verts;
 vec3* sphere_normals;
 vec2* sphere_tex_coords;
-
-typedef enum
-{
-	DAY_TEXTURE,
-	NIGHT_TEXTURE
-} textureEnum;
 
 
 //#define RECTANGLE
@@ -237,7 +239,7 @@ void display(void)
 	
 	//You need to send some vertex attributes and uniform variables here
 	glUniform4fv(ambient_light, 1, vec4(0.1, 0.1, 0.1, 1));
-	glUniform4fv(light_color, 1, vec4(1, 1, 1, 1));
+	glUniform4fv(light_color, 1, vec4(0.3, 0.3, 0.3, 1));
 	glUniform4fv(light_position, 1, lightmat*vec4(-50, 25, 50, 1));		// Light will follow the object (Because of mv)
 	
 	glVertexAttrib4fv(vAmbientDiffuseColor, vec4(0.5, 0.5, 0.5, 1));
@@ -246,9 +248,11 @@ void display(void)
 
 	glBindVertexArray( vao[0] );
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texName[0]);
+	glBindTexture(GL_TEXTURE_2D, texName[DAY_TEXTURE]);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, texName[1]);
+	glBindTexture(GL_TEXTURE_2D, texName[NIGHT_TEXTURE]);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, texName[SPECULAR_TEXTURE]);
 
 	glDrawArrays( GL_TRIANGLES, 0, spherevertcount );    // draw the sphere 
     
@@ -290,6 +294,9 @@ void setupShader(GLuint prog){
 	nightTexMap = glGetUniformLocation(prog, "nightTexture");
 	glUniform1i(nightTexMap, NIGHT_TEXTURE);
 
+	specularTexMap = glGetUniformLocation(prog, "specularTexture");
+	glUniform1i(specularTexMap, SPECULAR_TEXTURE);
+
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[2] );
 	texCoord = glGetAttribLocation(prog, "texCoord");
 	glEnableVertexAttribArray(texCoord);
@@ -308,10 +315,13 @@ void Keyboard(unsigned char key, int x, int y) {
 	if (key == 'g'){
 		setupShader(program1);
 	}
-	//eventually we'll have a second shader program
-	if (key == 'p'){
+	
+	// Specular Shader
+	if (key == 's'){
 		setupShader(program2);
 	}  
+
+
 	if (key == 'c')
 	{
 		setupShader(program3);
@@ -370,7 +380,7 @@ void init() {
 
 	// Load shaders and use the resulting shader program
     program1 = InitShader( "vshader-transform.glsl", "fshader-transform.glsl" );
-	program2 = InitShader( "vshader-phongshading.glsl", "fshader-phongshading.glsl" );
+	program2 = InitShader( "vshader-specular.glsl", "fshader-specular.glsl" );
 	program3 = InitShader( "vshader-celshading.glsl", "fshader-celshading.glsl" );
 
 	// Create a vertex array object
@@ -389,18 +399,16 @@ void init() {
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[2] );
     glBufferData( GL_ARRAY_BUFFER, spherevertcount*sizeof(vec2), sphere_tex_coords, GL_STATIC_DRAW);
 
-	ILuint ilTexID[3]; /* ILuint is a 32bit unsigned integer.
+	ILuint ilTexID[NUM_TEXTURES]; /* ILuint is a 32bit unsigned integer.
     //Variable texid will be used to store image name. */
 
-#define IMAGE_LOAD_COUNT 2
-
 	ilInit(); /* Initialization of OpenIL */
-	ilGenImages(IMAGE_LOAD_COUNT, ilTexID); /* Generation of three image names for OpenIL image loading */
-	glGenTextures(IMAGE_LOAD_COUNT, texName); //and we eventually want the data in an OpenGL texture
+	ilGenImages(NUM_TEXTURES, ilTexID); /* Generation of three image names for OpenIL image loading */
+	glGenTextures(NUM_TEXTURES, texName); //and we eventually want the data in an OpenGL texture
 
-	ilBindImage(ilTexID[0]); /* Binding of IL image name */
+	ilBindImage(ilTexID[DAY_TEXTURE]); /* Binding of IL image name */
 	loadTexFile("images/Earth.png");
-	glBindTexture(GL_TEXTURE_2D, texName[0]); //bind OpenGL texture name
+	glBindTexture(GL_TEXTURE_2D, texName[DAY_TEXTURE]); //bind OpenGL texture name
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -408,9 +416,19 @@ void init() {
 	glTexImage2D(GL_TEXTURE_2D, 0, ilGetInteger(IL_IMAGE_BPP), ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT),0,
 	   ilGetInteger(IL_IMAGE_FORMAT), ilGetInteger(IL_IMAGE_TYPE), ilGetData());
 
-	ilBindImage(ilTexID[1]); /* Binding of IL image name */
+	ilBindImage(ilTexID[NIGHT_TEXTURE]); /* Binding of IL image name */
 	loadTexFile("images/EarthNight.png");
-	glBindTexture(GL_TEXTURE_2D, texName[1]); //bind OpenGL texture name
+	glBindTexture(GL_TEXTURE_2D, texName[NIGHT_TEXTURE]); //bind OpenGL texture name
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//Note how we depend on OpenIL to supply information about the file we just loaded in
+	glTexImage2D(GL_TEXTURE_2D, 0, ilGetInteger(IL_IMAGE_BPP), ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT),0,
+	   ilGetInteger(IL_IMAGE_FORMAT), ilGetInteger(IL_IMAGE_TYPE), ilGetData());
+
+	ilBindImage(ilTexID[SPECULAR_TEXTURE]); /* Binding of IL image name */
+	loadTexFile("images/EarthSpec.png");
+	glBindTexture(GL_TEXTURE_2D, texName[SPECULAR_TEXTURE]); //bind OpenGL texture name
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -419,8 +437,7 @@ void init() {
 	   ilGetInteger(IL_IMAGE_FORMAT), ilGetInteger(IL_IMAGE_TYPE), ilGetData());
 
 
-
-    ilDeleteImages(IMAGE_LOAD_COUNT, ilTexID); //we're done with OpenIL, so free up the memory
+    ilDeleteImages(NUM_TEXTURES, ilTexID); //we're done with OpenIL, so free up the memory
 
 
 
