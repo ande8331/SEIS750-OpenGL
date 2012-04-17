@@ -29,6 +29,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Week10-Textures", "Week10-T
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Week10-ImageLoading", "Week10-ImageLoading\Week10-ImageLoading.vcxproj", "{4684325F-EB39-4321-BE68-B92FCB6337D7}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Week11-Mipmapping", "Week11-Mipmapping\Week11-Mipmapping.vcxproj", "{8865F8FE-9884-484C-B286-C0BB99684CBD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -91,6 +93,10 @@ Global
 		{4684325F-EB39-4321-BE68-B92FCB6337D7}.Debug|Win32.Build.0 = Debug|Win32
 		{4684325F-EB39-4321-BE68-B92FCB6337D7}.Release|Win32.ActiveCfg = Release|Win32
 		{4684325F-EB39-4321-BE68-B92FCB6337D7}.Release|Win32.Build.0 = Release|Win32
+		{8865F8FE-9884-484C-B286-C0BB99684CBD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8865F8FE-9884-484C-B286-C0BB99684CBD}.Debug|Win32.Build.0 = Debug|Win32
+		{8865F8FE-9884-484C-B286-C0BB99684CBD}.Release|Win32.ActiveCfg = Release|Win32
+		{8865F8FE-9884-484C-B286-C0BB99684CBD}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
