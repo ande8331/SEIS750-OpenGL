@@ -24,14 +24,11 @@ void main()
 
 
 	vec4 tmpfvAmbientDiffuseColor = texture2D(dayTexture, fTexCoord);
-	vec4 tmpfvSpecularColor =  texture2D(dayTexture, fTexCoord);
-	//vec4 tmpfvAmbientDiffuseColor = texture2D(specularTexture, fTexCoord);
-	//vec4 tmpfvSpecularColor = vec4(0,0,0,0);
 	vec4 specMap = texture2D(specularTexture, fTexCoord);
 
 	vec4 ambient = ambient_light*tmpfvAmbientDiffuseColor;
 	vec4 diffuse = light_color * tmpfvAmbientDiffuseColor * max(0.0, dot(L, N));
-	vec4 specular = light_color * tmpfvSpecularColor * pow(max(0.0, dot(N, H)), specMap.w*10000); // Specular
+	vec4 specular = light_color * specMap * pow(max(0.0, dot(N, H)), specMap.w*200); // Specular
 	
 	if (dot (L, N) < 0)
 	{
