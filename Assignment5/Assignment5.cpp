@@ -343,7 +343,8 @@ void Keyboard(unsigned char key, int x, int y) {
 	if (key == 27)
 		exit(0);
 
-	if (key == 'g'){
+	// Original (Default view)
+	if (key == 'd'){
 		setupShader(program1);
 	}
 	
@@ -457,39 +458,37 @@ void init() {
 	ilBindImage(ilTexID[DAY_TEXTURE]); /* Binding of IL image name */
 	loadTexFile("images/Earth.png");
 	glBindTexture(GL_TEXTURE_2D, texName[DAY_TEXTURE]); //bind OpenGL texture name
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);	
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	//Note how we depend on OpenIL to supply information about the file we just loaded in
 	glTexImage2D(GL_TEXTURE_2D, 0, ilGetInteger(IL_IMAGE_BPP), ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT),0,
 	   ilGetInteger(IL_IMAGE_FORMAT), ilGetInteger(IL_IMAGE_TYPE), ilGetData());
+	glGenerateMipmap(GL_TEXTURE_2D);
 
 	ilBindImage(ilTexID[NIGHT_TEXTURE]); /* Binding of IL image name */
 	loadTexFile("images/EarthNight.png");
 	glBindTexture(GL_TEXTURE_2D, texName[NIGHT_TEXTURE]); //bind OpenGL texture name
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);	
 	//Note how we depend on OpenIL to supply information about the file we just loaded in
 	glTexImage2D(GL_TEXTURE_2D, 0, ilGetInteger(IL_IMAGE_BPP), ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT),0,
 	   ilGetInteger(IL_IMAGE_FORMAT), ilGetInteger(IL_IMAGE_TYPE), ilGetData());
+	glGenerateMipmap(GL_TEXTURE_2D);
 
 	ilBindImage(ilTexID[SPECULAR_TEXTURE]); /* Binding of IL image name */
 	loadTexFile("images/EarthSpec.png");
 	glBindTexture(GL_TEXTURE_2D, texName[SPECULAR_TEXTURE]); //bind OpenGL texture name
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);	
 	//Note how we depend on OpenIL to supply information about the file we just loaded in
 	glTexImage2D(GL_TEXTURE_2D, 0, ilGetInteger(IL_IMAGE_BPP), ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT),0,
 	   ilGetInteger(IL_IMAGE_FORMAT), ilGetInteger(IL_IMAGE_TYPE), ilGetData());
-
+	glGenerateMipmap(GL_TEXTURE_2D);
 
     ilDeleteImages(NUM_TEXTURES, ilTexID); //we're done with OpenIL, so free up the memory
-
-
-
-
 
 	setupShader(program1);
 
