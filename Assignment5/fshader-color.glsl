@@ -45,4 +45,5 @@ void main()
 	}
 
 	fColor = ambient + diffuse + specular;
+	fColor.w = 1.0;
 }

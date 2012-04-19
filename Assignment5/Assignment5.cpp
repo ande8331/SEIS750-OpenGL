@@ -61,6 +61,7 @@ double view_rotz = 0.0;
 double z_distance;
 
 float earthRotation = 0.0;
+float cloudRotation = 0.0;
 
 //our modelview and perspective matrices
 mat4 mv, p;
@@ -305,18 +306,16 @@ void display(void)
 
 	//Take care of any mouse rotations or panning
     mv = LookAt(vec4(0, 0, 10+z_distance, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
-	mat4 lightmat = mv;
 	mv = mv * RotateX(115);
-
 	mv = mv * RotateX(view_rotx) * RotateY(view_roty) * RotateZ(view_rotz);
-	lightmat = mv;
+	mv = mv * RotateZ(-45);
 	
 	//You need to send some vertex attributes and uniform variables here
 	glUniform4fv(ambient_light, 1, vec4(0.1, 0.1, 0.1, 1));
 	glUniform4fv(light_color, 1, vec4(0.6, 0.6, 0.6, 1));
-	glUniform4fv(light_position, 1, lightmat*vec4(-5000, 0, 0, 1));		// Light will follow the object (Because of mv)
-	
-	mv = mv * RotateZ(-earthRotation-90);
+	glUniform4fv(light_position, 1, mv*vec4(-5000, 0, 0, 1));		// Light will follow the object (Because of mv)
+	mat4 preRotate = mv;
+	mv = mv * RotateZ(-earthRotation);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
 	glBindVertexArray( vao[0] );
@@ -332,7 +331,13 @@ void display(void)
 
 	if (drawClouds == true)
 	{
-//		setupShader(program4);
+		setupShader(program4);
+		mv = preRotate * RotateZ(-cloudRotation);
+		glUniform4fv(ambient_light, 1, vec4(0.1, 0.1, 0.1, 1));
+		glUniform4fv(light_color, 1, vec4(0.6, 0.6, 0.6, 1));
+		glUniform4fv(light_position, 1, mv*vec4(-5000, 0, 0, 1));		// Light will follow the object (Because of mv)
+		glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+
 		glBindVertexArray( vao[1] );
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texName[CLOUD_TEXTURE]);
@@ -427,7 +432,7 @@ void init() {
 	spherevertcount = generateSphere(4, 40);
 
 	// Load shaders and use the resulting shader program
-    program1 = InitShader( "vshader-transform.glsl", "fshader-transform.glsl" );
+    program1 = InitShader( "vshader-color.glsl", "fshader-color.glsl" );
 	program2 = InitShader( "vshader-specular.glsl", "fshader-specular.glsl" );
 	program3 = InitShader( "vshader-allfeatures.glsl", "fshader-allfeatures.glsl" );
 	program4 = InitShader( "vshader-clouds.glsl", "fshader-clouds.glsl" );
@@ -527,6 +532,7 @@ void init() {
 void my_timer(int v) 
 {	
 	earthRotation += 0.05;
+	cloudRotation += 0.04;
 
 	/* calls the display function v times a second */
 	glutPostRedisplay();

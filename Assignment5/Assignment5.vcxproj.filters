@@ -26,12 +26,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="fshader-transform.glsl">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="vshader-transform.glsl">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="images\Earth.png">
       <Filter>Source Files\images</Filter>
     </None>
@@ -60,6 +54,12 @@
       <Filter>Source Files</Filter>
     </None>
     <None Include="vshader-clouds.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="fshader-color.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="vshader-color.glsl">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
