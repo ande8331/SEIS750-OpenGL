@@ -32,21 +32,6 @@
     <None Include="vshader-transform.glsl">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="fshader-lighting.glsl">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="vshader-lighting.glsl">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="fshader-celshading.glsl">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="vshader-celshading.glsl">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="images\domokun.png">
-      <Filter>Source Files\images</Filter>
-    </None>
     <None Include="images\Earth.png">
       <Filter>Source Files\images</Filter>
     </None>
@@ -64,6 +49,18 @@
     </None>
     <None Include="images\earthcloudmap.png">
       <Filter>Source Files\images</Filter>
+    </None>
+    <None Include="fshader-allfeatures.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="vshader-allfeatures.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="fshader-clouds.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="vshader-clouds.glsl">
+      <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
 </Project>

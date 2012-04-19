@@ -65,17 +65,16 @@
     <ClCompile Include="InitShader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="fshader-celshading.glsl" />
-    <None Include="fshader-lighting.glsl" />
+    <None Include="fshader-allfeatures.glsl" />
+    <None Include="fshader-clouds.glsl" />
     <None Include="fshader-specular.glsl" />
     <None Include="fshader-transform.glsl" />
-    <None Include="images\domokun.png" />
     <None Include="images\Earth.png" />
     <None Include="images\earthcloudmap.png" />
     <None Include="images\EarthNight.png" />
     <None Include="images\EarthSpec.png" />
-    <None Include="vshader-celshading.glsl" />
-    <None Include="vshader-lighting.glsl" />
+    <None Include="vshader-allfeatures.glsl" />
+    <None Include="vshader-clouds.glsl" />
     <None Include="vshader-specular.glsl" />
     <None Include="vshader-transform.glsl" />
   </ItemGroup>

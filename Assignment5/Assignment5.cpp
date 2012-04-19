@@ -19,13 +19,14 @@ int ww=700, wh=700;
 #define M_PI 3.14159265358979323846
 
 //If you want more than one type of shader, store references to your shader program objects
-GLuint program1, program2, program3;
+GLuint activeProgram, program1, program2, program3, program4;
 
 typedef enum
 {
 	DAY_TEXTURE,
 	NIGHT_TEXTURE,
 	SPECULAR_TEXTURE,
+	CLOUD_TEXTURE,
 	NUM_TEXTURES
 } textureEnum;
 
@@ -45,6 +46,7 @@ GLuint vbo[NUM_VBO_ITEMS];
 GLuint texName[NUM_TEXTURES];
 int spherevertcount;
 int cloudspherevertcount;
+bool drawClouds = true;
 
 //Let's have some mouse dragging rotation
 int right_button_down = FALSE;
@@ -229,49 +231,6 @@ int generateSphere(float radius, int subdiv)
 	return totalverts;
 }
 
-void display(void)
-{
-	/*clear all pixels*/
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
- 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	//Take care of any mouse rotations or panning
-    mv = LookAt(vec4(0, 0, 10+z_distance, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
-	mat4 lightmat = mv;
-	mv = mv * RotateX(115);
-	mv = mv * RotateZ(-earthRotation-90);
-	mv = mv * RotateX(view_rotx) * RotateY(view_roty) * RotateZ(view_rotz);
-
-	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
-	
-	
-	//You need to send some vertex attributes and uniform variables here
-	glUniform4fv(ambient_light, 1, vec4(0.1, 0.1, 0.1, 1));
-	glUniform4fv(light_color, 1, vec4(0.6, 0.6, 0.6, 1));
-	glUniform4fv(light_position, 1, lightmat*vec4(-50, 25, 50, 1));		// Light will follow the object (Because of mv)
-	
-	glVertexAttrib4fv(vAmbientDiffuseColor, vec4(0.5, 0.5, 0.5, 1));
-    glVertexAttrib4fv(vSpecularColor, vec4(1, 1, 1, 1));
-	glVertexAttrib1f(vSpecularExponent, 10);
-
-	glBindVertexArray( vao[0] );
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texName[DAY_TEXTURE]);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, texName[NIGHT_TEXTURE]);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, texName[SPECULAR_TEXTURE]);
-
-	glDrawArrays( GL_TRIANGLES, 0, spherevertcount );    // draw the sphere 
-    
-    glFlush();
-	
-	/*start processing buffered OpenGL routines*/
-	glutSwapBuffers();
-}
-
 //Connect all of the shader variables to local pointers
 void setupShader(GLuint prog){
 	glUseProgram( prog );
@@ -337,6 +296,61 @@ void setupShader(GLuint prog){
 	glUniformMatrix4fv(projection, 1, GL_TRUE, p);
 }
 
+void display(void)
+{
+	setupShader(activeProgram);
+
+	/*clear all pixels*/
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+ 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	//Take care of any mouse rotations or panning
+    mv = LookAt(vec4(0, 0, 10+z_distance, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
+	mat4 lightmat = mv;
+	mv = mv * RotateX(115);
+	mv = mv * RotateZ(-earthRotation-90);
+	mv = mv * RotateX(view_rotx) * RotateY(view_roty) * RotateZ(view_rotz);
+
+	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
+	
+	
+	//You need to send some vertex attributes and uniform variables here
+	glUniform4fv(ambient_light, 1, vec4(0.1, 0.1, 0.1, 1));
+	glUniform4fv(light_color, 1, vec4(0.6, 0.6, 0.6, 1));
+	glUniform4fv(light_position, 1, lightmat*vec4(-50, 25, 50, 1));		// Light will follow the object (Because of mv)
+	
+	glVertexAttrib4fv(vAmbientDiffuseColor, vec4(0.5, 0.5, 0.5, 1));
+    glVertexAttrib4fv(vSpecularColor, vec4(1, 1, 1, 1));
+	glVertexAttrib1f(vSpecularExponent, 10);
+
+	glBindVertexArray( vao[0] );
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texName[DAY_TEXTURE]);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, texName[NIGHT_TEXTURE]);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, texName[SPECULAR_TEXTURE]);
+
+	glDrawArrays( GL_TRIANGLES, 0, spherevertcount );    // draw the sphere 
+    glFlush();
+
+	if (drawClouds == true)
+	{
+//		setupShader(program4);
+		glBindVertexArray( vao[1] );
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texName[CLOUD_TEXTURE]);
+
+		glDrawArrays( GL_TRIANGLES, 0, cloudspherevertcount );    // draw the sphere 
+	}
+
+    glFlush();
+	
+	/*start processing buffered OpenGL routines*/
+	glutSwapBuffers();
+}
 
 void Keyboard(unsigned char key, int x, int y) {
 	/*exit when the escape key is pressed*/
@@ -346,18 +360,26 @@ void Keyboard(unsigned char key, int x, int y) {
 	// Original (Default view)
 	if (key == 'd'){
 		setupShader(program1);
+		activeProgram = program1;
 	}
 	
 	// Specular Shader
 	if (key == 's'){
 		setupShader(program2);
+		activeProgram = program2;
 	}  
 
+	// All Features
+	if (key == 'a')
+	{
+		setupShader(program3);
+		activeProgram = program3;
+	}
 
 	if (key == 'c')
 	{
-		setupShader(program3);
-	}
+		drawClouds = !drawClouds;
+	}	
 
 	glutPostRedisplay();
 
@@ -413,7 +435,9 @@ void init() {
 	// Load shaders and use the resulting shader program
     program1 = InitShader( "vshader-transform.glsl", "fshader-transform.glsl" );
 	program2 = InitShader( "vshader-specular.glsl", "fshader-specular.glsl" );
-	program3 = InitShader( "vshader-celshading.glsl", "fshader-celshading.glsl" );
+	program3 = InitShader( "vshader-allfeatures.glsl", "fshader-allfeatures.glsl" );
+	program4 = InitShader( "vshader-clouds.glsl", "fshader-clouds.glsl" );
+	activeProgram = program1;
 
 	// Create a vertex array object
     glGenVertexArrays( 2, &vao[0] );
@@ -432,7 +456,7 @@ void init() {
     glBufferData( GL_ARRAY_BUFFER, spherevertcount*sizeof(vec2), sphere_tex_coords, GL_STATIC_DRAW);
 
 	// Create the cloud
-	cloudspherevertcount = generateSphere(6, 40);
+	cloudspherevertcount = generateSphere(4.2, 40);
 
     // Create and initialize any buffer objects
 	glBindVertexArray( vao[1] );
@@ -445,8 +469,6 @@ void init() {
 
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[CLOUD_TEXTURE_COORDS] );
     glBufferData( GL_ARRAY_BUFFER, spherevertcount*sizeof(vec2), sphere_tex_coords, GL_STATIC_DRAW);
-
-
 
 	ILuint ilTexID[NUM_TEXTURES]; /* ILuint is a 32bit unsigned integer.
     //Variable texid will be used to store image name. */
@@ -487,6 +509,18 @@ void init() {
 	glTexImage2D(GL_TEXTURE_2D, 0, ilGetInteger(IL_IMAGE_BPP), ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT),0,
 	   ilGetInteger(IL_IMAGE_FORMAT), ilGetInteger(IL_IMAGE_TYPE), ilGetData());
 	glGenerateMipmap(GL_TEXTURE_2D);
+
+	ilBindImage(ilTexID[SPECULAR_TEXTURE]); /* Binding of IL image name */
+	loadTexFile("images/earthcloudmap.png");
+	glBindTexture(GL_TEXTURE_2D, texName[CLOUD_TEXTURE]); //bind OpenGL texture name
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);	
+	//Note how we depend on OpenIL to supply information about the file we just loaded in
+	glTexImage2D(GL_TEXTURE_2D, 0, ilGetInteger(IL_IMAGE_BPP), ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT),0,
+	   ilGetInteger(IL_IMAGE_FORMAT), ilGetInteger(IL_IMAGE_TYPE), ilGetData());
+	glGenerateMipmap(GL_TEXTURE_2D);
+
 
     ilDeleteImages(NUM_TEXTURES, ilTexID); //we're done with OpenIL, so free up the memory
 
