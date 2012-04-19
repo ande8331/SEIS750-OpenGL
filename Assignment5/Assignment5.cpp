@@ -237,9 +237,6 @@ void setupShader(GLuint prog){
 	model_view = glGetUniformLocation(prog, "model_view");
 	projection = glGetUniformLocation(prog, "projection");
 	
-	vAmbientDiffuseColor = glGetAttribLocation(prog, "vAmbientDiffuseColor");
-	vSpecularColor = glGetAttribLocation(prog, "vSpecularColor");
-	vSpecularExponent = glGetAttribLocation(prog, "vSpecularExponent");
 	light_position = glGetUniformLocation(prog, "light_position");
 	light_color = glGetUniformLocation(prog, "light_color");
 	ambient_light = glGetUniformLocation(prog, "ambient_light");
@@ -310,20 +307,17 @@ void display(void)
     mv = LookAt(vec4(0, 0, 10+z_distance, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
 	mat4 lightmat = mv;
 	mv = mv * RotateX(115);
-	mv = mv * RotateZ(-earthRotation-90);
-	mv = mv * RotateX(view_rotx) * RotateY(view_roty) * RotateZ(view_rotz);
 
-	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
-	
+	mv = mv * RotateX(view_rotx) * RotateY(view_roty) * RotateZ(view_rotz);
+	lightmat = mv;
 	
 	//You need to send some vertex attributes and uniform variables here
 	glUniform4fv(ambient_light, 1, vec4(0.1, 0.1, 0.1, 1));
 	glUniform4fv(light_color, 1, vec4(0.6, 0.6, 0.6, 1));
-	glUniform4fv(light_position, 1, lightmat*vec4(-50, 25, 50, 1));		// Light will follow the object (Because of mv)
+	glUniform4fv(light_position, 1, lightmat*vec4(-5000, 0, 0, 1));		// Light will follow the object (Because of mv)
 	
-	glVertexAttrib4fv(vAmbientDiffuseColor, vec4(0.5, 0.5, 0.5, 1));
-    glVertexAttrib4fv(vSpecularColor, vec4(1, 1, 1, 1));
-	glVertexAttrib1f(vSpecularExponent, 10);
+	mv = mv * RotateZ(-earthRotation-90);
+	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
 	glBindVertexArray( vao[0] );
 	glActiveTexture(GL_TEXTURE0);

@@ -22,7 +22,6 @@ void main()
 	vec3 N = normalize (vN);
 	vec3 H = normalize (L+E);
 
-
 	vec4 tmpfvAmbientDiffuseColor = texture2D(dayTexture, fTexCoord);
 	vec4 specMap = texture2D(specularTexture, fTexCoord);
 
