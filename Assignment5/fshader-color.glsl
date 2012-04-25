@@ -29,7 +29,7 @@ void main()
 	vec4 diffuse = light_color * tmpfvAmbientDiffuseColor * max(0.0, dot(L, N));
 	vec4 specular = light_color * tmpfvSpecularColor * pow(max(0.0, dot(N, H)), fvSpecularExponent); // Specular
 
-	if (dot (L, N) < 0.0)
+	if (dot (L, N) < -0.20)
 	{
 		ambient = texture2D(nightTexture, fTexCoord);
 		diffuse = vec4(0,0,0,1);
@@ -37,7 +37,7 @@ void main()
 	}
 	else if (dot (L,N) < 0.20)
 	{
-		float dayAverage = (dot(L,N)/0.20);
+		float dayAverage = ((dot(L,N)+0.20)/0.40);
 		float nightAverage = 1 - dayAverage;
 		ambient = (ambient*dayAverage) + (texture2D(nightTexture, fTexCoord) * nightAverage);
 		diffuse = (diffuse*dayAverage);
