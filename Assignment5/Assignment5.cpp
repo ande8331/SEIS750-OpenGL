@@ -326,7 +326,7 @@ void display(void)
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, texName[SPECULAR_TEXTURE]);
 
-	glDrawArrays( GL_TRIANGLES, 0, spherevertcount );    // draw the sphere 
+	glDrawArrays( GL_TRIANGLES, 0, spherevertcount );    // draw the globe 
     glFlush();
 
 	if (drawClouds == true)
@@ -342,7 +342,7 @@ void display(void)
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texName[CLOUD_TEXTURE]);
 
-		glDrawArrays( GL_TRIANGLES, 0, cloudspherevertcount );    // draw the sphere 
+		glDrawArrays( GL_TRIANGLES, 0, cloudspherevertcount );    // draw the clouds 
 	}
 
     glFlush();
@@ -426,7 +426,7 @@ void mouse(int button, int state, int x, int y) {
 void init() {
 
 	/*select clearing (background) color*/
-	glClearColor(1.0, 1.0, 1.0, 1.0);
+	glClearColor(0.0, 0.0, 0.0, 1.0);
 
 	// Create the earth
 	spherevertcount = generateSphere(4, 40);
@@ -455,19 +455,19 @@ void init() {
     glBufferData( GL_ARRAY_BUFFER, spherevertcount*sizeof(vec2), sphere_tex_coords, GL_STATIC_DRAW);
 
 	// Create the cloud
-	cloudspherevertcount = generateSphere(4.2, 40);
+	cloudspherevertcount = generateSphere(4.1, 50);
 
     // Create and initialize any buffer objects
 	glBindVertexArray( vao[1] );
     glBindBuffer( GL_ARRAY_BUFFER, vbo[CLOUD_VERTS] );
-    glBufferData( GL_ARRAY_BUFFER, spherevertcount*sizeof(vec4), sphere_verts, GL_STATIC_DRAW);	
+    glBufferData( GL_ARRAY_BUFFER, cloudspherevertcount*sizeof(vec4), sphere_verts, GL_STATIC_DRAW);	
 
 	//and now our colors for each vertex
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[CLOUD_NORMALS] );
-	glBufferData( GL_ARRAY_BUFFER, spherevertcount*sizeof(vec3), sphere_normals, GL_STATIC_DRAW );
+	glBufferData( GL_ARRAY_BUFFER, cloudspherevertcount*sizeof(vec3), sphere_normals, GL_STATIC_DRAW );
 
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[CLOUD_TEXTURE_COORDS] );
-    glBufferData( GL_ARRAY_BUFFER, spherevertcount*sizeof(vec2), sphere_tex_coords, GL_STATIC_DRAW);
+    glBufferData( GL_ARRAY_BUFFER, cloudspherevertcount*sizeof(vec2), sphere_tex_coords, GL_STATIC_DRAW);
 
 	ILuint ilTexID[NUM_TEXTURES]; /* ILuint is a 32bit unsigned integer.
     //Variable texid will be used to store image name. */
