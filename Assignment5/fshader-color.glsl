@@ -21,7 +21,6 @@ void main()
 	vec3 N = normalize (vN);
 	vec3 H = normalize (L+E);
 
-
 	vec4 tmpfvAmbientDiffuseColor = texture2D(dayTexture, fTexCoord);
 	vec4 tmpfvSpecularColor = vec4(0,0,0,0);	// Don't use specular at this point
 
@@ -29,14 +28,17 @@ void main()
 	vec4 diffuse = light_color * tmpfvAmbientDiffuseColor * max(0.0, dot(L, N));
 	vec4 specular = light_color * tmpfvSpecularColor * pow(max(0.0, dot(N, H)), fvSpecularExponent); // Specular
 
+	// Blend Day and Night together to make a smooth transition (Using weighted average)
 	if (dot (L, N) < -0.20)
 	{
+		// Complete Night Mode
 		ambient = texture2D(nightTexture, fTexCoord);
-		diffuse = vec4(0,0,0,1);
-		specular = vec4(0, 0, 0, 1); // Certain positionings cause problems (being on wrong side of object), test for it, throw it out
+		diffuse = vec4(0,0,0,1);	 // No diffuse at night
+		specular = vec4(0, 0, 0, 1); // No specular at night
 	}
 	else if (dot (L,N) < 0.20)
 	{
+		// Blended Mode
 		float dayAverage = ((dot(L,N)+0.20)/0.40);
 		float nightAverage = 1 - dayAverage;
 		ambient = (ambient*dayAverage) + (texture2D(nightTexture, fTexCoord) * nightAverage);
@@ -45,5 +47,5 @@ void main()
 	}
 
 	fColor = ambient + diffuse + specular;
-	fColor.w = 1.0;
+	fColor.w = 1.0;	// Default to 1 in case these calcs threw it off
 }

@@ -171,9 +171,9 @@ void init() {
     // Load shaders and use the resulting shader program
     control = InitShader( "vshader-control.glsl", "fshader-universal.glsl" );
 	lerp = InitShader( "vshader-lerp.glsl", "fshader-universal.glsl" );
-	CR = InitShader( "vshader-CR.glsl", "fshader-universal.glsl" );
-	Bezier = InitShader( "vshader-Bezier.glsl", "fshader-universal.glsl" );
-	bspline = InitShader( "vshader-b-spline.glsl", "fshader-universal.glsl" );
+	//CR = InitShader( "vshader-CR.glsl", "fshader-universal.glsl" );
+	//Bezier = InitShader( "vshader-Bezier.glsl", "fshader-universal.glsl" );
+	//bspline = InitShader( "vshader-b-spline.glsl", "fshader-universal.glsl" );
     active = lerp;
 	setupShader(active);
 	// Create a vertex array object

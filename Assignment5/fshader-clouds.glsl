@@ -2,7 +2,7 @@
 in vec4 color;
 out vec4  fColor;
 in vec2 fTexCoord;
-uniform sampler2D dayTexture;	// Calling it day texture, but its actually cloud texture
+uniform sampler2D cloudTexture;	// Calling it day texture, but its actually cloud texture
 uniform vec4 ambient_light;
 in vec4 fvAmbientDiffuseColor;
 uniform vec4 light_color;
@@ -20,7 +20,7 @@ void main()
 	vec3 N = normalize (vN);
 	vec3 H = normalize (L+E);
 
-	vec4 tmpfvAmbientDiffuseColor = texture2D(dayTexture, fTexCoord);	
+	vec4 tmpfvAmbientDiffuseColor = texture2D(cloudTexture, fTexCoord);	
 	vec4 tmpfvSpecularColor = vec4(0,0,0,0);
 
 	vec4 ambient = ambient_light*tmpfvAmbientDiffuseColor;

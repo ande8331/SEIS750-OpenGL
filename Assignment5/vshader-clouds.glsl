@@ -21,15 +21,11 @@ out vec4 fvSpecularColor;
 out vec4 position;
 out vec3 vN;
 
-
-void
-main()
+void main()
 {
 	vec4 veyepos = model_view*vPosition;
 	vec4 normal = vec4(vNormal, 0);		// Converts the vec3 to a vec4
 	vec3 L = normalize( light_position.xyz - veyepos.xyz ); // use vec3 because it works better in a dot product
-	// above line is a vector
-	// .xxxx is a vec4 of x in each position (swizziling)
 
 	vec3 N = normalize(( model_view * normal).xyz);  // apply any mv transformations to the normal (needed to be vec4 to allow 4x4 to multiply it
 	vec3 V = normalize(-veyepos.xyz);		// View vector

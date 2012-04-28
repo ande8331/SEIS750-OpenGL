@@ -1,7 +1,10 @@
 /*
- *Skeleton lighting program
- *SEIS750
- *Spring 2012
+ * Assignment 5 - Earth Texture Mapping
+ *
+ * Continued on from: Skeleton lighting program
+ * SEIS750
+ * Spring 2012
+ * by Ross Anderson
  **/
 
 #include <GL/Angel.h>
@@ -19,7 +22,7 @@ int ww=700, wh=700;
 #define M_PI 3.14159265358979323846
 
 //If you want more than one type of shader, store references to your shader program objects
-GLuint activeProgram, program1, program2, program3, program4;
+GLuint activeProgram, colorMapProgram, specularMapProgram, allFeaturesMapProgram, cloudMapProgram;
 
 typedef enum
 {
@@ -41,11 +44,18 @@ typedef enum
 	NUM_VBO_ITEMS
 } vboEnum;
 
-GLuint vao[2];
+typedef enum
+{
+	EARTH_SPHERE,
+	CLOUD_SPHERE,
+	NUM_VAO_ITEMS
+} vaoEnum;
+
+GLuint vao[NUM_VAO_ITEMS];
 GLuint vbo[NUM_VBO_ITEMS];
 GLuint texName[NUM_TEXTURES];
-int spherevertcount;
-int cloudspherevertcount;
+int globeVertCount;
+int cloudSphereVertCount;
 bool drawClouds = true;
 
 //Let's have some mouse dragging rotation
@@ -83,7 +93,7 @@ GLuint specularTexMap;
 GLuint cloudTexMap;
 
 
-//Some light properties
+//light properties
 GLuint light_position;
 GLuint light_color;
 GLuint ambient_light;
@@ -93,7 +103,7 @@ vec3* sphere_normals;
 vec2* sphere_tex_coords;
 
 
-//Modified slightly from the OpenIL tutorials
+//Modified slightly from the OpenIL tutorials (Copied from in class exercise)
 ILuint loadTexFile(const char* filename)
 {	
 	/* ILboolean is type similar to GLboolean and can equal GL_FALSE (0) or GL_TRUE (1)
@@ -238,12 +248,13 @@ void setupShader(GLuint prog){
 	model_view = glGetUniformLocation(prog, "model_view");
 	projection = glGetUniformLocation(prog, "projection");
 	
+	// Setup Lights
 	light_position = glGetUniformLocation(prog, "light_position");
 	light_color = glGetUniformLocation(prog, "light_color");
 	ambient_light = glGetUniformLocation(prog, "ambient_light");
 
 	//Setup Earth
-	glBindVertexArray( vao[0] );
+	glBindVertexArray( vao[EARTH_SPHERE] );
 
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[EARTH_VERTS] );
 	vPosition = glGetAttribLocation(prog, "vPosition");
@@ -269,8 +280,8 @@ void setupShader(GLuint prog){
 	glEnableVertexAttribArray(texCoord);
 	glVertexAttribPointer(texCoord, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-	//Setup Cloud
-	glBindVertexArray( vao[1] );
+	//Setup Clouds
+	glBindVertexArray( vao[CLOUD_SPHERE] );
 
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[CLOUD_VERTS] );
 	vPosition = glGetAttribLocation(prog, "vPosition");
@@ -283,7 +294,7 @@ void setupShader(GLuint prog){
 	glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 	cloudTexMap = glGetUniformLocation(prog, "cloudTexture");
-	glUniform1i(cloudTexMap, SPECULAR_TEXTURE);
+	glUniform1i(cloudTexMap, CLOUD_TEXTURE);
 
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[CLOUD_TEXTURE_COORDS] );
 	texCoord = glGetAttribLocation(prog, "texCoord");
@@ -296,53 +307,62 @@ void setupShader(GLuint prog){
 
 void display(void)
 {
+	// Set shader to what the key events have setup
 	setupShader(activeProgram);
 
-	/*clear all pixels*/
+	// Clear all pixels
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
  
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	//Take care of any mouse rotations or panning
+	// Take care of any mouse rotations or panning
     mv = LookAt(vec4(0, 0, 10+z_distance, 1.0), vec4(0, 0, 0, 1.0), vec4(0, 1, 0, 0.0));
 	mv = mv * RotateX(115);
 	mv = mv * RotateX(view_rotx) * RotateY(view_roty) * RotateZ(view_rotz);
 	mv = mv * RotateZ(-45);
 	
-	//You need to send some vertex attributes and uniform variables here
-	glUniform4fv(ambient_light, 1, vec4(0.1, 0.1, 0.1, 1));
-	glUniform4fv(light_color, 1, vec4(0.6, 0.6, 0.6, 1));
-	glUniform4fv(light_position, 1, mv*vec4(-5000, 0, 0, 1));		// Light will follow the object (Because of mv)
-	mat4 preRotate = mv;
+	// Setup lighting vectors
+	vec4 lightVec = mv*vec4(-5000, 0, 0, 1);
+	vec4 ambientLightVec = vec4(0.1, 0.1, 0.1, 1);
+	vec4 lightColorVec = vec4(0.6, 0.6, 0.6, 1);
+
+	//Send in lighting vectors
+	glUniform4fv(ambient_light, 1, ambientLightVec);
+	glUniform4fv(light_color, 1, lightColorVec);	
+	glUniform4fv(light_position, 1, lightVec);		// Light will follow the object (Because of mv)
+	mat4 preRotate = mv;							// Save this off for use with the clouds
 	mv = mv * RotateZ(-earthRotation);
 	glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
-	glBindVertexArray( vao[0] );
+	// Draw the earth
+	glBindVertexArray( vao[EARTH_SPHERE] );
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texName[DAY_TEXTURE]);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, texName[NIGHT_TEXTURE]);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, texName[SPECULAR_TEXTURE]);
+	glDrawArrays( GL_TRIANGLES, 0, globeVertCount );
 
-	glDrawArrays( GL_TRIANGLES, 0, spherevertcount );    // draw the globe 
-    glFlush();
-
+	// Draw the clouds if necessary
 	if (drawClouds == true)
 	{
-		setupShader(program4);
+		// Switch to cloud shader
+		setupShader(cloudMapProgram);
+
+		// Adjust for light position
 		mv = preRotate * RotateZ(-cloudRotation);
-		glUniform4fv(ambient_light, 1, vec4(0.1, 0.1, 0.1, 1));
-		glUniform4fv(light_color, 1, vec4(0.6, 0.6, 0.6, 1));
-		glUniform4fv(light_position, 1, mv*vec4(-5000, 0, 0, 1));		// Light will follow the object (Because of mv)
+
+		// Send in the lighting vectors
+		glUniform4fv(ambient_light, 1, ambientLightVec);
+		glUniform4fv(light_color, 1, lightColorVec);
+		glUniform4fv(light_position, 1, lightVec);		// Light will follow the object (Because of mv)
 		glUniformMatrix4fv(model_view, 1, GL_TRUE, mv);
 
-		glBindVertexArray( vao[1] );
-		glActiveTexture(GL_TEXTURE0);
+		// Draw the clouds
+		glBindVertexArray( vao[CLOUD_SPHERE] );
+		glActiveTexture(GL_TEXTURE3);
 		glBindTexture(GL_TEXTURE_2D, texName[CLOUD_TEXTURE]);
 
-		glDrawArrays( GL_TRIANGLES, 0, cloudspherevertcount );    // draw the clouds 
+		glDrawArrays( GL_TRIANGLES, 0, cloudSphereVertCount );
 	}
 
     glFlush();
@@ -358,30 +378,28 @@ void Keyboard(unsigned char key, int x, int y) {
 
 	// Original (Default view)
 	if (key == 'd'){
-		setupShader(program1);
-		activeProgram = program1;
+		activeProgram = colorMapProgram;
 	}
 	
 	// Specular Shader
 	if (key == 's'){
-		setupShader(program2);
-		activeProgram = program2;
+		activeProgram = specularMapProgram;
 	}  
 
 	// All Features
 	if (key == 'a')
 	{
-		setupShader(program3);
-		activeProgram = program3;
+		activeProgram = allFeaturesMapProgram;
+		drawClouds = true;
 	}
 
+	// Toggle the clouds
 	if (key == 'c')
 	{
 		drawClouds = !drawClouds;
 	}	
 
 	glutPostRedisplay();
-
 }
 
 //Mouse drags = rotation
@@ -400,7 +418,6 @@ void mouse_dragged(int x, int y) {
 	}
   glutPostRedisplay();
 }
-
 
 void mouse(int button, int state, int x, int y) {
   //establish point of reference for dragging mouse in window
@@ -425,50 +442,54 @@ void mouse(int button, int state, int x, int y) {
 
 void init() {
 
-	/*select clearing (background) color*/
+	// Clear to Black
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 
 	// Create the earth
-	spherevertcount = generateSphere(4, 40);
-
-	// Load shaders and use the resulting shader program
-    program1 = InitShader( "vshader-color.glsl", "fshader-color.glsl" );
-	program2 = InitShader( "vshader-specular.glsl", "fshader-specular.glsl" );
-	program3 = InitShader( "vshader-allfeatures.glsl", "fshader-allfeatures.glsl" );
-	program4 = InitShader( "vshader-clouds.glsl", "fshader-clouds.glsl" );
-	activeProgram = program1;
+	globeVertCount = generateSphere(4, 40);
 
 	// Create a vertex array object
-    glGenVertexArrays( 2, &vao[0] );
+    glGenVertexArrays( NUM_VAO_ITEMS, &vao[0] );
 
     // Create and initialize any buffer objects
 	glBindVertexArray( vao[EARTH_VERTS] );
 	glGenBuffers( NUM_VBO_ITEMS, &vbo[0] );
     glBindBuffer( GL_ARRAY_BUFFER, vbo[EARTH_VERTS] );
-    glBufferData( GL_ARRAY_BUFFER, spherevertcount*sizeof(vec4), sphere_verts, GL_STATIC_DRAW);	
+    glBufferData( GL_ARRAY_BUFFER, globeVertCount*sizeof(vec4), sphere_verts, GL_STATIC_DRAW);	
 
-	//and now our colors for each vertex
+	// Load the Noramls
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[EARTH_NORMALS] );
-	glBufferData( GL_ARRAY_BUFFER, spherevertcount*sizeof(vec3), sphere_normals, GL_STATIC_DRAW );
+	glBufferData( GL_ARRAY_BUFFER, globeVertCount*sizeof(vec3), sphere_normals, GL_STATIC_DRAW );
 
+	// Load the texture points
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[EARTH_TEXTURE_COORDS] );
-    glBufferData( GL_ARRAY_BUFFER, spherevertcount*sizeof(vec2), sphere_tex_coords, GL_STATIC_DRAW);
+    glBufferData( GL_ARRAY_BUFFER, globeVertCount*sizeof(vec2), sphere_tex_coords, GL_STATIC_DRAW);
 
 	// Create the cloud
-	cloudspherevertcount = generateSphere(4.1, 50);
+	cloudSphereVertCount = generateSphere(4.1, 50);
 
     // Create and initialize any buffer objects
-	glBindVertexArray( vao[1] );
+	glBindVertexArray( vao[CLOUD_SPHERE] );
     glBindBuffer( GL_ARRAY_BUFFER, vbo[CLOUD_VERTS] );
-    glBufferData( GL_ARRAY_BUFFER, cloudspherevertcount*sizeof(vec4), sphere_verts, GL_STATIC_DRAW);	
+    glBufferData( GL_ARRAY_BUFFER, cloudSphereVertCount*sizeof(vec4), sphere_verts, GL_STATIC_DRAW);	
 
-	//and now our colors for each vertex
+	// Load the Normals
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[CLOUD_NORMALS] );
-	glBufferData( GL_ARRAY_BUFFER, cloudspherevertcount*sizeof(vec3), sphere_normals, GL_STATIC_DRAW );
+	glBufferData( GL_ARRAY_BUFFER, cloudSphereVertCount*sizeof(vec3), sphere_normals, GL_STATIC_DRAW );
 
+	// Load the texture points
 	glBindBuffer( GL_ARRAY_BUFFER, vbo[CLOUD_TEXTURE_COORDS] );
-    glBufferData( GL_ARRAY_BUFFER, cloudspherevertcount*sizeof(vec2), sphere_tex_coords, GL_STATIC_DRAW);
+    glBufferData( GL_ARRAY_BUFFER, cloudSphereVertCount*sizeof(vec2), sphere_tex_coords, GL_STATIC_DRAW);
 
+	// Load shaders and use the resulting shader program
+    colorMapProgram = InitShader( "vshader-color.glsl", "fshader-color.glsl" );
+	specularMapProgram = InitShader( "vshader-specular.glsl", "fshader-specular.glsl" );
+	allFeaturesMapProgram = InitShader( "vshader-allfeatures.glsl", "fshader-allfeatures.glsl" );
+	cloudMapProgram = InitShader( "vshader-clouds.glsl", "fshader-clouds.glsl" );
+	activeProgram = colorMapProgram;
+	setupShader(activeProgram);
+
+	// Setup and Load the Textures
 	ILuint ilTexID[NUM_TEXTURES]; /* ILuint is a 32bit unsigned integer.
     //Variable texid will be used to store image name. */
 
@@ -476,61 +497,62 @@ void init() {
 	ilGenImages(NUM_TEXTURES, ilTexID); /* Generation of three image names for OpenIL image loading */
 	glGenTextures(NUM_TEXTURES, texName); //and we eventually want the data in an OpenGL texture
 
-	ilBindImage(ilTexID[DAY_TEXTURE]); /* Binding of IL image name */
+	// Load Day Texture
+	ilBindImage(ilTexID[DAY_TEXTURE]);
 	loadTexFile("images/Earth.png");
-	glBindTexture(GL_TEXTURE_2D, texName[DAY_TEXTURE]); //bind OpenGL texture name
+	glBindTexture(GL_TEXTURE_2D, texName[DAY_TEXTURE]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);	
-
-	//Note how we depend on OpenIL to supply information about the file we just loaded in
 	glTexImage2D(GL_TEXTURE_2D, 0, ilGetInteger(IL_IMAGE_BPP), ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT),0,
 	   ilGetInteger(IL_IMAGE_FORMAT), ilGetInteger(IL_IMAGE_TYPE), ilGetData());
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	ilBindImage(ilTexID[NIGHT_TEXTURE]); /* Binding of IL image name */
+	// Load Night Texture
+	ilBindImage(ilTexID[NIGHT_TEXTURE]);
 	loadTexFile("images/EarthNight.png");
-	glBindTexture(GL_TEXTURE_2D, texName[NIGHT_TEXTURE]); //bind OpenGL texture name
-
+	glBindTexture(GL_TEXTURE_2D, texName[NIGHT_TEXTURE]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);	
-	//Note how we depend on OpenIL to supply information about the file we just loaded in
 	glTexImage2D(GL_TEXTURE_2D, 0, ilGetInteger(IL_IMAGE_BPP), ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT),0,
 	   ilGetInteger(IL_IMAGE_FORMAT), ilGetInteger(IL_IMAGE_TYPE), ilGetData());
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	ilBindImage(ilTexID[SPECULAR_TEXTURE]); /* Binding of IL image name */
+	// Load Specular Texture
+	ilBindImage(ilTexID[SPECULAR_TEXTURE]);
 	loadTexFile("images/EarthSpec.png");
-	glBindTexture(GL_TEXTURE_2D, texName[SPECULAR_TEXTURE]); //bind OpenGL texture name
-
+	glBindTexture(GL_TEXTURE_2D, texName[SPECULAR_TEXTURE]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);	
-	//Note how we depend on OpenIL to supply information about the file we just loaded in
 	glTexImage2D(GL_TEXTURE_2D, 0, ilGetInteger(IL_IMAGE_BPP), ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT),0,
 	   ilGetInteger(IL_IMAGE_FORMAT), ilGetInteger(IL_IMAGE_TYPE), ilGetData());
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	ilBindImage(ilTexID[SPECULAR_TEXTURE]); /* Binding of IL image name */
+	// Load Cloud Texture
+	ilBindImage(ilTexID[CLOUD_TEXTURE]);
 	loadTexFile("images/earthcloudmap.png");
-	glBindTexture(GL_TEXTURE_2D, texName[CLOUD_TEXTURE]); //bind OpenGL texture name
-
+	glBindTexture(GL_TEXTURE_2D, texName[CLOUD_TEXTURE]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);	
-	//Note how we depend on OpenIL to supply information about the file we just loaded in
 	glTexImage2D(GL_TEXTURE_2D, 0, ilGetInteger(IL_IMAGE_BPP), ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT),0,
 	   ilGetInteger(IL_IMAGE_FORMAT), ilGetInteger(IL_IMAGE_TYPE), ilGetData());
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-
-    ilDeleteImages(NUM_TEXTURES, ilTexID); //we're done with OpenIL, so free up the memory
-
-	setupShader(program1);
+    ilDeleteImages(NUM_TEXTURES, ilTexID); //we're done with OpenIL, so free up the memory	
 
 	//Only draw the things in the front layer
 	glEnable(GL_DEPTH_TEST);
+
+	//Had issues with the clouds, so enable front face culling
+	glEnable(GL_CULL_FACE);
+
+	// Enable blending for when clouds are drawn
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void my_timer(int v) 
 {	
+	// Rotate the earth and clouds
 	earthRotation += 0.05;
 	cloudRotation += 0.04;
 
