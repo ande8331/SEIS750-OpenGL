@@ -1,0 +1,133 @@
+
+/*Content Frame background color / text color / background image*/
+#contentFrame,
+#schemePreview, 
+body, 
+body.ineditmode, 
+body.topFrame,
+div.breadcrumbs,
+div.paneTabs ul li.active, 
+div.paneTabs ul li,
+body.wizardBody div.containerWizard {
+    background-color:;
+    color:#000000;
+}
+/*Content area background color / text color / background image */
+#contentArea,
+#schemePreviewBody,
+.container, .contentPane div.bottomRound b {        
+    background-color:#fff;
+    color:#000;
+}
+
+/*Primary button background / text color*/
+#primaryButton, 
+input[type="submit"].submit,
+.mainButton a, .mainButton a:hover, .mainButton a:focus,
+.actionBarMicro .mainButton a, .actionBarMicro .mainButton a:hover, .actionBarMicro .mainButton a:focus,
+.rumble .mainButton > a, .rumble_top .mainButton > a:focus, 
+.rumble .mainButton > a:hover, .rumble_top .mainButton > a:focus, 
+.rumble .mainButton > a:hover, .rumble_top .mainButton > a:focus,
+.button-1, .button-1-img, .button-1:hover, .button-1-img:hover, .button-1:focus, .button-1-img:focus {
+    background-color:#666666;
+	border-color:#666666;
+    color:#fff;
+}
+
+/*Secondary button background / text color*/
+#secondaryButton, 
+.secondaryButton a, .secondaryButton a:hover, .secondaryButton a:focus,
+.button-2, .button-2-img, .button-2:hover, .button-2-img:focus, .button-2:hover, .button-2-img:focus {
+    background-color:#cccccc;
+	border-color:#cccccc;
+    color:#000;
+}
+
+/*Page Header background color / text color / background image */
+#pageHeader, 
+#schemePreviewHead,
+div.pageTitle,
+div.actionBar, 
+div.contentPaneWide div.actionBar,
+div.actionBar ul, 
+div.localViewToggle,
+.navPalette div.actionBarMicro, 
+div.contentPane div.topRound b, 
+div.topRound b,
+div.listCm div.topRound b, 
+div.buttonCm div.topRound b, 
+div.treeContainer div.topRound b,
+div.treeViewCs div.topRound b,
+div#lightboxContent h2,
+#lightbox div.topRound b,
+#puller,
+.frameResizeToggle {
+    background-color:#cccccc;
+	border-color:#cccccc;
+    color:#000;
+}
+
+/*Top Frame Text Color */
+#topFrame, 
+div.topTabs div.topGlobalLinks ul li a.topLevel, 
+div.topTabs-compact div.topGlobalLinks ul li a.topLevel, 
+div.topTabs div.hotItems ul.hotLinks li a  {
+    color:#fff;
+}
+
+
+/*Top Frame Background Color / Background Image*/
+#topFrame, 
+.bgBanner {
+    background-image: url(http://blackboard.stthomas.edu/branding/_1_1/slice1.jpg);
+    background-repeat: repeat;
+    background-position: 0 0;
+    background-color:#663366;
+	border-color:#ffffff;
+}
+div.topTabs-compact {
+    background:#663366;
+	border-color:#ffffff;
+}
+
+/*Top Tab Color/Background Color*/
+#topTab, 
+.appTabs a, .topTabs-compact .appTabs a,
+.appTabs a:hover, .topTabs-compact .appTabs a:hover,
+.appTabs a:focus, .topTabs-compact .appTabs a:focus {   
+    color:#000000;
+    background-color:#cccccc;
+	border-color:#cccccc;
+}
+
+/*Top Tab Active Tab Color/Background Color*/
+#topTabActive, 
+.appTabs .active a, .appTabs .active a:hover, .appTabs .active a:focus,
+.topTabs-compact .appTabs .active a, .topTabs-compact .appTabs .active a:hover, .topTabs-compact .appTabs .active a:focus {
+    color:#000;
+    background-color:#ffffff;  
+	border-color:#ffffff;             
+}
+
+/*Module colors*/
+#moduleTitle, 
+.portlet h2, .portlet h2 span.reorder
+{
+    background-color:#666666;
+    color:#fff;
+}
+.portlet h2 a
+{
+    background-color: transparent;
+    color:#fff;
+}
+#moduleBorder, #moduleBody, 
+.portlet
+{
+    border-top-color: #666666;
+    border-left-color: #666666;
+    border-bottom-color: #666666;
+    border-right-color: #666666;
+    background-color:#fff;
+    color:#000;    
+}
